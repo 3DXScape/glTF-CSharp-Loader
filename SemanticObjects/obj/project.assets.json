@@ -2,10 +2,21 @@
   "version": 3,
   "targets": {
     "net6.0": {
+      "GeoPose/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v5.0",
+        "compile": {
+          "bin/placeholder/GeoPose.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/GeoPose.dll": {}
+        }
+      },
       "glTFInterface/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
         "dependencies": {
+          "GeoPose": "1.0.0",
           "SharedGeometry": "1.0.0"
         },
         "compile": {
@@ -28,6 +39,11 @@
     }
   },
   "libraries": {
+    "GeoPose/1.0.0": {
+      "type": "project",
+      "path": "../GeoPose/GeoPose.csproj",
+      "msbuildProject": "../GeoPose/GeoPose.csproj"
+    },
     "glTFInterface/1.0.0": {
       "type": "project",
       "path": "../glTFInterface/glTFInterface.csproj",
@@ -41,6 +57,7 @@
   },
   "projectFileDependencyGroups": {
     "net6.0": [
+      "GeoPose >= 1.0.0",
       "SharedGeometry >= 1.0.0",
       "glTFInterface >= 1.0.0"
     ]
@@ -76,6 +93,9 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
+            "D:\\Git\\glTF-CSharp-Loader\\GeoPose\\GeoPose.csproj": {
+              "projectPath": "D:\\Git\\glTF-CSharp-Loader\\GeoPose\\GeoPose.csproj"
+            },
             "D:\\Git\\glTF-CSharp-Loader\\glTFInterface\\glTFInterface.csproj": {
               "projectPath": "D:\\Git\\glTF-CSharp-Loader\\glTFInterface\\glTFInterface.csproj"
             },
@@ -109,7 +129,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.307\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.308\\RuntimeIdentifierGraph.json"
       }
     }
   }

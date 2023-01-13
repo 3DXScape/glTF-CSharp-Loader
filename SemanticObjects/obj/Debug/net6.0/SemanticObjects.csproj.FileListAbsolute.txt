@@ -17,3 +17,5 @@ D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\SharedGeometry.dll
 D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\SharedGeometry.pdb
 D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\geometry4Sharp.dll
 D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\geometry4Sharp.pdb
+D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\GeoPose.dll
+D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\GeoPose.pdb

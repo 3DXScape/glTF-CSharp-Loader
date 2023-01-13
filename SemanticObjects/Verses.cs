@@ -414,7 +414,7 @@ Created: 11/23/2022 11:54:10 PM UTC
             double radius = this.Size.Value;
             GeoPose.BasicYPR aPose = this.FramePose;
             OGC_SemanticCore semanticCore = new OGC_SemanticCore("Test", "https://citygml.info/OGC-Khronos-Forum/Prototype/Proto.gltf",
-            aPose.Position.lat, aPose.Position.lon, aPose.Position.h, aPose.Angles.yaw, aPose.Angles.pitch, aPose.Angles.roll, radius);
+            aPose.Position.lat, aPose.Position.lon, aPose.Position.h, aPose.Orientation.yaw, aPose.Orientation.pitch, aPose.Orientation.roll, radius);
 
             // add base scene
             Scene scene = new Scene();
@@ -646,7 +646,7 @@ Created: 11/23/2022 11:54:10 PM UTC
             scene.name = "Scene";
             // this index gets added for each added node in renderentityscene.nodes.Add(0);
             OGC_SemanticCore semanticCore = new OGC_SemanticCore("Test", "https://citygml.info/OGC-Khronos-Forum/Prototype/Proto.gltf",
-             aPose.Position.lat, aPose.Position.lon, aPose.Position.h, aPose.Angles.yaw, aPose.Angles.pitch, aPose.Angles.roll, radius);
+             aPose.Position.lat, aPose.Position.lon, aPose.Position.h, aPose.Orientation.yaw, aPose.Orientation.pitch, aPose.Orientation.roll, radius);
             scene.extensions = new Dictionary<string, object>();
             scene.extensions.Add("OGC_Semantic_Core", semanticCore);
             root.scenes.Add(scene);

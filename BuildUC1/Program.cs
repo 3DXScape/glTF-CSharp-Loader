@@ -18,13 +18,13 @@ const double roll = 0.0;
 const double size = 200.0;
 
 IntegratedWorld myWorld = new IntegratedWorld("Use Case 1");
-GeoPose.BasicYPR myIntegratedFrame = new GeoPose.BasicYPR("Integrated Frame");
+GeoPose.BasicYPR myIntegratedFrame = new GeoPose.BasicYPR();
 myIntegratedFrame.Position.lat = lat;
 myIntegratedFrame.Position.lon = lon;
 myIntegratedFrame.Position.h = h;
-myIntegratedFrame.Angles.yaw = yaw;
-myIntegratedFrame.Angles.pitch = pitch;
-myIntegratedFrame.Angles.roll = roll;
+myIntegratedFrame.Orientation.yaw = yaw;
+myIntegratedFrame.Orientation.pitch = pitch;
+myIntegratedFrame.Orientation.roll = roll;
 myWorld.OmniVerse = new OutsideOfAnyWorld();
 myWorld.FramePose = myIntegratedFrame;
 myWorld.Size = new SharedGeometry.Distance();
@@ -37,7 +37,7 @@ SharedGeometry.Distance wSize = new SharedGeometry.Distance();
 wSize.Value = 200.0;
 myBackground.Size = wSize;
 
-GeoPose.BasicYPR myBackgroundFrame = new GeoPose.BasicYPR("Background Frame");
+GeoPose.BasicYPR myBackgroundFrame = new GeoPose.BasicYPR();
 myBackgroundFrame.Position.lat = lat;
 myBackgroundFrame.Position.lon = lon;
 myBackgroundFrame.Position.h = h;
@@ -72,9 +72,9 @@ for (int nBuilding = 0; nBuilding < nBuildings; nBuilding++)
     pose.Position.East = 0.0;
     pose.Position.North = 0.0;
     pose.Position.Up = 0.0;
-    pose.Angles.yaw = 0.0;
-    pose.Angles.pitch = 0.0;
-    pose.Angles.roll = 0.0;
+    pose.Orientation.yaw = 0.0;
+    pose.Orientation.pitch = 0.0;
+    pose.Orientation.roll = 0.0;
     aBuilding.Pose = pose;
 
     aBuilding.SemanticEntityClass = new SemanticClasses.Building();
@@ -90,9 +90,9 @@ for (int nStreet = 0; nStreet < nStreets; nStreet++)
     pose.Position.East = 0.0;
     pose.Position.North = 0.0;
     pose.Position.Up = 0.0;
-    pose.Angles.yaw = 0.0;
-    pose.Angles.pitch = 0.0;
-    pose.Angles.roll = 0.0;
+    pose.Orientation.yaw = 0.0;
+    pose.Orientation.pitch = 0.0;
+    pose.Orientation.roll = 0.0;
     aStreet.Pose = pose;
 
     // add sidewalks
@@ -105,9 +105,9 @@ for (int nStreet = 0; nStreet < nStreets; nStreet++)
     pose.Position.East = 0.0;
     pose.Position.North = 0.0;
     pose.Position.Up = 0.0;
-    pose.Angles.yaw = 0.0;
-    pose.Angles.pitch = 0.0;
-    pose.Angles.roll = 0.0;
+    pose.Orientation.yaw = 0.0;
+    pose.Orientation.pitch = 0.0;
+    pose.Orientation.roll = 0.0;
     aSidewalk.Pose = pose;
 
     aSidewalk.SemanticEntityClass = new SemanticClasses.WalkWay();
@@ -119,9 +119,9 @@ for (int nStreet = 0; nStreet < nStreets; nStreet++)
     pose.Position.East = 0.0;
     pose.Position.North = 0.0;
     pose.Position.Up = 0.0;
-    pose.Angles.yaw = 0.0;
-    pose.Angles.pitch = 0.0;
-    pose.Angles.roll = 0.0;
+    pose.Orientation.yaw = 0.0;
+    pose.Orientation.pitch = 0.0;
+    pose.Orientation.roll = 0.0;
     aSidewalk.Pose = pose;
     aSidewalk.SemanticEntityClass = new SemanticClasses.WalkWay();
     myBackground.AddEntity(aSidewalk);
@@ -136,9 +136,9 @@ for (int nSignal = 0; nSignal < nSignals; nSignal++)
     pose.Position.East = 0.0;
     pose.Position.North = 0.0;
     pose.Position.Up = 0.0;
-    pose.Angles.yaw = 0.0;
-    pose.Angles.pitch = 0.0;
-    pose.Angles.roll = 0.0;
+    pose.Orientation.yaw = 0.0;
+    pose.Orientation.pitch = 0.0;
+    pose.Orientation.roll = 0.0;
     aSignal.Pose = pose;
 
     aSignal.SemanticEntityClass = new SemanticClasses.Signal();
@@ -150,7 +150,7 @@ myWorld.AddWorld(myBackground);
 DynamicWorld myForeground = new DynamicWorld();
 myForeground.Name = "Foreground";
 
-GeoPose.BasicYPR myForegroundFrame = new GeoPose.BasicYPR("Foreground Frame");
+GeoPose.BasicYPR myForegroundFrame = new GeoPose.BasicYPR();
 myForegroundFrame.Position.lat = lat;
 myForegroundFrame.Position.lon = lon;
 myForegroundFrame.Position.h = h;
@@ -163,9 +163,9 @@ pose = new GeoPose.ENUPose();
 pose.Position.East = 0.0;
 pose.Position.North = 0.0;
 pose.Position.Up = 0.0;
-pose.Angles.yaw = 0.0;
-pose.Angles.pitch = 0.0;
-pose.Angles.roll = 0.0;
+pose.Orientation.yaw = 0.0;
+pose.Orientation.pitch = 0.0;
+pose.Orientation.roll = 0.0;
 riderPerson.Pose = pose;
 
 riderPerson.SemanticEntityClass = new SemanticClasses.Person();
@@ -179,9 +179,9 @@ pose = new GeoPose.ENUPose();
 pose.Position.East = 0.0;
 pose.Position.North = 0.0;
 pose.Position.Up = 0.0;
-pose.Angles.yaw = 0.0;
-pose.Angles.pitch = 0.0;
-pose.Angles.roll = 0.0;
+pose.Orientation.yaw = 0.0;
+pose.Orientation.pitch = 0.0;
+pose.Orientation.roll = 0.0;
 driverPerson.Pose = pose;
 
 driverPerson.SemanticEntityClass = new SemanticClasses.Person();
@@ -196,9 +196,9 @@ for (int nPerson = 0; nPerson < nPersons; nPerson++)
     pose.Position.East = 0.0;
     pose.Position.North = 0.0;
     pose.Position.Up = 0.0;
-    pose.Angles.yaw = 0.0;
-    pose.Angles.pitch = 0.0;
-    pose.Angles.roll = 0.0;
+    pose.Orientation.yaw = 0.0;
+    pose.Orientation.pitch = 0.0;
+    pose.Orientation.roll = 0.0;
     aPerson.Pose = pose;
 
     aPerson.SemanticEntityClass = new SemanticClasses.Person();
@@ -212,9 +212,9 @@ pose = new GeoPose.ENUPose();
 pose.Position.East = 0.0;
 pose.Position.North = 0.0;
 pose.Position.Up = 0.0;
-pose.Angles.yaw = 0.0;
-pose.Angles.pitch = 0.0;
-pose.Angles.roll = 0.0;
+pose.Orientation.yaw = 0.0;
+pose.Orientation.pitch = 0.0;
+pose.Orientation.roll = 0.0;
 rideCar.Pose = pose;
 
 rideCar.SemanticEntityClass = new SemanticClasses.Car();
@@ -229,9 +229,9 @@ for(int nCar = 0;nCar < nCars; nCar++)
     pose.Position.East = 0.0;
     pose.Position.North = 0.0;
     pose.Position.Up = 0.0;
-    pose.Angles.yaw = 0.0;
-    pose.Angles.pitch = 0.0;
-    pose.Angles.roll = 0.0;
+    pose.Orientation.yaw = 0.0;
+    pose.Orientation.pitch = 0.0;
+    pose.Orientation.roll = 0.0;
     aCar.Pose = pose;
 
     aCar.SemanticEntityClass = new SemanticClasses.Car();
@@ -243,10 +243,10 @@ myWorld.AddWorld(myForeground);
 DynamicWorld myEarthCenteredInertial = new DynamicWorld();
 myEarthCenteredInertial.Name = "EarthCenteredInertial";
 
-GeoPose.Advanced myEarthCenteredInertialFrame = new GeoPose.Advanced("EarthCenteredInertial Frame");
-myEarthCenteredInertialFrame.frameSpecification.authority = "https://naif.jpl.nasa.gov/naif/";
-myEarthCenteredInertialFrame.frameSpecification.id = "J2000";
-myEarthCenteredInertialFrame.frameSpecification.parameters = "";
+GeoPose.Advanced myEarthCenteredInertialFrame = new GeoPose.Advanced();
+myEarthCenteredInertialFrame.Position.authority = "https://naif.jpl.nasa.gov/naif/";
+myEarthCenteredInertialFrame.Position.id = "J2000";
+myEarthCenteredInertialFrame.Position.parameters = "";
 myEarthCenteredInertial.FramePose = myEarthCenteredInertialFrame;
 myWorld.AddWorld(myEarthCenteredInertial);
 
@@ -254,7 +254,7 @@ myWorld.AddWorld(myEarthCenteredInertial);
 VirtualWorld myVirtualParts = new VirtualWorld();
 myVirtualParts.Name = "Virtual";
 
-GeoPose.BasicYPR myVirtualPartsFrame = new GeoPose.BasicYPR("VirtualParts Frame");
+GeoPose.BasicYPR myVirtualPartsFrame = new GeoPose.BasicYPR();
 myVirtualPartsFrame.Position.lat = lat;
 myVirtualPartsFrame.Position.lon = lon;
 myVirtualPartsFrame.Position.h = h;
@@ -267,9 +267,9 @@ pose = new GeoPose.ENUPose();
 pose.Position.East = 0.0;
 pose.Position.North = 0.0;
 pose.Position.Up = 0.0;
-pose.Angles.yaw = 0.0;
-pose.Angles.pitch = 0.0;
-pose.Angles.roll = 0.0;
+pose.Orientation.yaw = 0.0;
+pose.Orientation.pitch = 0.0;
+pose.Orientation.roll = 0.0;
 carSign.Pose = pose;
 
 carSign.SemanticEntityClass = new SemanticClasses.Sign();

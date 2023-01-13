@@ -23,10 +23,10 @@ namespace GoogleMapsConsole
         // check/create working directories
         // define a center in wgs 84
         // define a radius in m
-        // get conters of bb based on center and radius
-        // make a point set with center and circular boundary with 1 + 256 points
-        // get feature info from OSM
+        // get corners of bb based on center and radius
         // get texture from Google
+        // get feature info from OSM
+        // make a point set with center and circular boundary with 1 + 256 points
         // build roads, paths, water, and buildings/footprints from feature info
         // triangulate points of the area features plus 
         // add 
@@ -35,13 +35,6 @@ namespace GoogleMapsConsole
             // https://overpass-api.de/api/interpreter?data=[out:json];node(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
             // https://overpass-api.de/api/interpreter?data=[out:json];way(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
             // https://overpass-api.de/api/interpreter?data=[out:json];relation(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
-
-            // top  left = 50.93946582314387, -1.4727869743311701
-            // bot right = 50.93545318608545, -1.4673796409470672
-            //
-            // 50.938733425687315,%20-1.470220960392684
-            // 50.93563783737563, -1.4691744971337046 is lower right
-            // need 14 rows up and nine columns left at zoom 20
 
             string baseDir = "c:\\temp\\models\\world";
             // create directories if not already present
@@ -53,6 +46,11 @@ namespace GoogleMapsConsole
             if (!Directory.Exists(baseDir))
             {
                 Directory.CreateDirectory(baseDir);
+            }
+            string baseOSM = baseDir + "\\" + "OSM";
+            if (!Directory.Exists(baseOSM))
+            {
+                Directory.CreateDirectory(baseOSM);
             }
             double cLat = 50.9374713795844;
             double cLon = -1.4696387314938;
@@ -69,7 +67,6 @@ namespace GoogleMapsConsole
             uint zoom = 20;
             double overlap = 0.8;
             double shiftLines = (double)imageSize * overlap;
-            //double lonShiftLines = 320.0;
             Console.Write("Rows per degree: " + RowsPerLatDegree(latMin, latMax, zoom).ToString("f8"));
             Console.WriteLine("  Cols per degree: " + ColsPerLonDegree(lonMin, lonMax, zoom).ToString("f8"));
             // what is the height in pseudo mercator northings? half of imageSize
@@ -84,18 +81,10 @@ namespace GoogleMapsConsole
             double lonUR = lonMax - imageSizeLonDegrees * overlap * 0.5;
             int nRows = (int)((latUR - latLL + imageSizeLatDegrees * 0.5) / (imageSizeLatDegrees * overlap));
             int nCols = (int)((lonUR - lonLL + imageSizeLonDegrees * 0.5) / (imageSizeLonDegrees * overlap));
-            //double clatLR = 50.93563783737563;
-            //double clonLR = -1.4691744971337046 + 0.001718 * 0.25; //-1.4691744971337046;
-            //double clonLR = -1.4692580 + 0.001718 * 0.25; //-1.4691744971337046;
-            //double latIncrement = 0.001082 * 0.25;
-            //double lonIncrement = 0.001718 * 0.25;
             double latIncrement = shiftLines / RowsPerLatDegree(latMin, latMax, zoom);
             double lonIncrement = shiftLines / ColsPerLonDegree(lonMin, lonMax, zoom);
-            //int nRows = 5;
-            //int nCols = 5;
             HttpClient client = new HttpClient();
             for (int nCol = 0; nCol < nCols; nCol++)
-            //for (int nCol = 0; nCol < 6; nCol++)
             {
                 double colLon = lonLL + nCol * lonIncrement;
                 for (int nRow = 0; nRow < nRows; nRow++)
@@ -150,7 +139,6 @@ namespace GoogleMapsConsole
                 }
             }
             for (int nCol = 0; nCol < nCols; nCol++)
-            //for (int nCol = 0; nCol < 6; nCol++)
             {
                 double colLon = lonLL + nCol * lonIncrement;
                 for (int nRow = 0; nRow < nRows; nRow++)
@@ -233,7 +221,6 @@ namespace GoogleMapsConsole
             double minY = latToY(minLat, zoom);
             double maxY = latToY(maxLat, zoom);
             double deltaY = maxY - minY;
-            //double deltaY = latToY(maxLat, zoom) - latToY(minLat, zoom);
             double result =  deltaY / deltaLat;
             return -result;
         }
@@ -244,8 +231,6 @@ namespace GoogleMapsConsole
             double result = deltaX / (maxLon - minLon);
             return result;
         }
-
-
         static public uint lonToX(double lon, uint zoom)
         {
             uint offset = 256u << ((int)zoom - 1); // one pi worth of longitude

@@ -143,41 +143,51 @@ namespace SharedGeometry
         public string? ImageUrl { get; set; } = null;   
     }
 }
+#if NOMORE
 namespace GeoPose
 {
-    public class Position
+    public abstract class Position
+    {
+        
+    }
+    public abstract class Orientation
+    {
+
+    }
+    public abstract class GeoPose
+    {
+        public Position? Position { get; set; } = null;
+        public Orientation? Orientation { get; set; } = null;
+    }
+    public class SphericalPosition : Position
     {
         public double lat { get; set; } = double.NaN;
         public double lon { get; set; } = double.NaN;
         public double h { get; set; } = double.NaN;
     }
-    public class ENUPosition
+    public class ENUPosition : Position
     {
         public double East { get; set; } = double.NaN;
         public double North { get; set; } = double.NaN;
         public double Up { get; set; } = double.NaN;
     }
-    public class YPRAngles
+    public class YPRAngles : Orientation
     {
         public double yaw { get; set; } = double.NaN;
         public double pitch { get; set; } = double.NaN;
         public double roll { get; set; } = double.NaN;
     }
-    public class Quaternion
+    public class Quaternion : Orientation
     {
         public double x { get; set; } = double.NaN;
         public double y { get; set; } = double.NaN;
         public double z { get; set; } = double.NaN;
         public double w { get; set; } = double.NaN;
     }
-    public abstract class GeoPose
+    public class ENUPose : GeoPose
     {
-        public string Name { get; set; } = "";
-    }
-    public class ENUPose
-    {
-        public ENUPosition Position { get; set; } = new ENUPosition();
-        public YPRAngles Angles { get; set; } = new YPRAngles();
+        public new ENUPosition Position { get; set; } = new ENUPosition();
+        public new YPRAngles Orientation { get; set; } = new YPRAngles();
         public string ToJSON(string indent = "")
         {
             StringBuilder sb = new StringBuilder();
@@ -187,55 +197,35 @@ namespace GeoPose
                 "\"up\":   " + Position.Up);
             sb.Append("\r\n\t\t" + indent + "},");
             sb.Append("\r\n\t\t" + indent);
-            sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + Angles.yaw + ",\r\n\t\t\t" + indent +
-                "\"pitch\": " + Angles.pitch + ",\r\n\t\t\t" + indent +
-                "\"roll\":  " + Angles.roll);
+            sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + Orientation.yaw + ",\r\n\t\t\t" + indent +
+                "\"pitch\": " + Orientation.pitch + ",\r\n\t\t\t" + indent +
+                "\"roll\":  " + Orientation.roll);
             sb.Append("\r\n\t\t" + indent + "}");
             sb.Append("\r\n\t" + indent + "}");
             return sb.ToString();
         }
-
     }
     public class BasicYPR : GeoPose
     {
-        public BasicYPR(string aName)
-        {
-            Name = aName;
-        }
-        public Position Position { get; set; } = new Position();
-        public YPRAngles Angles { get; set; } = new YPRAngles();
-        /*
-  {
-  "position": {
-    "lat": 48,
-    "lon": -122,
-    "h": 0
-  },
-  "quaternion": {
-    "x": 0.2054016057332686,
-    "y": 0.2602252793489189,
-    "z": 0.5845327055343223,
-    "w": -0.7405501336916342
-  }
-}
-         * 
-         */
-
-
+        public new SphericalPosition? Position { get; set; } = new SphericalPosition();
+        public new YPRAngles? Orientation { get; set; } = new YPRAngles();
         public string ToJSON(string indent = "")
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("{\r\n\t\t" + indent);
-            sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + Position.lat + ",\r\n\t\t\t" + indent +
-                "\"lon\": " + Position.lon + ",\r\n\t\t\t" + indent +
-                "\"h\":   " + Position.h);
-            sb.Append("\r\n\t\t" + indent + "},");
-            sb.Append("\r\n\t\t" + indent);
-            sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + Angles.yaw + ",\r\n\t\t\t" + indent +
-                "\"pitch\": " + Angles.pitch + ",\r\n\t\t\t" + indent +
-                "\"roll\":  " + Angles.roll);
-            sb.Append("\r\n\t\t" + indent + "}");
-            sb.Append("\r\n\t" + indent + "}");
+            if (Position != null && Orientation != null)
+            {
+                sb.Append("{\r\n\t\t" + indent);
+                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + Position.lat + ",\r\n\t\t\t" + indent +
+                    "\"lon\": " + Position.lon + ",\r\n\t\t\t" + indent +
+                    "\"h\":   " + Position.h);
+                sb.Append("\r\n\t\t" + indent + "},");
+                sb.Append("\r\n\t\t" + indent);
+                sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + Orientation.yaw + ",\r\n\t\t\t" + indent +
+                    "\"pitch\": " + Orientation.pitch + ",\r\n\t\t\t" + indent +
+                    "\"roll\":  " + Orientation.roll);
+                sb.Append("\r\n\t\t" + indent + "}");
+                sb.Append("\r\n\t" + indent + "}");
+            }
             return sb.ToString();
         }
     }
@@ -247,39 +237,16 @@ namespace GeoPose
     }
     public class Advanced : GeoPose
     {
-        public Advanced(string aName)
-        {
-            Name = aName;
-        }
-        public FrameSpecification frameSpecification { get; set; } = new FrameSpecification();
-        public Quaternion Quaternion { get; set; } = new Quaternion();
-        /*
-  {
-  "frameSpecification": {
-    "authority": "/geopose/1.0",
-    "id": "LTP-ENU",
-    "parameters": "longitude=-122.0000000&latitude=48.0000000&height=0.000"
-  },
-  "quaternion": {
-    "x": -0.14531824386668632,
-    "y": -0.03245644116944548,
-    "z": 0.9650744852300841,
-    "w": -0.21554680555277317
-  },
-  "validTime": 1669671566669
-}
-         * 
-         */
-
-
+        public new FrameSpecification Position { get; set; } = new FrameSpecification();
+        public new Quaternion Orientation { get; set; } = new Quaternion();
         public string ToJSON()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("{\"frameSpecification\":{\"authority\":" + frameSpecification.authority + ",\"id\":" + frameSpecification.id + ",\"parameters\":" + frameSpecification.parameters + "},");
-            sb.Append("\"quaternion\":{\"x\":" + Quaternion.x + ",\"y\":" + Quaternion.y + ",\"z\":" + Quaternion.z + ",\"w\":" + Quaternion.w);
+            sb.Append("{\"frameSpecification\":{\"authority\":" + Position.authority + ",\"id\":" + Position.id + ",\"parameters\":" + Position.parameters + "},");
+            sb.Append("\"quaternion\":{\"x\":" + Orientation.x + ",\"y\":" + Orientation.y + ",\"z\":" + Orientation.z + ",\"w\":" + Orientation.w);
             sb.Append("}}");
             return sb.ToString();
         }
     }
-
 }
+#endif // NOMORE

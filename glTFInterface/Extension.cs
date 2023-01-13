@@ -30,9 +30,9 @@ namespace glTFInterface
             this.geoPose.Position.lat = lat;
             this.geoPose.Position.lon = lon;
             this.geoPose.Position.h = h;
-            this.geoPose.Angles.yaw = yaw;
-            this.geoPose.Angles.pitch = pitch;
-            this.geoPose.Angles.roll = roll;
+            this.geoPose.Orientation.yaw = yaw;
+            this.geoPose.Orientation.pitch = pitch;
+            this.geoPose.Orientation.roll = roll;
 
             this.radius = radius;
 
@@ -40,7 +40,7 @@ namespace glTFInterface
             TimeSpan unixTicks = new TimeSpan(DateTime.Now.Ticks) - epochTicks;
             maxUnixTime = minUnixTime = (Int64)unixTicks.TotalMilliseconds;
         }
-        public GeoPose.BasicYPR geoPose { get; set; } = new GeoPose.BasicYPR("root");
+        public GeoPose.BasicYPR geoPose { get; set; } = new GeoPose.BasicYPR();
         public double radius { get; set; } = 0.0;
         public override string ToJSON(string indent = "")
         {
@@ -72,7 +72,7 @@ namespace glTFInterface
             this.geoPose.Position.h = h;
             this.radius = radius;
         }
-        public GeoPose.BasicYPR geoPose { get; set; } = new GeoPose.BasicYPR("root");
+        public GeoPose.BasicYPR geoPose { get; set; } = new GeoPose.BasicYPR();
         public double radius { get; set; } = 0.0;
         public override string ToJSON(string indent = "")
         {

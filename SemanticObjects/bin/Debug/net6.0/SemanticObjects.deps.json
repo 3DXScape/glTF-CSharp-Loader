@@ -8,6 +8,7 @@
     ".NETCoreApp,Version=v6.0": {
       "SemanticObjects/1.0.0": {
         "dependencies": {
+          "GeoPose": "1.0.0",
           "SharedGeometry": "1.0.0",
           "glTFInterface": "1.0.0",
           "geometry4Sharp": "1.0.0.0"
@@ -16,8 +17,14 @@
           "SemanticObjects.dll": {}
         }
       },
+      "GeoPose/1.0.0": {
+        "runtime": {
+          "GeoPose.dll": {}
+        }
+      },
       "glTFInterface/1.0.0": {
         "dependencies": {
+          "GeoPose": "1.0.0",
           "SharedGeometry": "1.0.0"
         },
         "runtime": {
@@ -41,6 +48,11 @@
   },
   "libraries": {
     "SemanticObjects/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "GeoPose/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

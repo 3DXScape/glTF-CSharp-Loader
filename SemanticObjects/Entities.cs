@@ -22,9 +22,9 @@ namespace Entities
             pose.Position.East = 0.0;
             pose.Position.North = 0.0;
             pose.Position.Up = 0.0;
-            pose.Angles.yaw = 0.0;
-            pose.Angles.pitch = 0.0;
-            pose.Angles.roll = 0.0;
+            pose.Orientation.yaw = 0.0;
+            pose.Orientation.pitch = 0.0;
+            pose.Orientation.roll = 0.0;
             Pose = pose;
         }
         // what world does this entity live in?

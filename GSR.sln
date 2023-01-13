@@ -40,6 +40,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleMapsConsole", "Google
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LTPENUWGS84", "LTPENE_WGS84\LTPENUWGS84.csproj", "{76D1DAB0-71BB-47B9-B070-C14B22C7CC57}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeoPose", "GeoPose\GeoPose.csproj", "{2AD5AAB2-6E6F-4C7A-B199-45CE9664A3A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,6 +116,10 @@ Global
 		{76D1DAB0-71BB-47B9-B070-C14B22C7CC57}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76D1DAB0-71BB-47B9-B070-C14B22C7CC57}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76D1DAB0-71BB-47B9-B070-C14B22C7CC57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AD5AAB2-6E6F-4C7A-B199-45CE9664A3A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AD5AAB2-6E6F-4C7A-B199-45CE9664A3A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AD5AAB2-6E6F-4C7A-B199-45CE9664A3A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AD5AAB2-6E6F-4C7A-B199-45CE9664A3A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

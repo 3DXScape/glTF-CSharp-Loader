@@ -184,7 +184,38 @@ namespace GoogleMapsConsole
                 }
             }
             string finalFileName = "c:\\temp\\models\\world\\satimages\\Final.png";
+            if(File.Exists(finalFileName))
+            {
+                File.Delete(finalFileName);
+            }
             finalImage.Save(finalFileName);
+            // get closest power of two size
+            int lowerPowerOfTwo = (int)Math.Log2((double)imageHeight);
+            int upperPowerOfTwo = lowerPowerOfTwo + 1;
+            double lowerSize = Math.Pow(2, lowerPowerOfTwo);
+            double upperSize = Math.Pow(2, upperPowerOfTwo);
+            double lowerCount = lowerSize * lowerSize;
+            double actualCount = (double)imageHeight * (double)imageHeight;
+            double upperCount = upperSize * upperSize;
+            double lowerDelta = actualCount - lowerCount;
+            double upperDelta = upperCount - actualCount;
+            if(lowerDelta < upperDelta)
+            {
+                // resize image to lowerSize x lowerSize
+                Image<Rgba32> outImage = new Image<Rgba32>((int)(lowerSize + 0.5), (int)(lowerSize + 0.5));
+                finalImage.Mutate(x => x.Resize((int)(lowerSize + 0.5), (int)(lowerSize + 0.5)));
+                finalFileName = finalFileName.Replace(".png", ".resized.png");
+                if (File.Exists(finalFileName))
+                {
+                    File.Delete(finalFileName);
+                }
+                finalImage.Save(finalFileName);
+            }
+            else
+            {
+                // resize image to upperSize x upperSize
+                Image<Rgba32> outImage = new Image<Rgba32>((int)(upperSize + 0.5), (int)(upperSize + 0.5));
+            }
             // need pseudo mercator coordinates of LL and UR
             // also the WGS-84 and LTP-ENU equivalents
 

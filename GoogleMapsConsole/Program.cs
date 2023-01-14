@@ -36,21 +36,21 @@ namespace GoogleMapsConsole
             // https://overpass-api.de/api/interpreter?data=[out:json];way(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
             // https://overpass-api.de/api/interpreter?data=[out:json];relation(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
 
-            string baseDir = "c:\\temp\\models\\world";
+            string baseDir = "c:/temp/models/world";
             // create directories if not already present
             if(!Directory.Exists(baseDir))
             {
                 Directory.CreateDirectory(baseDir);
             }
-            string baseImagesDir = baseDir + "\\" + "TerrainImages";
-            if (!Directory.Exists(baseDir))
+            string baseImagesDir = baseDir + "/" + "TerrainImages";
+            if (!Directory.Exists(baseImagesDir))
             {
-                Directory.CreateDirectory(baseDir);
+                Directory.CreateDirectory(baseImagesDir);
             }
-            string baseOSM = baseDir + "\\" + "OSM";
-            if (!Directory.Exists(baseOSM))
+            string baseOSMDir = baseDir + "/" + "OSM";
+            if (!Directory.Exists(baseOSMDir))
             {
-                Directory.CreateDirectory(baseOSM);
+                Directory.CreateDirectory(baseOSMDir);
             }
             double cLat = 50.9374713795844;
             double cLon = -1.4696387314938;
@@ -93,7 +93,7 @@ namespace GoogleMapsConsole
                     string gmRC = latToY(rowLat, (uint)zoom).ToString() + "." + lonToX(colLon, (uint)zoom).ToString();
                     string latlon = rowLat.ToString("f7") + "," + colLon.ToString("f7");
                     string colrow = nCol.ToString("d2") + "." + nRow.ToString("d2");
-                    string fileName = "c:\\temp\\models\\world\\satimages\\20." + gmRC + ".png";
+                    string fileName = baseImagesDir + "/20." + gmRC + ".png";// "c:\\temp\\models\\world\\satimages\\20." + gmRC + ".png";
                     if(File.Exists(fileName))
                     {
                         continue;
@@ -147,7 +147,7 @@ namespace GoogleMapsConsole
                     string gmRC = latToY(rowLat, (uint)zoom).ToString() + "." + lonToX(colLon, (uint)zoom).ToString();
                     string latlon = rowLat.ToString("f7") + "," + colLon.ToString("f7");
                     string colrow = nCol.ToString("d2") + "." + nRow.ToString("d2");
-                    string fileName = "c:\\temp\\models\\world\\satimages\\20." + gmRC + ".png";
+                    string fileName = baseImagesDir + "/20." + gmRC + ".png";
                     if (!File.Exists(fileName))
                     {
                         continue;
@@ -171,7 +171,7 @@ namespace GoogleMapsConsole
                     }
                 }
             }
-            string finalFileName = "c:\\temp\\models\\world\\satimages\\Final.png";
+            string finalFileName = baseImagesDir + "/Terrain.png";
             if(File.Exists(finalFileName))
             {
                 File.Delete(finalFileName);
@@ -187,25 +187,71 @@ namespace GoogleMapsConsole
             double upperCount = upperSize * upperSize;
             double lowerDelta = actualCount - lowerCount;
             double upperDelta = upperCount - actualCount;
-            if(lowerDelta < upperDelta)
+            finalFileName = finalFileName.Replace(".png", "." + lowerSize.ToString() + ".png");
+            if (File.Exists(finalFileName))
+            {
+                File.Delete(finalFileName);
+            }
+            Image<Rgba32> outImage;
+            if (lowerDelta < upperDelta)
             {
                 // resize image to lowerSize x lowerSize
-                Image<Rgba32> outImage = new Image<Rgba32>((int)(lowerSize + 0.5), (int)(lowerSize + 0.5));
+                outImage = new Image<Rgba32>((int)(lowerSize + 0.5), (int)(lowerSize + 0.5));
                 finalImage.Mutate(x => x.Resize((int)(lowerSize + 0.5), (int)(lowerSize + 0.5)));
-                finalFileName = finalFileName.Replace(".png", ".resized.png");
-                if (File.Exists(finalFileName))
-                {
-                    File.Delete(finalFileName);
-                }
-                finalImage.Save(finalFileName);
             }
             else
             {
                 // resize image to upperSize x upperSize
-                Image<Rgba32> outImage = new Image<Rgba32>((int)(upperSize + 0.5), (int)(upperSize + 0.5));
+                outImage = new Image<Rgba32>((int)(upperSize + 0.5), (int)(upperSize + 0.5));
+                finalImage.Mutate(x => x.Resize((int)(upperSize + 0.5), (int)(upperSize + 0.5)));
             }
+            finalImage.Save(finalFileName);
             // need pseudo mercator coordinates of LL and UR
             // also the WGS-84 and LTP-ENU equivalents
+
+            // get OSM Data
+            string osmBB = "(" + latLL.ToString("f8") + "," + lonLL.ToString("f8") + "," + latUR.ToString("f8") + "," + lonUR.ToString("f8") + ")";
+            string OSMBaseUri = "https://overpass-api.de/api/interpreter?data=[out:json];";
+            string OSMUriTail = osmBB + ";%20out%20body;";
+            string[] OSMTypes = new string[3] { "node", "way", "relation" };
+            //string[] OSMUris = new string[3] {
+            //    "https://overpass-api.de/api/interpreter?data=[out:json];node" + osmBB + ";%20out%20body",
+            //    "https://overpass-api.de/api/interpreter?data=[out:json];way" + osmBB + ";%20out%20body",
+            //    "https://overpass-api.de/api/interpreter?data=[out:json];relation" + osmBB + ";%20out%20body" };
+            for(int nUri = 0; nUri < 3; nUri++) 
+            {
+                string uri = OSMBaseUri + OSMTypes[nUri] + OSMUriTail;
+                string osmFileName = baseOSMDir + "/" + OSMTypes[nUri] + "s.txt";
+                try
+                {
+
+                    var osmContent = await client.GetByteArrayAsync(uri);
+
+                    using (var osmBuffer = new MemoryStream(osmContent))
+                    {
+                        using (var reader = new StreamReader(osmBuffer))
+                        {
+                            string strContent = reader.ReadToEnd();
+                            StreamWriter sw = new StreamWriter(osmFileName);
+                            sw.Write(strContent);
+                            sw.Close();
+                            Thread.Sleep(1000);
+                        }
+
+                        //Do something with image
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+
+            }
+            // https://overpass-api.de/api/interpreter?data=[out:json];way(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
+            // https://overpass-api.de/api/interpreter?data=[out:json];relation(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
+            // https://overpass-api.de/api/interpreter?data=[out:json];node(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
+            // https://overpass-api.de/api/interpreter?data=[out:json];way(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
+            // https://overpass-api.de/api/interpreter?data=[out:json];relation(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
 
             // then make a mesh for the rectangular area and compute the texture coordinates
             // then package as function

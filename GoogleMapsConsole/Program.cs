@@ -4,6 +4,8 @@ using System.Net.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
+using NetTopologySuite.Geometries;
+using GeoAPI.Geometries;
 
 namespace GoogleMapsConsole
 {
@@ -206,19 +208,20 @@ namespace GoogleMapsConsole
                 finalImage.Mutate(x => x.Resize((int)(upperSize + 0.5), (int)(upperSize + 0.5)));
             }
             finalImage.Save(finalFileName);
-            // need pseudo mercator coordinates of LL and UR
-            // also the WGS-84 and LTP-ENU equivalents
+            // need pseudo mercator coordinates of LL, LR, UR, and UL
+            // also the WGS-84 50.93559071, -1.47291916;50.93558776, -1.46687911;50.93939992, -1.46688010;50.93939699, -1.47292183
+            // x,y: -163964.604,6609908.363;-163292.235,6609907.842;-163292.345,6610581.262;-163964.908,6610580.744
+            // LTP-ENU equivalents
 
             // get OSM Data
             string osmBB = "(" + latLL.ToString("f8") + "," + lonLL.ToString("f8") + "," + latUR.ToString("f8") + "," + lonUR.ToString("f8") + ")";
             string OSMBaseUri = "https://overpass-api.de/api/interpreter?data=[out:json];";
             string OSMUriTail = osmBB + ";%20out%20body;";
             string[] OSMTypes = new string[3] { "node", "way", "relation" };
-            //string[] OSMUris = new string[3] {
-            //    "https://overpass-api.de/api/interpreter?data=[out:json];node" + osmBB + ";%20out%20body",
-            //    "https://overpass-api.de/api/interpreter?data=[out:json];way" + osmBB + ";%20out%20body",
-            //    "https://overpass-api.de/api/interpreter?data=[out:json];relation" + osmBB + ";%20out%20body" };
-            for(int nUri = 0; nUri < 3; nUri++) 
+            // https://overpass-api.de/api/interpreter?data=[out:json];node(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
+            // https://overpass-api.de/api/interpreter?data=[out:json];way(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
+            // https://overpass-api.de/api/interpreter?data=[out:json];relation(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
+            for (int nUri = 0; nUri < 3; nUri++) 
             {
                 string uri = OSMBaseUri + OSMTypes[nUri] + OSMUriTail;
                 string osmFileName = baseOSMDir + "/" + OSMTypes[nUri] + "s.txt";
@@ -247,13 +250,55 @@ namespace GoogleMapsConsole
                 }
 
             }
-            // https://overpass-api.de/api/interpreter?data=[out:json];way(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
-            // https://overpass-api.de/api/interpreter?data=[out:json];relation(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
-            // https://overpass-api.de/api/interpreter?data=[out:json];node(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
-            // https://overpass-api.de/api/interpreter?data=[out:json];way(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
-            // https://overpass-api.de/api/interpreter?data=[out:json];relation(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
-
             // then make a mesh for the rectangular area and compute the texture coordinates
+            //    take four corners plus points on radius circle
+            /*
+                        NetTopologySuite.Triangulate.DelaunayTriangulationBuilder tb = new NetTopologySuite.Triangulate.DelaunayTriangulationBuilder();
+                        NetTopologySuite.Triangulate.VoronoiDiagramBuilder vb = new NetTopologySuite.Triangulate.VoronoiDiagramBuilder();
+                        List<Coordinate> icc = new List<Coordinate>();
+                        IList<AddressPoint> pointList = pointQTIndex.QueryAll();
+                        foreach (AddressPoint sap in pointList)
+                        {
+                            //NetTopologySuite.Geometries.Point p = new NetTopologySuite.Geometries.Point(sap.position.X, sap.position.Y);
+                            icc.Add(sap.position.Coordinate);
+                        }
+                        vb.SetSites(icc);
+                        GeometryFactory gf = new GeometryFactory();
+                        GeometryCollection gc = vb.GetDiagram(gf);
+                        int nPoly = gc.Count;
+                        if(nPoly < 1)
+                        {
+                            return false;
+                        }
+                        int nMaxOver = (int)(nPoly * 0.01 * maxOverPercent);
+                        //int nMaxOver = (int)(nPoly * 0.075);
+                        double threshold = 100.0;
+                        //int bnOver = 0;
+                        while (true)
+                        {
+                            int nOver = 0;
+                            foreach (Polygon poly in gc)
+             */
+
+            //    triangulate them
+            NetTopologySuite.Triangulate.DelaunayTriangulationBuilder tb = new NetTopologySuite.Triangulate.DelaunayTriangulationBuilder();
+            //NetTopologySuite.Triangulate.VoronoiDiagramBuilder vb = new NetTopologySuite.Triangulate.VoronoiDiagramBuilder();
+            List<GeoAPI.Geometries.Coordinate> icc = new List<Coordinate>();
+            Coordinate ll = new Coordinate(0.0, 0.0);
+            Coordinate ul = new Coordinate(0.0, 1.0);
+            Coordinate ur = new Coordinate(1.0, 1.0);
+            Coordinate lr = new Coordinate(1.0, 0.0);
+            icc.Add(ll);
+            icc.Add(lr);
+            icc.Add(ur);
+            icc.Add(ul);
+            GeometryFactory gf = new GeometryFactory();
+            tb.SetSites(icc);
+            NetTopologySuite.Triangulate.QuadEdge.QuadEdgeSubdivision qes = tb.GetSubdivision();
+            //icc.Add()
+            //IList<AddressPoint> pointList = pointQTIndex.QueryAll();
+
+            //    attach to terrain object
             // then package as function
             // then go back to loader and create a snow globe with textured terrain
             // then add buildings from OSM - push up terrain inside footprints

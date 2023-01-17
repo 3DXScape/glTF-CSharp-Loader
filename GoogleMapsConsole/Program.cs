@@ -72,6 +72,27 @@ namespace GoogleMapsConsole
             IntCoordPair iCoord = gm.MetersToPixels(botLeft.X, botLeft.Y, 20);
             IntCoordPair rCoord = gm.PixelsToRaster(iCoord.X, iCoord.Y, 20);
 
+            // need the LTP-ENU coordinates for center and corners of rectangle
+            CoordPair[] LTP_ENUAnchors = new CoordPair[5];
+            LTP_ENUAnchors[0] = new CoordPair(east - radius, north - radius);
+            LTP_ENUAnchors[1] = new CoordPair(east + radius, north - radius);
+            LTP_ENUAnchors[2] = new CoordPair(east + radius, north + radius);
+            LTP_ENUAnchors[3] = new CoordPair(east - radius, north + radius);
+            LTP_ENUAnchors[4] = new CoordPair(east         , north         );
+
+            // need the WGS84 EPSG 4326 positions
+            CoordPair[] GeodeticPositions = new CoordPair[5];
+            GeodeticPositions[0] = new CoordPair(lonMin, latMin);
+            GeodeticPositions[1] = new CoordPair(lonMax, latMin);
+            GeodeticPositions[2] = new CoordPair(lonMax, latMax);
+            GeodeticPositions[3] = new CoordPair(lonMin, latMax);
+            GeodeticPositions[4] = new CoordPair(cLon  ,   cLat);
+
+            // need the raster coordinates for center and corners of rectangle
+            IntCoordPair[] RasterAnchors = new IntCoordPair[5];
+            RasterAnchors[0] = rCoord;
+            // need UV coordinates for every point in terrain - get Raster coordinates for LTP-ENU coordinates
+
             int pmDeltaX = (int)(pmXMax - pmXMin);
             int pmDeltaY = (int)(pmYMax - pMYMin);
             // also the WGS-84 50.93559071, -1.47291916;50.93558776, -1.46687911;50.93939992, -1.46688010;50.93939699, -1.47292183

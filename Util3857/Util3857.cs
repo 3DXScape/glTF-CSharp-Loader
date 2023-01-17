@@ -8,11 +8,29 @@ namespace Util3857
 {
     public class CoordPair
     {
+        public CoordPair()
+        {
+
+        }
+        public CoordPair(double x, double y)
+        {
+            this.X = x;
+            this.Y = y;
+        }
         public double X { get; set; }
         public double Y { get; set; }
     }
     public class IntCoordPair
     {
+        public IntCoordPair()
+        {
+
+        }
+        public IntCoordPair(int x, int y)
+        {
+            this.X = x;
+            this.Y = y;
+        }
         public int X { get; set; }
         public int Y { get; set; }
     }

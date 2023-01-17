@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="SemanticClasses.SemanticClass" Collapsed="true">
+    <Position X="21" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IEBAAAAAgAAggAAACAAAAAQAIAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.BoundingSphere" Collapsed="true">
+    <Position X="7.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.Generic" Collapsed="true">
+    <Position X="16.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.Verse" Collapsed="true">
+    <Position X="21" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.LandSurface" Collapsed="true">
+    <Position X="30" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.Road" Collapsed="true">
+    <Position X="5.25" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAQBAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.Way" Collapsed="true">
+    <Position X="10.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.RoadWay" Collapsed="true">
+    <Position X="12" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.RoadMarking" Collapsed="true">
+    <Position X="23.25" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.RoadFurniture" Collapsed="true">
+    <Position X="33.25" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.Signal" Collapsed="true">
+    <Position X="32.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.Sign" Collapsed="true">
+    <Position X="34.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.Building" Collapsed="true">
+    <Position X="18.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.ExternalDoor" Collapsed="true">
+    <Position X="25.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.ExternalWindow" Collapsed="true">
+    <Position X="36.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.WalkWay" Collapsed="true">
+    <Position X="9.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.Car" Collapsed="true">
+    <Position X="14.25" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.RideCar" Collapsed="true">
+    <Position X="14.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SemanticClasses.Person" Collapsed="true">
+    <Position X="27.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Semantics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

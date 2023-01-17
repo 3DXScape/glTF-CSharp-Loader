@@ -6,6 +6,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using NetTopologySuite.Geometries;
 using GeoAPI.Geometries;
+using Util3857;
 
 namespace GoogleMapsConsole
 {
@@ -34,17 +35,13 @@ namespace GoogleMapsConsole
         // add 
         static async Task Main(string[] args)
         {
-            // https://overpass-api.de/api/interpreter?data=[out:json];node(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
-            // https://overpass-api.de/api/interpreter?data=[out:json];way(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
-            // https://overpass-api.de/api/interpreter?data=[out:json];relation(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
-
             string baseDir = "c:/temp/models/world";
             // create directories if not already present
-            if(!Directory.Exists(baseDir))
+            if (!Directory.Exists(baseDir))
             {
                 Directory.CreateDirectory(baseDir);
             }
-            string baseImagesDir = baseDir + "/" + "TerrainImages";
+            string baseImagesDir = baseDir + "/" + "Terrain";
             if (!Directory.Exists(baseImagesDir))
             {
                 Directory.CreateDirectory(baseImagesDir);
@@ -54,9 +51,10 @@ namespace GoogleMapsConsole
             {
                 Directory.CreateDirectory(baseOSMDir);
             }
+
             double cLat = 50.9374713795844;
             double cLon = -1.4696387314938;
-            double cH   = 19.08;
+            double cH = 19.08;
             double radius = 220.0;
 
             double north, east, up, latMin, lonMin, latMax, lonMax, aH;
@@ -64,11 +62,26 @@ namespace GoogleMapsConsole
             LTP_ENU.LTP_ENU.GeodeticToEnu(cLat, cLon, cH, cLat, cLon, cH, out east, out north, out up);
             LTP_ENU.LTP_ENU.EnuToGeodetic(east + radius, north + radius, up, cLat, cLon, cH, out latMax, out lonMax, out aH);
             LTP_ENU.LTP_ENU.EnuToGeodetic(east - radius, north - radius, up, cLat, cLon, cH, out latMin, out lonMin, out aH);
+            // get pseudo mercator for lat/lon min/max
+            uint pmXMin = lonToX(lonMin, 20);
+            uint pmXMax = lonToX(lonMax, 20);
+            uint pMYMin = latToY(latMin, 20);
+            uint pmYMax = latToY(latMax, 20);
+            GlobalMercator gm = new GlobalMercator();
+            CoordPair botLeft = gm.LatLonToMeters(latMin, lonMin);
+            IntCoordPair iCoord = gm.MetersToPixels(botLeft.X, botLeft.Y, 20);
+            IntCoordPair rCoord = gm.PixelsToRaster(iCoord.X, iCoord.Y, 20);
+
+            int pmDeltaX = (int)(pmXMax - pmXMin);
+            int pmDeltaY = (int)(pmYMax - pMYMin);
+            // also the WGS-84 50.93559071, -1.47291916;50.93558776, -1.46687911;50.93939992, -1.46688010;50.93939699, -1.47292183
             // get centers of images to cover rectangle
             int imageSize = 512;
             uint zoom = 20;
-            double overlap = 0.8;
-            double shiftLines = (double)imageSize * overlap;
+            // Overlap is the fractional duplication of adjacent images 
+            double overlap = 0.2;
+            double jumpSize = 1.0 - overlap;
+            double shiftLines = (double)imageSize * jumpSize;
             Console.Write("Rows per degree: " + RowsPerLatDegree(latMin, latMax, zoom).ToString("f8"));
             Console.WriteLine("  Cols per degree: " + ColsPerLonDegree(lonMin, lonMax, zoom).ToString("f8"));
             // what is the height in pseudo mercator northings? half of imageSize
@@ -77,12 +90,13 @@ namespace GoogleMapsConsole
             double imageSizeLatDegrees = (double)imageSize / RowsPerLatDegree(latMin, latMax, zoom);
             double imageSizeLonDegrees = (double)imageSize / ColsPerLonDegree(latMin, latMax, zoom);
             // what is the lat, lon of the lower left image?
-            double latLL = latMin + imageSizeLatDegrees * overlap * 0.5;
-            double lonLL = lonMin + imageSizeLonDegrees * overlap * 0.5;
-            double latUR = latMax - imageSizeLatDegrees * overlap * 0.5;
-            double lonUR = lonMax - imageSizeLonDegrees * overlap * 0.5;
-            int nRows = (int)((latUR - latLL + imageSizeLatDegrees * 0.5) / (imageSizeLatDegrees * overlap));
-            int nCols = (int)((lonUR - lonLL + imageSizeLonDegrees * 0.5) / (imageSizeLonDegrees * overlap));
+            // also the WGS-84 50.93559071, -1.47291916;50.93558776, -1.46687911;50.93939992, -1.46688010;50.93939699, -1.47292183
+            double latLL = latMin + imageSizeLatDegrees * jumpSize * 0.5;
+            double lonLL = lonMin + imageSizeLonDegrees * jumpSize * 0.5;
+            double latUR = latMax - imageSizeLatDegrees * jumpSize * 0.5;
+            double lonUR = lonMax - imageSizeLonDegrees * jumpSize * 0.5;
+            int nRows = (int)((latUR - latLL + imageSizeLatDegrees * 0.5) / (imageSizeLatDegrees * jumpSize));
+            int nCols = (int)((lonUR - lonLL + imageSizeLonDegrees * 0.5) / (imageSizeLonDegrees * jumpSize));
             double latIncrement = shiftLines / RowsPerLatDegree(latMin, latMax, zoom);
             double lonIncrement = shiftLines / ColsPerLonDegree(lonMin, lonMax, zoom);
             HttpClient client = new HttpClient();
@@ -96,7 +110,7 @@ namespace GoogleMapsConsole
                     string latlon = rowLat.ToString("f7") + "," + colLon.ToString("f7");
                     string colrow = nCol.ToString("d2") + "." + nRow.ToString("d2");
                     string fileName = baseImagesDir + "/20." + gmRC + ".png";// "c:\\temp\\models\\world\\satimages\\20." + gmRC + ".png";
-                    if(File.Exists(fileName))
+                    if (File.Exists(fileName))
                     {
                         continue;
                     }
@@ -123,12 +137,13 @@ namespace GoogleMapsConsole
 
                 }
             }
-            int usableImageSize = (int)((double)imageSize * overlap);
+            int usableImageSize = (int)((double)imageSize * jumpSize);
             int imageWidth = nCols * usableImageSize;
             imageWidth = ((imageWidth + 3) / 4) * 4;
             int imageHeight = nRows * usableImageSize;
             imageHeight = ((imageHeight + 3) / 4) * 4;
             Image<Rgba32> finalImage = new Image<Rgba32>(imageWidth, imageHeight);
+#if TESTPATTERN
             for (int nRow = 0; nRow < imageHeight; nRow++)
             {
                 for(int nCol = 0; nCol < imageWidth; nCol++)
@@ -140,6 +155,7 @@ namespace GoogleMapsConsole
                     finalImage[nCol, nRow] = c;
                 }
             }
+#endif // TESTPATTERN
             for (int nCol = 0; nCol < nCols; nCol++)
             {
                 double colLon = lonLL + nCol * lonIncrement;
@@ -155,14 +171,14 @@ namespace GoogleMapsConsole
                         continue;
                     }
                     Image<Rgba32> tileBitmap = Image.Load<Rgba32>(fileName);
-                    for(int tRow = 0; tRow < imageSize; tRow++)
+                    for (int tRow = 0; tRow < imageSize; tRow++)
                     {
-                        int outRow = tRow + ((nRows-1) - nRow) * (int)(imageSize * overlap);
+                        int outRow = tRow + ((nRows - 1) - nRow) * (int)(imageSize * jumpSize);
                         if (outRow >= 0 && outRow < imageHeight)
                         {
                             for (int tCol = 0; tCol < imageSize; tCol++)
                             {
-                                int outCol = tCol + nCol * (int)(imageSize * overlap);
+                                int outCol = tCol + nCol * (int)(imageSize * jumpSize);
                                 if (outCol >= 0 && outCol < imageWidth)
                                 {
                                     Rgba32 c = tileBitmap[tCol, tRow];
@@ -174,7 +190,7 @@ namespace GoogleMapsConsole
                 }
             }
             string finalFileName = baseImagesDir + "/Terrain.png";
-            if(File.Exists(finalFileName))
+            if (File.Exists(finalFileName))
             {
                 File.Delete(finalFileName);
             }
@@ -221,10 +237,14 @@ namespace GoogleMapsConsole
             // https://overpass-api.de/api/interpreter?data=[out:json];node(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
             // https://overpass-api.de/api/interpreter?data=[out:json];way(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
             // https://overpass-api.de/api/interpreter?data=[out:json];relation(50.93545,-1.4727869,50.93946,-1.46737964);%20out%20body;
-            for (int nUri = 0; nUri < 3; nUri++) 
+            for (int nUri = 0; nUri < 3; nUri++)
             {
                 string uri = OSMBaseUri + OSMTypes[nUri] + OSMUriTail;
                 string osmFileName = baseOSMDir + "/" + OSMTypes[nUri] + "s.txt";
+                if (File.Exists(osmFileName))
+                {
+                    continue;
+                }
                 try
                 {
 
@@ -240,13 +260,11 @@ namespace GoogleMapsConsole
                             sw.Close();
                             Thread.Sleep(1000);
                         }
-
-                        //Do something with image
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.ToString());
+                    Console.WriteLine("Exception getting OSM data: " + ex.ToString());
                 }
 
             }
@@ -312,7 +330,7 @@ namespace GoogleMapsConsole
             double minY = latToY(minLat, zoom);
             double maxY = latToY(maxLat, zoom);
             double deltaY = maxY - minY;
-            double result =  deltaY / deltaLat;
+            double result = deltaY / deltaLat;
             return -result;
         }
         static double ColsPerLonDegree(double minLon, double maxLon, uint zoom)
@@ -334,5 +352,6 @@ namespace GoogleMapsConsole
             return (uint)Math.Round(offset - offset / Math.PI * Math.Log((1.0 + Math.Sin(lat * Math.PI / 180.0)) / (1.0 - Math.Sin(lat * Math.PI / 180.0))) / 2.0);
         }
     }
-
 }
+
+

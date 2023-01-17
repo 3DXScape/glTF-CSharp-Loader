@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="GeoPoseF.GeoPose" Collapsed="true">
+    <Position X="9.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseF.BasicYPR">
+    <Position X="6" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAACAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="FrameTransform" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GeoPoseF.BasicQuaternion">
+    <Position X="8.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAACAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="FrameTransform" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GeoPoseF.Advanced">
+    <Position X="10.5" Y="3.25" Width="1.5" />
+    <AssociationLine Name="FrameTransform" Type="GeoPoseF.ExtrinsicFrameSpecification" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="10.5" Y="4.092" />
+        <Point X="10.125" Y="4.092" />
+        <Point X="10.125" Y="6.261" />
+        <Point X="9.25" Y="6.261" />
+        <Point X="9.25" Y="6.75" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="Orientation" Type="GeoPoseF.Quaternion" ManuallyRouted="true">
+      <Path>
+        <Point X="12" Y="4.092" />
+        <Point X="12.322" Y="4.092" />
+        <Point X="12.322" Y="5.184" />
+        <Point X="12.417" Y="5.184" Type="JumpStart" />
+        <Point X="12.583" Y="5.184" Type="JumpEnd" />
+        <Point X="13.906" Y="5.184" />
+        <Point X="13.906" Y="6.75" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAACAAAAAQCAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="FrameTransform" />
+      <Property Name="Orientation" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GeoPoseF.Position" Collapsed="true">
+    <Position X="9.25" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseF.Orientation" Collapsed="true">
+    <Position X="11.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseF.GeodeticPosition">
+    <Position X="9.25" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAAAAACAAAAAAAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseF.GeocentricPosition">
+    <Position X="11.5" Y="9.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAQAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseF.ENUPosition">
+    <Position X="7" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAgAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseF.YPRAngles">
+    <Position X="10.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAAAAAAgAAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseF.Quaternion">
+    <Position X="13" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAhgAQAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseF.ENUPose">
+    <Position X="12.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAgAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Orientation" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GeoPoseF.ExtrinsicFrameSpecification">
+    <Position X="8" Y="6.75" Width="2.25" />
+    <InheritanceLine Type="GeoPoseF.FrameTransform" ManuallyRouted="true">
+      <Path>
+        <Point X="7.75" Y="6.062" />
+        <Point X="7.75" Y="6.454" />
+        <Point X="9.125" Y="6.454" />
+        <Point X="9.125" Y="6.75" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAACAAgA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseF.WGS84ToLTP_ENUTransform">
+    <Position X="5.5" Y="6.75" Width="2.25" />
+    <InheritanceLine Type="GeoPoseF.FrameTransform" ManuallyRouted="true">
+      <Path>
+        <Point X="7.75" Y="6.062" />
+        <Point X="7.75" Y="6.381" />
+        <Point X="6.806" Y="6.381" Type="JumpStart" />
+        <Point X="6.639" Y="6.381" Type="JumpEnd" />
+        <Point X="6.383" Y="6.381" />
+        <Point X="6.383" Y="6.75" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseF.FrameTransform" Collapsed="true">
+    <Position X="7" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseF.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

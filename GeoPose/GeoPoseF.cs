@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 /// This library is a C# implementation of the three OGC GeoPose 1.0 Basic and Advanced targets
 /// with Json serialization of each, conforming to the OGC GeoPose 1.0 standard.
 /// <version>
-/// Version 0.9.11 
+/// Version 0.9.13 
 /// </version>
 /// <date>
 /// 13 December 2022
@@ -35,14 +35,23 @@ using System.Threading.Tasks;
 /// It is used in the prototype encoding of the CityGML semantic model in Khronos glTF 2.0.
 /// </note>
 /// <note>
-///This version targets the open source and platform-independent .NET 6 Core framework.
+/// This version targets the open source and platform-independent .NET 6 Core framework
+///  and is an alternative to the GeoPose implementation.
+/// This GeoPoseF design differs from the GeoPose design in that it directly follows the template from the standard,
+///  where every GeoPose consists of a frame transformation and an orientation.
+///  Every transform defines the relationship
+///  between an outer and an inner frame and expresses the origin of the inner frame as a
+///  distinguished Position. The conceptual advantage of this design is that it follows
+///  the conceptual model of the standard exactly, rather than treating the Basic targets
+///  as special cases.
+///  
+///  **There is no practical difference in actual use of this version vs
+///  the "GeoPose" namespace version. It makes the derivation of the distinguished point "Position"
+///  as the origin of the coordinate system associated with the inner frame explicit.
+///  This structure also makes it easy to add new categories of FrameTransfom directly in the inheritance scheme.**
+///  
 /// </note>
 /// </summary>
-
-using System;
-using System.Text;
-
-#if ACTIVE
 namespace GeoPoseF
 {
     // *******************************************************************************
@@ -52,7 +61,7 @@ namespace GeoPoseF
     /// </summary>
     public abstract class GeoPose
     {
-        public FrameTransform? FrameT { get; set; } = null;
+        public FrameTransform? FrameTransform { get; set; } = null;
         public Orientation? Orientation { get; set; } = null;
     }
     /// <summary>
@@ -75,7 +84,7 @@ namespace GeoPoseF
         /// A Position specified in spherical coordinates with height above a reference surface -
         /// usually an ellipsoid of revolution or a gravitational equipotential surface.
         /// </summary>
-        public new WGS84ToLTP-ENU Frame { get; set; } = new WGS84ToLTP-ENU();
+        public new WGS84ToLTP_ENUTransform FrameTransform { get; set; } = new WGS84ToLTP_ENUTransform();
         /// <summary>
         /// An Orientation specified as three rotations.
         /// </summary>
@@ -86,12 +95,12 @@ namespace GeoPoseF
         public string ToJSON(string indent = "")
         {
             StringBuilder sb = new StringBuilder();
-            if (Position != null && Orientation != null)
+            if (FrameTransform != null && Orientation != null)
             {
                 sb.Append("{\r\n\t\t" + indent);
-                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + Position.lat + ",\r\n\t\t\t" + indent +
-                    "\"lon\": " + Position.lon + ",\r\n\t\t\t" + indent +
-                    "\"h\":   " + Position.h);
+                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + FrameTransform.Position.lat + ",\r\n\t\t\t" + indent +
+                    "\"lon\": " + FrameTransform.Position.lon + ",\r\n\t\t\t" + indent +
+                    "\"h\":   " + FrameTransform.Position.h);
                 sb.Append("\r\n\t\t" + indent + "},");
                 sb.Append("\r\n\t\t" + indent);
                 sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + Orientation.yaw + ",\r\n\t\t\t" + indent +
@@ -115,7 +124,7 @@ namespace GeoPoseF
         /// <summary>
         /// A WGS84 (EPSG 4327) Position specified in spherical coordinates with height above the WGS84 ellipsoid.
         /// </summary>
-        public new GeodeticPosition Position { get; set; } = new GeodeticPosition();
+        public new WGS84ToLTP_ENUTransform FrameTransform { get; set; } = new WGS84ToLTP_ENUTransform();
         /// <summary>
         /// An Orientation specified as a unit quaternion.
         /// </summary>
@@ -126,12 +135,12 @@ namespace GeoPoseF
         public string ToJSON(string indent = "")
         {
             StringBuilder sb = new StringBuilder();
-            if (Position != null && Orientation != null)
+            if (FrameTransform.Position != null && Orientation != null)
             {
                 sb.Append("{\r\n\t\t" + indent);
-                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + Position.lat + ",\r\n\t\t\t" + indent +
-                    "\"lon\": " + Position.lon + ",\r\n\t\t\t" + indent +
-                    "\"h\":   " + Position.h);
+                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + FrameTransform.Position.lat + ",\r\n\t\t\t" + indent +
+                    "\"lon\": " + FrameTransform.Position.lon + ",\r\n\t\t\t" + indent +
+                    "\"h\":   " + FrameTransform.Position.h);
                 sb.Append("\r\n\t\t" + indent + "},");
                 sb.Append("\r\n\t\t" + indent);
                 sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"x\":   " + Orientation.x + ",\r\n\t\t\t" + indent +
@@ -153,7 +162,7 @@ namespace GeoPoseF
         /// <summary>
         /// A Frame Specification defining a frame with associated coordinate system whose Position is the origin.
         /// </summary>
-        public new FrameSpecification Position { get; set; } = new FrameSpecification();
+        public new ExtrinsicFrameSpecification FrameTransform { get; set; } = new ExtrinsicFrameSpecification();
         /// <summary>
         /// An Orientation specified as a unit quaternion.
         /// </summary>
@@ -168,7 +177,9 @@ namespace GeoPoseF
         public string ToJSON()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("{\"frameSpecification\":{\"authority\":" + Position.authority + ",\"id\":" + Position.id + ",\"parameters\":" + Position.parameters + "},");
+            sb.Append("{\"frameSpecification\":{\"authority\":" + FrameTransform.authority + ",\"id\":" +
+                FrameTransform.id + ",\"parameters\":" +
+                FrameTransform.parameters + "},");
             sb.Append("\"quaternion\":{\"x\":" + Orientation.x + ",\"y\":" + Orientation.y + ",\"z\":" + Orientation.z + ",\"w\":" + Orientation.w);
             sb.Append("}}");
             return sb.ToString();
@@ -247,7 +258,7 @@ namespace GeoPoseF
         /// forms a right-hand coordinate system with the north and up axes, and
         /// which lies in a plane tangent to the ellisoid at that point.
         /// </summary>
-        public double East { get; set; } = double.NaN;
+        public double east { get; set; } = double.NaN;
         /// <summary>
         /// A coordinate value in meters, along an axis (north-axis) that has origin at
         /// a point tangent to an ellisoid defined by a geodetic frame,
@@ -255,12 +266,12 @@ namespace GeoPoseF
         /// forms a right-hand coordinate system with the east and up axes, and
         /// which lies in a plane tangent to the ellisoid at that point.
         /// </summary>
-        public double North { get; set; } = double.NaN;
+        public double north { get; set; } = double.NaN;
         /// <summary>
         /// A coordinate value in meters, measured perpendicular to the tangent plane,
         /// positive in the up direction.
         /// </summary>
-        public double Up { get; set; } = double.NaN;
+        public double up { get; set; } = double.NaN;
     }
     /// <summary>
     /// A specialization of Orientation using Yaw, Pitch, and Roll angles in degrees.
@@ -347,6 +358,15 @@ namespace GeoPoseF
         }
     }
     /// <summary>
+    /// A FrameTransform is a generic container for information that defines mapping between reference frames.
+    /// <remark>
+    /// </remark>
+    /// </summary>
+    public abstract class FrameTransform
+    {
+
+    }
+    /// <summary>
     /// A FrameSpecification is a generic container for information that defines a reference frame.
     /// <remark>
     /// A FrameSpecification can be abstracted as a Position:
@@ -355,7 +375,7 @@ namespace GeoPoseF
     /// The origin, is in fact the *only* distinguished Position associated with the coodinate system.
     /// </remark>
     /// </summary>
-    public class FrameSpecification
+    public class ExtrinsicFrameSpecification : FrameTransform
     {
         /// <summary>
         /// The name or identification of the definer of the category of frame specification.
@@ -373,5 +393,18 @@ namespace GeoPoseF
         /// </summary>
         public string parameters { get; set; } = "";
     }
+    /// <summary>
+    /// A specialized specification of the WGS84 (EPSG 4326) geodetic frame to a local tangent plane East, North, Up frame.
+    /// <remark>
+    /// The origin of the coordinate system associated with the frame is a Position - the origin -
+    /// which is the *only* distinguished Position associated with the coodinate system associated with the inner frame (range).
+    /// </remark>
+    /// </summary>
+    public class WGS84ToLTP_ENUTransform : FrameTransform
+    {
+        /// <summary>
+        /// A single geodetic position defines the tangent point for a transform to LTP-ENU.
+        /// </summary>
+        public GeodeticPosition Position { get; set; } = null;
+    }
 }
-#endif // ACTIVE

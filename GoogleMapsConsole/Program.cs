@@ -88,7 +88,7 @@ namespace GoogleMapsConsole
             GeodeticPositions[3] = new CoordPair(lonMin, latMax);
             GeodeticPositions[4] = new CoordPair(cLon  ,   cLat);
             Console.WriteLine("LL: " + GeodeticPositions[0].X.ToString("f8") + " " + GeodeticPositions[0].Y.ToString("f8"));
-            Console.WriteLine("LR: " + GeodeticPositions[1].X.ToString("f8") + " " + GeodeticPositions[2].Y.ToString("f8"));
+            Console.WriteLine("LR: " + GeodeticPositions[1].X.ToString("f8") + " " + GeodeticPositions[1].Y.ToString("f8"));
             Console.WriteLine("UR: " + GeodeticPositions[2].X.ToString("f8") + " " + GeodeticPositions[2].Y.ToString("f8"));
             Console.WriteLine("UL: " + GeodeticPositions[3].X.ToString("f8") + " " + GeodeticPositions[3].Y.ToString("f8"));
             Console.WriteLine("CT: " + GeodeticPositions[4].X.ToString("f8") + " " + GeodeticPositions[4].Y.ToString("f8"));
@@ -169,19 +169,20 @@ namespace GoogleMapsConsole
                             Console.WriteLine(ex.ToString());
                         }
                     }
+                    const int mysteryOffset = 128;
                     Image<Rgba32> tileBitmap = Image.Load<Rgba32>(fileName);
                     for (int tRow = 0; tRow < imageSize; tRow++)
                     {
                         int finalTopRow = tileTop - RasterAnchors[3].Y;
                         // what row is this in the finalImage?
-                        int outRow = tRow + finalTopRow;                        // ((nRows - 1) - nRow) * (int)(imageSize * jumpSize);
+                        int outRow = tRow + finalTopRow - mysteryOffset;                        // ((nRows - 1) - nRow) * (int)(imageSize * jumpSize);
                         if (outRow >= 0 && outRow < imageHeight)
                         {
                             for (int tCol = 0; tCol < imageSize; tCol++)
                             {
                                 int finalLeftCol = tileLeft - RasterAnchors[0].X;
                                 // what col is this in the finalImage?
-                                int outCol = tCol + finalLeftCol;                    // nCol * (int)(imageSize * jumpSize);
+                                int outCol = tCol + finalLeftCol - mysteryOffset;                    // nCol * (int)(imageSize * jumpSize);
                                 if (outCol >= 0 && outCol < imageWidth)
                                 {
                                     Rgba32 c = tileBitmap[tCol, tRow];

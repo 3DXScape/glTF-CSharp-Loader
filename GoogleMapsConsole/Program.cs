@@ -41,7 +41,7 @@ namespace GoogleMapsConsole
             {
                 Directory.CreateDirectory(baseDir);
             }
-            string baseImagesDir = baseDir + "/" + "Terrain";
+            string baseImagesDir = baseDir + "/" + "Terrain2";
             if (!Directory.Exists(baseImagesDir))
             {
                 Directory.CreateDirectory(baseImagesDir);
@@ -87,119 +87,101 @@ namespace GoogleMapsConsole
             GeodeticPositions[2] = new CoordPair(lonMax, latMax);
             GeodeticPositions[3] = new CoordPair(lonMin, latMax);
             GeodeticPositions[4] = new CoordPair(cLon  ,   cLat);
-
+            Console.WriteLine("LL: " + GeodeticPositions[0].X.ToString("f8") + " " + GeodeticPositions[0].Y.ToString("f8"));
+            Console.WriteLine("LR: " + GeodeticPositions[1].X.ToString("f8") + " " + GeodeticPositions[2].Y.ToString("f8"));
+            Console.WriteLine("UR: " + GeodeticPositions[2].X.ToString("f8") + " " + GeodeticPositions[2].Y.ToString("f8"));
+            Console.WriteLine("UL: " + GeodeticPositions[3].X.ToString("f8") + " " + GeodeticPositions[3].Y.ToString("f8"));
+            Console.WriteLine("CT: " + GeodeticPositions[4].X.ToString("f8") + " " + GeodeticPositions[4].Y.ToString("f8"));
+            // LL: -1.47276839 50.93549376
+            // LR: -1.46650881 50.93944891
+            // UR: -1.46650881 50.93944891
+            // UL: -1.47276839 50.93944891
+            // CT: -1.46963873 50.93747138
             // need the raster coordinates for center and corners of rectangle
             IntCoordPair[] RasterAnchors = new IntCoordPair[5];
             RasterAnchors[0] = rCoord;
+            for(int nPair = 0; nPair < 5; nPair++)
+            {
+                CoordPair aPoint = gm.LatLonToMeters(GeodeticPositions[nPair].Y, GeodeticPositions[nPair].X);
+                IntCoordPair anICoord = gm.MetersToPixels(aPoint.X, aPoint.Y, 20);
+                IntCoordPair anRCoord = gm.PixelsToRaster(anICoord.X, anICoord.Y, 20);
+                RasterAnchors[nPair] = anRCoord;    
+            }
             // need UV coordinates for every point in terrain - get Raster coordinates for LTP-ENU coordinates
 
-            int pmDeltaX = (int)(pmXMax - pmXMin);
-            int pmDeltaY = (int)(pmYMax - pMYMin);
-            // also the WGS-84 50.93559071, -1.47291916;50.93558776, -1.46687911;50.93939992, -1.46688010;50.93939699, -1.47292183
-            // get centers of images to cover rectangle
+            //int pmDeltaX = (int)(pmXMax - pmXMin);
+            //int pmDeltaY = (int)(pmYMax - pMYMin);
+            int pmDeltaX = (int)(RasterAnchors[1].X - RasterAnchors[0].X);
+            int pmDeltaY = (int)(RasterAnchors[0].Y - RasterAnchors[3].Y);
             int imageSize = 512;
             uint zoom = 20;
-            // Overlap is the fractional duplication of adjacent images 
             double overlap = 0.2;
             double jumpSize = 1.0 - overlap;
-            double shiftLines = (double)imageSize * jumpSize;
-            Console.Write("Rows per degree: " + RowsPerLatDegree(latMin, latMax, zoom).ToString("f8"));
-            Console.WriteLine("  Cols per degree: " + ColsPerLonDegree(lonMin, lonMax, zoom).ToString("f8"));
-            // what is the height in pseudo mercator northings? half of imageSize
-            // what is the width in pseudo mercator eastings? half of imageSize
-            // what is the height of an image in degrees? imageSize/RowsPerLatDegree(latMin, latMax, zoom)
-            double imageSizeLatDegrees = (double)imageSize / RowsPerLatDegree(latMin, latMax, zoom);
-            double imageSizeLonDegrees = (double)imageSize / ColsPerLonDegree(latMin, latMax, zoom);
-            // what is the lat, lon of the lower left image?
-            // also the WGS-84 50.93559071, -1.47291916;50.93558776, -1.46687911;50.93939992, -1.46688010;50.93939699, -1.47292183
-            double latLL = latMin + imageSizeLatDegrees * jumpSize * 0.5;
-            double lonLL = lonMin + imageSizeLonDegrees * jumpSize * 0.5;
-            double latUR = latMax - imageSizeLatDegrees * jumpSize * 0.5;
-            double lonUR = lonMax - imageSizeLonDegrees * jumpSize * 0.5;
-            int nRows = (int)((latUR - latLL + imageSizeLatDegrees * 0.5) / (imageSizeLatDegrees * jumpSize));
-            int nCols = (int)((lonUR - lonLL + imageSizeLonDegrees * 0.5) / (imageSizeLonDegrees * jumpSize));
-            double latIncrement = shiftLines / RowsPerLatDegree(latMin, latMax, zoom);
-            double lonIncrement = shiftLines / ColsPerLonDegree(lonMin, lonMax, zoom);
+            // 
+            int shiftLines = (int)(0.5 + (double)imageSize * jumpSize);
+            // start 256 lines down from top of final image and 256 pixels to the right of the left edge of the final image
             HttpClient client = new HttpClient();
-            for (int nCol = 0; nCol < nCols; nCol++)
-            {
-                double colLon = lonLL + nCol * lonIncrement;
-                for (int nRow = 0; nRow < nRows; nRow++)
-                {
-                    double rowLat = latLL + nRow * latIncrement;
-                    string gmRC = latToY(rowLat, (uint)zoom).ToString() + "." + lonToX(colLon, (uint)zoom).ToString();
-                    string latlon = rowLat.ToString("f7") + "," + colLon.ToString("f7");
-                    string colrow = nCol.ToString("d2") + "." + nRow.ToString("d2");
-                    string fileName = baseImagesDir + "/20." + gmRC + ".png";// "c:\\temp\\models\\world\\satimages\\20." + gmRC + ".png";
-                    if (File.Exists(fileName))
-                    {
-                        continue;
-                    }
-                    Uri uri = new Uri("https://maps.googleapis.com/maps/api/staticmap?center=<<latlon>>&format=png&maptype=satellite&zoom=20&size=640x640&key=AIzaSyDdzK4fey4N9dfCFDY78s02ICM3AyJ27Xk"
-                        .Replace("<<latlon>>", latlon));
-                    //client.BaseAddress = uri;
-                    try
-                    {
-
-                        var imageContent = await client.GetByteArrayAsync(uri);
-
-                        using (var imageBuffer = new MemoryStream(imageContent))
-                        {
-                            var image = Image.Load(imageBuffer);
-                            image.Save(fileName);
-                            Thread.Sleep(1000);
-                            //Do something with image
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.ToString());
-                    }
-
-                }
-            }
             int usableImageSize = (int)((double)imageSize * jumpSize);
-            int imageWidth = nCols * usableImageSize;
-            imageWidth = ((imageWidth + 3) / 4) * 4;
-            int imageHeight = nRows * usableImageSize;
-            imageHeight = ((imageHeight + 3) / 4) * 4;
+            int imageWidth = RasterAnchors[1].X - RasterAnchors[0].X + 1;
+            //imageWidth = ((imageWidth + 3) / 4) * 4;
+            int imageHeight = RasterAnchors[0].Y - RasterAnchors[3].Y + 1; ;
+            //imageHeight = ((imageHeight + 3) / 4) * 4;
             Image<Rgba32> finalImage = new Image<Rgba32>(imageWidth, imageHeight);
-#if TESTPATTERN
-            for (int nRow = 0; nRow < imageHeight; nRow++)
+
+            int nImages = 0;
+            for (int tileLeft = RasterAnchors[0].X;tileLeft < RasterAnchors[1].X ; tileLeft += shiftLines)
             {
-                for(int nCol = 0; nCol < imageWidth; nCol++)
+                int tileRight = tileLeft + shiftLines - 1;
+                int tileCol = (tileLeft + tileRight) / 2;
+                for (int tileTop = RasterAnchors[3].Y;tileTop < RasterAnchors[0].Y; tileTop += shiftLines)
                 {
-                    int r = nRow % 256;
-                    int g = nCol % 256;
-                    int b = (nRow + nCol) % 256;
-                    Rgba32 c = new Rgba32(r, g, b, 240);
-                    finalImage[nCol, nRow] = c;
-                }
-            }
-#endif // TESTPATTERN
-            for (int nCol = 0; nCol < nCols; nCol++)
-            {
-                double colLon = lonLL + nCol * lonIncrement;
-                for (int nRow = 0; nRow < nRows; nRow++)
-                {
-                    double rowLat = latLL + nRow * latIncrement;
-                    string gmRC = latToY(rowLat, (uint)zoom).ToString() + "." + lonToX(colLon, (uint)zoom).ToString();
-                    string latlon = rowLat.ToString("f7") + "," + colLon.ToString("f7");
-                    string colrow = nCol.ToString("d2") + "." + nRow.ToString("d2");
+                    nImages++;
+                    int tileBot = tileTop + shiftLines - 1;
+                    int tileRow = (tileTop + tileBot) / 2;
+                    IntCoordPair cPixel = gm.PixelsToRaster(tileCol, tileRow, (int)zoom);
+                    CoordPair cMeters = gm.PixelsToMeters(cPixel.X, cPixel.Y, (int)zoom);
+                    CoordPair cGeodetic = gm.MetersToLatLon(cMeters.X, cMeters.Y);
+                    string gmRC = tileRow.ToString() + "." + tileCol.ToString();
+                    string latlon = cGeodetic.Y.ToString("f7") + "," + cGeodetic.X.ToString("f7");
+
                     string fileName = baseImagesDir + "/20." + gmRC + ".png";
                     if (!File.Exists(fileName))
                     {
-                        continue;
+
+                        Uri uri = new Uri("https://maps.googleapis.com/maps/api/staticmap?center=<<latlon>>&format=png&maptype=satellite&zoom=20&size=640x640&key=AIzaSyDdzK4fey4N9dfCFDY78s02ICM3AyJ27Xk"
+                            .Replace("<<latlon>>", latlon));
+                        //client.BaseAddress = uri;
+                        try
+                        {
+
+                            var imageContent = await client.GetByteArrayAsync(uri);
+
+                            using (var imageBuffer = new MemoryStream(imageContent))
+                            {
+                                var image = Image.Load(imageBuffer);
+                                image.Save(fileName);
+                                Thread.Sleep(1000);
+                                //Do something with image
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.ToString());
+                        }
                     }
                     Image<Rgba32> tileBitmap = Image.Load<Rgba32>(fileName);
                     for (int tRow = 0; tRow < imageSize; tRow++)
                     {
-                        int outRow = tRow + ((nRows - 1) - nRow) * (int)(imageSize * jumpSize);
+                        int finalTopRow = tileTop - RasterAnchors[3].Y;
+                        // what row is this in the finalImage?
+                        int outRow = tRow + finalTopRow;                        // ((nRows - 1) - nRow) * (int)(imageSize * jumpSize);
                         if (outRow >= 0 && outRow < imageHeight)
                         {
                             for (int tCol = 0; tCol < imageSize; tCol++)
                             {
-                                int outCol = tCol + nCol * (int)(imageSize * jumpSize);
+                                int finalLeftCol = tileLeft - RasterAnchors[0].X;
+                                // what col is this in the finalImage?
+                                int outCol = tCol + finalLeftCol;                    // nCol * (int)(imageSize * jumpSize);
                                 if (outCol >= 0 && outCol < imageWidth)
                                 {
                                     Rgba32 c = tileBitmap[tCol, tRow];
@@ -208,6 +190,8 @@ namespace GoogleMapsConsole
                             }
                         }
                     }
+
+
                 }
             }
             string finalFileName = baseImagesDir + "/Terrain.png";
@@ -245,13 +229,165 @@ namespace GoogleMapsConsole
                 finalImage.Mutate(x => x.Resize((int)(upperSize + 0.5), (int)(upperSize + 0.5)));
             }
             finalImage.Save(finalFileName);
+
+            // then jump across columns jumpsize at a time until right edge of tile is right of right edge of final
+            //    then jump down rows jumpsize at a time until bottom edge of tile is below bottom edge of final
+
+            // also the WGS-84 50.93559071, -1.47291916;50.93558776, -1.46687911;50.93939992, -1.46688010;50.93939699, -1.47292183
+            // get centers of images to cover rectangle
+            // Overlap is the fractional duplication of adjacent images 
+            Console.Write("Rows per degree: " + RowsPerLatDegree(latMin, latMax, zoom).ToString("f8"));
+            Console.WriteLine("  Cols per degree: " + ColsPerLonDegree(lonMin, lonMax, zoom).ToString("f8"));
+            // work from top down
+            // first row is at pyMin + imageSize/2;
+            // each row is imageSize*jumpSize increment
+            // first col is at pxMin + imageSize/2
+#if OLD
+            // what is the height in pseudo mercator northings? half of imageSize
+            // what is the width in pseudo mercator eastings? half of imageSize
+            // what is the height of an image in degrees? imageSize/RowsPerLatDegree(latMin, latMax, zoom)
+            double imageSizeLatDegrees = (double)imageSize / RowsPerLatDegree(latMin, latMax, zoom);
+            double imageSizeLonDegrees = (double)imageSize / ColsPerLonDegree(latMin, latMax, zoom);
+            // what is the lat, lon of the lower left image?
+            // also the WGS-84 50.93559071, -1.47291916;50.93558776, -1.46687911;50.93939992, -1.46688010;50.93939699, -1.47292183
+            double latLL = latMin + imageSizeLatDegrees * jumpSize * 0.5;
+            double lonLL = lonMin + imageSizeLonDegrees * jumpSize * 0.5;
+            double latUR = latMax - imageSizeLatDegrees * jumpSize * 0.5;
+            double lonUR = lonMax - imageSizeLonDegrees * jumpSize * 0.5;
+            int nRows = (int)((latUR - latLL + imageSizeLatDegrees * 0.5) / (imageSizeLatDegrees * jumpSize));
+            int nCols = (int)((lonUR - lonLL + imageSizeLonDegrees * 0.5) / (imageSizeLonDegrees * jumpSize));
+            double latIncrement = shiftLines / RowsPerLatDegree(latMin, latMax, zoom);
+            double lonIncrement = shiftLines / ColsPerLonDegree(lonMin, lonMax, zoom);
+                //HttpClient client = new HttpClient();
+                for (int nCol = 0; nCol < nCols; nCol++)
+                {
+                    double colLon = lonLL + nCol * lonIncrement;
+                    for (int nRow = 0; nRow < nRows; nRow++)
+                    {
+                        double rowLat = latLL + nRow * latIncrement;
+                        string gmRC = latToY(rowLat, (uint)zoom).ToString() + "." + lonToX(colLon, (uint)zoom).ToString();
+                        string latlon = rowLat.ToString("f7") + "," + colLon.ToString("f7");
+                        string colrow = nCol.ToString("d2") + "." + nRow.ToString("d2");
+                        string fileName = baseImagesDir + "/20." + gmRC + ".png";// "c:\\temp\\models\\world\\satimages\\20." + gmRC + ".png";
+                        if (!File.Exists(fileName))
+                        {
+                            Uri uri = new Uri("https://maps.googleapis.com/maps/api/staticmap?center=<<latlon>>&format=png&maptype=satellite&zoom=20&size=640x640&key=AIzaSyDdzK4fey4N9dfCFDY78s02ICM3AyJ27Xk"
+                                .Replace("<<latlon>>", latlon));
+                            //client.BaseAddress = uri;
+                            try
+                            {
+
+                                var imageContent = await client.GetByteArrayAsync(uri);
+
+                                using (var imageBuffer = new MemoryStream(imageContent))
+                                {
+                                    var image = Image.Load(imageBuffer);
+                                    image.Save(fileName);
+                                    Thread.Sleep(1000);
+                                    //Do something with image
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.ToString());
+                            }
+                        }
+                    }
+                }
+#endif // OLD
+#if TESTPATTERN
+            for (int nRow = 0; nRow < imageHeight; nRow++)
+            {
+                for(int nCol = 0; nCol < imageWidth; nCol++)
+                {
+                    int r = nRow % 256;
+                    int g = nCol % 256;
+                    int b = (nRow + nCol) % 256;
+                    Rgba32 c = new Rgba32(r, g, b, 240);
+                    finalImage[nCol, nRow] = c;
+                }
+            }
+#endif // TESTPATTERN
+#if OLD
+            for (int nCol = 0; nCol < nCols; nCol++)
+            {
+                double colLon = lonLL + nCol * lonIncrement;
+                for (int nRow = 0; nRow < nRows; nRow++)
+                {
+                    double rowLat = latLL + nRow * latIncrement;
+                    string gmRC = latToY(rowLat, (uint)zoom).ToString() + "." + lonToX(colLon, (uint)zoom).ToString();
+                    string latlon = rowLat.ToString("f7") + "," + colLon.ToString("f7");
+                    string colrow = nCol.ToString("d2") + "." + nRow.ToString("d2");
+                    string fileName = baseImagesDir + "/20." + gmRC + ".png";
+                    if (!File.Exists(fileName))
+                    {
+                        continue;
+                    }
+                    Image<Rgba32> tileBitmap = Image.Load<Rgba32>(fileName);
+                    for (int tRow = 0; tRow < imageSize; tRow++)
+                    {
+                        int outRow = tRow + ((nRows - 1) - nRow) * (int)(imageSize * jumpSize);
+                        if (outRow >= 0 && outRow < imageHeight)
+                        {
+                            for (int tCol = 0; tCol < imageSize; tCol++)
+                            {
+                                int outCol = tCol + nCol * (int)(imageSize * jumpSize);
+                                if (outCol >= 0 && outCol < imageWidth)
+                                {
+                                    Rgba32 c = tileBitmap[tCol, tRow];
+                                    finalImage[outCol, outRow] = c;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            string finalFileName = baseImagesDir + "/Terrain.png";
+            if (File.Exists(finalFileName))
+            {
+                File.Delete(finalFileName);
+            }
+            finalImage.Save(finalFileName);
+
+            // get closest power of two size
+            int lowerPowerOfTwo = (int)Math.Log2((double)imageHeight);
+            int upperPowerOfTwo = lowerPowerOfTwo + 1;
+            double lowerSize = Math.Pow(2, lowerPowerOfTwo);
+            double upperSize = Math.Pow(2, upperPowerOfTwo);
+            double lowerCount = lowerSize * lowerSize;
+            double actualCount = (double)imageHeight * (double)imageHeight;
+            double upperCount = upperSize * upperSize;
+            double lowerDelta = actualCount - lowerCount;
+            double upperDelta = upperCount - actualCount;
+            finalFileName = finalFileName.Replace(".png", "." + lowerSize.ToString() + ".png");
+            if (File.Exists(finalFileName))
+            {
+                File.Delete(finalFileName);
+            }
+            Image<Rgba32> outImage;
+            if (lowerDelta < upperDelta)
+            {
+                // resize image to lowerSize x lowerSize
+                outImage = new Image<Rgba32>((int)(lowerSize + 0.5), (int)(lowerSize + 0.5));
+                finalImage.Mutate(x => x.Resize((int)(lowerSize + 0.5), (int)(lowerSize + 0.5)));
+            }
+            else
+            {
+                // resize image to upperSize x upperSize
+                outImage = new Image<Rgba32>((int)(upperSize + 0.5), (int)(upperSize + 0.5));
+                finalImage.Mutate(x => x.Resize((int)(upperSize + 0.5), (int)(upperSize + 0.5)));
+            }
+            finalImage.Save(finalFileName);
+#endif // OLD
             // need pseudo mercator coordinates of LL, LR, UR, and UL
             // also the WGS-84 50.93559071, -1.47291916;50.93558776, -1.46687911;50.93939992, -1.46688010;50.93939699, -1.47292183
             // x,y: -163964.604,6609908.363;-163292.235,6609907.842;-163292.345,6610581.262;-163964.908,6610580.744
             // LTP-ENU equivalents
 
             // get OSM Data
-            string osmBB = "(" + latLL.ToString("f8") + "," + lonLL.ToString("f8") + "," + latUR.ToString("f8") + "," + lonUR.ToString("f8") + ")";
+            string osmBB = "(" + GeodeticPositions[0].Y.ToString("f8") + "," + GeodeticPositions[0].X.ToString("f8") + "," +
+                GeodeticPositions[2].Y.ToString("f8") + "," + GeodeticPositions[2].X.ToString("f8") + ")";
             string OSMBaseUri = "https://overpass-api.de/api/interpreter?data=[out:json];";
             string OSMUriTail = osmBB + ";%20out%20body;";
             string[] OSMTypes = new string[3] { "node", "way", "relation" };

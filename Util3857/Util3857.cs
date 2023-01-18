@@ -205,6 +205,16 @@ namespace Util3857
             t.Y = (int)(System.Math.Ceiling(py / (double)(this.tileSize)) - 1);
             return t;
         }
+        public IntCoordPair RasterToPixels(int px, int py, int zoom)
+        {
+            //"Move the origin of pixel coordinates to top-left corner"
+
+            int mapSize = tileSize << zoom;
+            IntCoordPair p = new IntCoordPair();
+            p.X = px;
+            p.Y = mapSize - py;
+            return p;
+        }
         public IntCoordPair PixelsToRaster(int px, int py, int zoom)
         {
             //"Move the origin of pixel coordinates to top-left corner"

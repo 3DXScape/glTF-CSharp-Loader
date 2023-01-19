@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LTPENE_WGS84\LTPENUWGS84.csproj" />
+    <ProjectReference Include="..\TerrainComponents\TerrainComponents.csproj" />
     <ProjectReference Include="..\Util3857\Util3857.csproj" />
   </ItemGroup>
 

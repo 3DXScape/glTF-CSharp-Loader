@@ -24,7 +24,7 @@ namespace GoogleMapsConsole
         // add 
         static async Task Main(string[] args)
         {
-            GetTerrainComponents("OS Southampton HQ", "c:/temp/models/world", 50.93765028067923, -1.4696398272318714, 19.08, 256.0);
+            TerrainComponents.TerrainInfo results = await TerrainComponents.TerrainComponents.GetTerrainComponents("OS Southampton HQ", "c:/temp/models/world", 50.93765028067923, -1.4696398272318714, 19.08, 256.0);
 #if OLD
             string baseDir = "c:/temp/models/world";
             // create directories if not already present
@@ -455,7 +455,7 @@ namespace GoogleMapsConsole
             // then clean up and refactor
 #endif // OLD
         }
-
+#if LOCAL
         public static async void GetTerrainComponents(string name, string baseDir, double cLat, double cLon, double cH, double radius)
         {
             // create directories if not already present
@@ -736,6 +736,7 @@ namespace GoogleMapsConsole
             // then add buildings from OSM - push up terrain inside footprints
             // then clean up and refactor
         }
+#endif // LOCAL
     }
 }
 

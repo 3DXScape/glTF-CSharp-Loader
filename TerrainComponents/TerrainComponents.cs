@@ -9,10 +9,73 @@ using GeoAPI.Geometries;
 using Util3857;
 namespace TerrainComponents
 {
+    public class Vec2
+    {
+        public float[] Components { get; set; } = new float[2];
+    }
+    public class Vec3
+    {
+        public float[] Components { get; set; } = new float[3];
+    }
+    public class Vec3Store
+    {
+        private List<Vec3> _theList = new List<Vec3>();
+        public int Add(Coordinate p)
+        {
+            Vec3 vec3 = new Vec3();
+            vec3.Components[0] = (float)p.X;
+            vec3.Components[0] = (float)p.Y;
+            vec3.Components[0] = (float)p.Z;
+            return Add(vec3);
+        }
+        public int Add(Vec3 vec3)
+        {
+            int nVec3;
+            // is this already in store>
+            for (nVec3 = 0; nVec3 < _theList.Count; nVec3++)
+            {
+                if (vec3.Components[0] == _theList[nVec3].Components[0] &&
+                    vec3.Components[0] == _theList[nVec3].Components[0] &&
+                    vec3.Components[0] == _theList[nVec3].Components[0])
+                {
+                    return nVec3;
+                }
+            }
+            nVec3 = _theList.Count;
+            _theList.Add(vec3);
+            return nVec3;
+        }
+    }
+    public class TerrainInfo
+    {
+
+        // groups of three east, north, up coordinates
+        public Vec3[] Vertices { get; set; } = new Vec3[0];
+        // groups of three i, j, k components of 3D unit vectors
+        public Vec3[] Normals  { get; set; } = new Vec3[0];
+        // groups of three triangle indices into the Vertices
+        public int[] Indices { get; set; } = new int[0];
+        // groups of two u, v values for texture coordinates
+        public Vec2[] UVCoord { get; set; } = new Vec2[0];
+        public string TerrainTextureFile { get; set; } = string.Empty;
+    }
     public static class TerrainComponents
     {
-        public static async Task GetTerrainComponents(string name, string baseDir, double cLat, double cLon, double cH, double radius)
+        public static async Task<TerrainInfo> GetTerrainComponents(string name, string baseDir, double cLat, double cLon, double cH, double radius)
         {
+            TerrainInfo results = new TerrainInfo();
+            results.Vertices = new Vec3[0];
+            results.Normals = new Vec3[0];
+            results.Indices = new int[0];
+            results.UVCoord = new Vec2[0];
+            // should return
+            // 1. mesh for terrain
+            //    a. vertices
+            //    b. indices
+            //    c. normals
+            //    d. uv coord
+            //    e. texture map in png file
+            //  2. list of semantic objects
             // create directories if not already present
             if (!Directory.Exists(baseDir))
             {
@@ -69,7 +132,6 @@ namespace TerrainComponents
                 IntCoordPair anRCoord = gm.PixelsToRaster(anICoord.X, anICoord.Y, 20);
                 RasterAnchors[nPair] = anRCoord;
             }
-            // need UV coordinates for every point in terrain - get Raster coordinates for LTP-ENU coordinates
 
             int pmDeltaX = (int)(RasterAnchors[1].X - RasterAnchors[0].X);
             int pmDeltaY = (int)(RasterAnchors[0].Y - RasterAnchors[3].Y);
@@ -198,6 +260,7 @@ namespace TerrainComponents
                 finalImage.Mutate(x => x.Resize((int)(upperSize + 0.5), (int)(upperSize + 0.5)));
             }
             finalImage.Save(finalFileName);
+            results.TerrainTextureFile = new string(finalFileName);
 
             // get OSM Data
             string osmBB = "(" + GeodeticPositions[0].Y.ToString("f8") + "," + GeodeticPositions[0].X.ToString("f8") + "," +
@@ -272,22 +335,48 @@ namespace TerrainComponents
             //    triangulate them
             NetTopologySuite.Triangulate.DelaunayTriangulationBuilder tb = new NetTopologySuite.Triangulate.DelaunayTriangulationBuilder();
             List<GeoAPI.Geometries.Coordinate> icc = new List<Coordinate>();
-            Coordinate ll = new Coordinate(0.0, 0.0);
-            Coordinate ul = new Coordinate(0.0, 1.0);
-            Coordinate ur = new Coordinate(1.0, 1.0);
-            Coordinate lr = new Coordinate(1.0, 0.0);
+            Coordinate ll = new Coordinate(0.0, 0.0, 1.0);
+            Coordinate ul = new Coordinate(0.0, 1.0, 2.0);
+            Coordinate ur = new Coordinate(1.0, 1.0, 3.0);
+            Coordinate lr = new Coordinate(1.0, 0.0, 4.0);
+            Coordinate ct = new Coordinate(0.5, 0.5, 5.0);
             icc.Add(ll);
             icc.Add(lr);
             icc.Add(ur);
             icc.Add(ul);
+            icc.Add(ct);
             GeometryFactory gf = new GeometryFactory();
             tb.SetSites(icc);
             NetTopologySuite.Triangulate.QuadEdge.QuadEdgeSubdivision qes = tb.GetSubdivision();
+            NetTopologySuite.Geometries.GeometryCollection triangles = (NetTopologySuite.Geometries.GeometryCollection)qes.GetTriangles(new GeometryFactory());
+            Vec3Store vec3Store = new Vec3Store();
+            List<Tuple<int, int, int>> indices = new List<Tuple<int, int, int>>();
+            foreach(Geometry geometry in triangles)
+            {
+                if (geometry.Length == 4)
+                {
+                    Polygon triangle = (Polygon)geometry;
+                    int v0 = vec3Store.Add(triangle.Coordinates[0]);
+                    int v1 = vec3Store.Add(triangle.Coordinates[1]);
+                    int v2 = vec3Store.Add(triangle.Coordinates[2]);
+                    indices.Add(new Tuple<int, int, int>(v0, v1, v2));
+                }
+            }
+            //foreach 
+            // get triangles that do not include frame
+            //   store vertices in vertex list
+            //   make an index triple for triangle and store in index triple list
+            // make an array of Vec2 same length as Vertices list
+            // foreach vertex, store UV in UV array
+            // foreach triangle, compute and save normal
+            // make an array ov Vec3 same length as Vertices
+            // foreach vertex index, compute average of normals of triangles using that vertex and store reult in that index of normals array
 
             //    attach to terrain object
             // then go back to loader and create a snow globe with textured terrain
             // then add buildings from OSM - push up terrain inside footprints
             // then clean up and refactor
+            return results;
         }
     }
 }

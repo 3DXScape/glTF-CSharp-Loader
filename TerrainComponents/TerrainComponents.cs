@@ -15,7 +15,74 @@ namespace TerrainComponents
     }
     public class Vec3
     {
+        public Vec3()
+        {
+
+        }
+        public Vec3(Coordinate p)
+        {
+            this.Components[0] = (float)p.X;
+            this.Components[1] = (float)p.Y;
+            this.Components[2] = (float)p.Z;
+        }
+        public Vec3(float x, float y, float z)
+        {
+            Components[0] = x;
+            Components[1] = y;
+            Components[2] = z;  
+        }
         public float[] Components { get; set; } = new float[3];
+        public static Vec3 operator -(Vec3 a, Vec3 b)
+        {
+            return new Vec3(a.Components[0] - b.Components[0], a.Components[1] - b.Components[1], a.Components[2] - b.Components[2]);
+        }
+        // get a new normalized copy
+        public static Vec3 GetNormlized(Vec3 a)
+        {
+            double n2 = a.Components[0] * a.Components[0] + a.Components[1] * a.Components[1] + a.Components[2] * a.Components[2];
+            if ((float)n2 != 0.0)
+            {
+                float v = (float)Math.Sqrt(n2);
+                Vec3 unitVec3 = new Vec3((float)a.Components[0] / v, a.Components[1] / v, a.Components[2] / v);
+                return unitVec3;
+            }
+            return new Vec3((float)0.0, (float)0.0, (float)0.0);
+        }
+        // normalize in place
+        public static void Normlize(ref Vec3 a)
+        {
+            double n2 = a.Components[0] * a.Components[0] + a.Components[1] * a.Components[1] + a.Components[2] * a.Components[2];
+            if ((float)n2 != 0.0)
+            {
+                float v = (float)Math.Sqrt(n2);
+                a.Components[0] /= v;
+                a.Components[1] /= v;
+                a.Components[2] /= v;
+            }
+        }
+        public static Vec3 GetCross(Vec3 a, Vec3 b)
+        {
+            double i = a.Components[1] * b.Components[2] - b.Components[1] * a.Components[2];
+            double j = b.Components[0] * a.Components[2] - a.Components[0] * b.Components[2];
+            double k = a.Components[0] * b.Components[1] - b.Components[0] * a.Components[1];
+            return new Vec3((float)i, (float)j, (float)k);
+        }
+        public static Vec3 GetAverage(Vec3[] vecArray)
+        {
+            Vec3 result = new Vec3((float)0.0, (float)0.0, (float)0.0);
+            int n = vecArray.Length;
+            if (n > 0)
+            {
+                float dn = (float)n;
+                for (int nV = 0; nV < vecArray.Length; nV++)
+                {
+                    result.Components[0] = vecArray[nV].Components[0]/dn;
+                    result.Components[1] = vecArray[nV].Components[1]/dn;
+                    result.Components[2] = vecArray[nV].Components[2]/dn;
+                }
+            }
+            return result;
+        }
     }
     public class Vec3Store
     {
@@ -24,8 +91,8 @@ namespace TerrainComponents
         {
             Vec3 vec3 = new Vec3();
             vec3.Components[0] = (float)p.X;
-            vec3.Components[0] = (float)p.Y;
-            vec3.Components[0] = (float)p.Z;
+            vec3.Components[1] = (float)p.Y;
+            vec3.Components[2] = (float)p.Z;
             return Add(vec3);
         }
         public int Add(Vec3 vec3)
@@ -35,8 +102,8 @@ namespace TerrainComponents
             for (nVec3 = 0; nVec3 < _theList.Count; nVec3++)
             {
                 if (vec3.Components[0] == _theList[nVec3].Components[0] &&
-                    vec3.Components[0] == _theList[nVec3].Components[0] &&
-                    vec3.Components[0] == _theList[nVec3].Components[0])
+                    vec3.Components[1] == _theList[nVec3].Components[1] &&
+                    vec3.Components[2] == _theList[nVec3].Components[2])
                 {
                     return nVec3;
                 }
@@ -44,6 +111,20 @@ namespace TerrainComponents
             nVec3 = _theList.Count;
             _theList.Add(vec3);
             return nVec3;
+        }
+        public Vec3[] Vec3Array
+        {
+            get
+            {
+                return _theList.ToArray();
+            }
+        }
+        public int Length
+        {
+            get
+            {
+                return _theList.Count;
+            }
         }
     }
     public class TerrainInfo
@@ -303,73 +384,56 @@ namespace TerrainComponents
 
             }
             // then make a mesh for the rectangular area and compute the texture coordinates
-            //    take four corners plus points on radius circle
-            /*
-                        NetTopologySuite.Triangulate.DelaunayTriangulationBuilder tb = new NetTopologySuite.Triangulate.DelaunayTriangulationBuilder();
-                        NetTopologySuite.Triangulate.VoronoiDiagramBuilder vb = new NetTopologySuite.Triangulate.VoronoiDiagramBuilder();
-                        List<Coordinate> icc = new List<Coordinate>();
-                        IList<AddressPoint> pointList = pointQTIndex.QueryAll();
-                        foreach (AddressPoint sap in pointList)
-                        {
-                            //NetTopologySuite.Geometries.Point p = new NetTopologySuite.Geometries.Point(sap.position.X, sap.position.Y);
-                            icc.Add(sap.position.Coordinate);
-                        }
-                        vb.SetSites(icc);
-                        GeometryFactory gf = new GeometryFactory();
-                        GeometryCollection gc = vb.GetDiagram(gf);
-                        int nPoly = gc.Count;
-                        if(nPoly < 1)
-                        {
-                            return false;
-                        }
-                        int nMaxOver = (int)(nPoly * 0.01 * maxOverPercent);
-                        //int nMaxOver = (int)(nPoly * 0.075);
-                        double threshold = 100.0;
-                        //int bnOver = 0;
-                        while (true)
-                        {
-                            int nOver = 0;
-                            foreach (Polygon poly in gc)
-             */
-
-            //    triangulate them
-            NetTopologySuite.Triangulate.DelaunayTriangulationBuilder tb = new NetTopologySuite.Triangulate.DelaunayTriangulationBuilder();
             List<GeoAPI.Geometries.Coordinate> icc = new List<Coordinate>();
-            Coordinate ll = new Coordinate(0.0, 0.0, 1.0);
-            Coordinate ul = new Coordinate(0.0, 1.0, 2.0);
-            Coordinate ur = new Coordinate(1.0, 1.0, 3.0);
-            Coordinate lr = new Coordinate(1.0, 0.0, 4.0);
-            Coordinate ct = new Coordinate(0.5, 0.5, 5.0);
+            List<Tuple<int, int, int>> indices = new List<Tuple<int, int, int>>();
+            //    take fourLTP-ENU corners plus points on radius circle
+
+            Coordinate ll = new Coordinate(LTP_ENUAnchors[0].X, LTP_ENUAnchors[0].Y, 0.0);
+            Coordinate ul = new Coordinate(LTP_ENUAnchors[1].X, LTP_ENUAnchors[1].Y, 0.0);
+            Coordinate ur = new Coordinate(LTP_ENUAnchors[2].X, LTP_ENUAnchors[2].Y, 0.0);
+            Coordinate lr = new Coordinate(LTP_ENUAnchors[3].X, LTP_ENUAnchors[3].Y, 0.0);
+            Coordinate ct = new Coordinate(LTP_ENUAnchors[4].X, LTP_ENUAnchors[4].Y, 0.0);
             icc.Add(ll);
             icc.Add(lr);
             icc.Add(ur);
             icc.Add(ul);
             icc.Add(ct);
+            //    triangulate them
+            NetTopologySuite.Triangulate.DelaunayTriangulationBuilder tb = new NetTopologySuite.Triangulate.DelaunayTriangulationBuilder();
             GeometryFactory gf = new GeometryFactory();
             tb.SetSites(icc);
             NetTopologySuite.Triangulate.QuadEdge.QuadEdgeSubdivision qes = tb.GetSubdivision();
             NetTopologySuite.Geometries.GeometryCollection triangles = (NetTopologySuite.Geometries.GeometryCollection)qes.GetTriangles(new GeometryFactory());
             Vec3Store vec3Store = new Vec3Store();
-            List<Tuple<int, int, int>> indices = new List<Tuple<int, int, int>>();
-            foreach(Polygon poly in triangles.Geometries)
+            // get triangles that do not include frame
+            //   store vertices in vertex list
+            //   make an index triple for triangle and store in index triple list
+            List<Vec3> triangleNormalList = new List<Vec3>();   
+            foreach (Polygon poly in triangles.Geometries)
             {
                 if (poly.NumPoints == 4)
                 {
                     //Polygon triangle = (Polygon)geometry;
-                    int v0 = vec3Store.Add(poly.Coordinates[0]);
-                    int v1 = vec3Store.Add(poly.Coordinates[1]);
-                    int v2 = vec3Store.Add(poly.Coordinates[2]);
+                    Vec3 p0 = new Vec3(poly.Coordinates[0]);
+                    Vec3 p1 = new Vec3(poly.Coordinates[1]);
+                    Vec3 p2 = new Vec3(poly.Coordinates[2]);
+                    int v0 = vec3Store.Add(p0);
+                    int v1 = vec3Store.Add(p1);
+                    int v2 = vec3Store.Add(p2);
+                    // normal = normalize (p1-p0 x p2-p0)
+                    Vec3 n1 = p1 - p0;
+                    Vec3 n2 = p2 - p0;
                     indices.Add(new Tuple<int, int, int>(v0, v1, v2));
+                    ////triangleNormalList.Add(normal);
                 }
             }
             //foreach 
-            // get triangles that do not include frame
-            //   store vertices in vertex list
-            //   make an index triple for triangle and store in index triple list
             // make an array of Vec2 same length as Vertices list
+            Vec2[] uvCoord = new Vec2[vec3Store.Length];
             // foreach vertex, store UV in UV array
             // foreach triangle, compute and save normal
             // make an array ov Vec3 same length as Vertices
+            Vec3[] normals = new Vec3[vec3Store.Length];
             // foreach vertex index, compute average of normals of triangles using that vertex and store reult in that index of normals array
 
             //    attach to terrain object

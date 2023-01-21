@@ -351,14 +351,14 @@ namespace TerrainComponents
             NetTopologySuite.Geometries.GeometryCollection triangles = (NetTopologySuite.Geometries.GeometryCollection)qes.GetTriangles(new GeometryFactory());
             Vec3Store vec3Store = new Vec3Store();
             List<Tuple<int, int, int>> indices = new List<Tuple<int, int, int>>();
-            foreach(Geometry geometry in triangles)
+            foreach(Polygon poly in triangles.Geometries)
             {
-                if (geometry.Length == 4)
+                if (poly.NumPoints == 4)
                 {
-                    Polygon triangle = (Polygon)geometry;
-                    int v0 = vec3Store.Add(triangle.Coordinates[0]);
-                    int v1 = vec3Store.Add(triangle.Coordinates[1]);
-                    int v2 = vec3Store.Add(triangle.Coordinates[2]);
+                    //Polygon triangle = (Polygon)geometry;
+                    int v0 = vec3Store.Add(poly.Coordinates[0]);
+                    int v1 = vec3Store.Add(poly.Coordinates[1]);
+                    int v2 = vec3Store.Add(poly.Coordinates[2]);
                     indices.Add(new Tuple<int, int, int>(v0, v1, v2));
                 }
             }

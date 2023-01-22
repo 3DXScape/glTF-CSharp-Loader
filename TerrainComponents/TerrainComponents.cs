@@ -11,6 +11,20 @@ namespace TerrainComponents
 {
     public class Vec2
     {
+        public Vec2()
+        {
+
+        }
+        public Vec2(Coordinate p)
+        {
+            this.Components[0] = (float)p.X;
+            this.Components[1] = (float)p.Y;
+        }
+        public Vec2(float u, float v)
+        {
+            Components[0] = u;
+            Components[1] = v;
+        }
         public float[] Components { get; set; } = new float[2];
     }
     public class Vec3
@@ -49,15 +63,15 @@ namespace TerrainComponents
             return new Vec3((float)0.0, (float)0.0, (float)0.0);
         }
         // normalize in place
-        public static void Normlize(ref Vec3 a)
+        public void Normalize()
         {
-            double n2 = a.Components[0] * a.Components[0] + a.Components[1] * a.Components[1] + a.Components[2] * a.Components[2];
+            double n2 = this.Components[0] * this.Components[0] + this.Components[1] * this.Components[1] + this.Components[2] * this.Components[2];
             if ((float)n2 != 0.0)
             {
                 float v = (float)Math.Sqrt(n2);
-                a.Components[0] /= v;
-                a.Components[1] /= v;
-                a.Components[2] /= v;
+                this.Components[0] /= v;
+                this.Components[1] /= v;
+                this.Components[2] /= v;
             }
         }
         public static Vec3 GetCross(Vec3 a, Vec3 b)
@@ -76,9 +90,9 @@ namespace TerrainComponents
                 float dn = (float)n;
                 for (int nV = 0; nV < vecArray.Length; nV++)
                 {
-                    result.Components[0] = vecArray[nV].Components[0]/dn;
-                    result.Components[1] = vecArray[nV].Components[1]/dn;
-                    result.Components[2] = vecArray[nV].Components[2]/dn;
+                    result.Components[0] += vecArray[nV].Components[0]/dn;
+                    result.Components[1] += vecArray[nV].Components[1]/dn;
+                    result.Components[2] += vecArray[nV].Components[2]/dn;
                 }
             }
             return result;
@@ -328,18 +342,14 @@ namespace TerrainComponents
                 File.Delete(finalFileName);
             }
             Image<Rgba32> outImage;
-            if (lowerDelta < upperDelta)
+            int resizedImageSize = (int)(lowerSize + 0.5);
+            if(lowerDelta > upperDelta)
             {
-                // resize image to lowerSize x lowerSize
-                outImage = new Image<Rgba32>((int)(lowerSize + 0.5), (int)(lowerSize + 0.5));
-                finalImage.Mutate(x => x.Resize((int)(lowerSize + 0.5), (int)(lowerSize + 0.5)));
+                resizedImageSize = (int)(upperSize + 0.5);
             }
-            else
-            {
-                // resize image to upperSize x upperSize
-                outImage = new Image<Rgba32>((int)(upperSize + 0.5), (int)(upperSize + 0.5));
-                finalImage.Mutate(x => x.Resize((int)(upperSize + 0.5), (int)(upperSize + 0.5)));
-            }
+            // resize image to lowerSize x lowerSize
+            outImage = new Image<Rgba32>(resizedImageSize, resizedImageSize);
+            finalImage.Mutate(x => x.Resize(resizedImageSize, resizedImageSize));
             finalImage.Save(finalFileName);
             results.TerrainTextureFile = new string(finalFileName);
 
@@ -423,19 +433,39 @@ namespace TerrainComponents
                     // normal = normalize (p1-p0 x p2-p0)
                     Vec3 n1 = p1 - p0;
                     Vec3 n2 = p2 - p0;
+                    Vec3 cross = Vec3.GetCross(n1, n2);
+                    cross.Normalize();
+                    triangleNormalList.Add(cross);
                     indices.Add(new Tuple<int, int, int>(v0, v1, v2));
                     ////triangleNormalList.Add(normal);
                 }
             }
-            //foreach 
-            // make an array of Vec2 same length as Vertices list
+            //foreach
+            Vec3[] vertices = vec3Store.Vec3Array;
             Vec2[] uvCoord = new Vec2[vec3Store.Length];
-            // foreach vertex, store UV in UV array
-            // foreach triangle, compute and save normal
-            // make an array ov Vec3 same length as Vertices
             Vec3[] normals = new Vec3[vec3Store.Length];
-            // foreach vertex index, compute average of normals of triangles using that vertex and store reult in that index of normals array
-
+            double uMin = ll.X;
+            double vMin = ll.Y;
+            double uMax = ur.X;
+            double vMax = ur.Y;
+            for (int nV = 0; nV < vec3Store.Length; nV++)
+            {
+                // calculate uvs using LTP-ENU corners
+                double u = (vertices[nV].Components[0] - uMin) / (uMax - uMin);
+                double v = (vertices[nV].Components[1] - vMin) / (vMax - vMin);
+                uvCoord[nV] = new Vec2((float)u, (float)v);
+                List<Vec3> normalList = new List<Vec3>();   
+                for(int nT = 0; nT < triangleNormalList.Count; nT++)
+                {
+                    Tuple<int, int, int> t = indices[nT];
+                    if (t.Item1 == nV || t.Item2 == nV || t.Item3 == nV)
+                    {
+                        normalList.Add(triangleNormalList[nT]); 
+                    }
+                }
+                Vec3[] normalArray = normalList.ToArray();
+                normals[nV] = Vec3.GetAverage(normalArray);
+            }
             //    attach to terrain object
             // then go back to loader and create a snow globe with textured terrain
             // then add buildings from OSM - push up terrain inside footprints

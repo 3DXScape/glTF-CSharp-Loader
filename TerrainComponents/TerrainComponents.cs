@@ -395,7 +395,7 @@ namespace TerrainComponents
             }
             // then make a mesh for the rectangular area and compute the texture coordinates
             List<GeoAPI.Geometries.Coordinate> icc = new List<Coordinate>();
-            List<Tuple<int, int, int>> indices = new List<Tuple<int, int, int>>();
+            List<Tuple<int, int, int>> triIndices = new List<Tuple<int, int, int>>();
             //    take fourLTP-ENU corners plus points on radius circle
 
             Coordinate ll = new Coordinate(LTP_ENUAnchors[0].X, LTP_ENUAnchors[0].Y, 0.0);
@@ -436,7 +436,7 @@ namespace TerrainComponents
                     Vec3 cross = Vec3.GetCross(n1, n2);
                     cross.Normalize();
                     triangleNormalList.Add(cross);
-                    indices.Add(new Tuple<int, int, int>(v0, v1, v2));
+                    triIndices.Add(new Tuple<int, int, int>(v0, v1, v2));
                     ////triangleNormalList.Add(normal);
                 }
             }
@@ -444,6 +444,7 @@ namespace TerrainComponents
             Vec3[] vertices = vec3Store.Vec3Array;
             Vec2[] uvCoord = new Vec2[vec3Store.Length];
             Vec3[] normals = new Vec3[vec3Store.Length];
+            int[] indices = new int[triIndices.Count * 3];
             double uMin = ll.X;
             double vMin = ll.Y;
             double uMax = ur.X;
@@ -457,7 +458,7 @@ namespace TerrainComponents
                 List<Vec3> normalList = new List<Vec3>();   
                 for(int nT = 0; nT < triangleNormalList.Count; nT++)
                 {
-                    Tuple<int, int, int> t = indices[nT];
+                    Tuple<int, int, int> t = triIndices[nT];
                     if (t.Item1 == nV || t.Item2 == nV || t.Item3 == nV)
                     {
                         normalList.Add(triangleNormalList[nT]); 
@@ -466,6 +467,17 @@ namespace TerrainComponents
                 Vec3[] normalArray = normalList.ToArray();
                 normals[nV] = Vec3.GetAverage(normalArray);
             }
+            for (int nT = 0; nT < triangleNormalList.Count; nT++)
+            {
+                indices[nT * 3] = triIndices[nT].Item1;
+                indices[nT * 3 + 1] = triIndices[nT].Item2;
+                indices[nT * 3 + 2] = triIndices[nT].Item3;
+            }
+
+            results.Normals = normals;
+            results.UVCoord = uvCoord;
+            results.Indices = indices;
+            results.Vertices = vertices;
             //    attach to terrain object
             // then go back to loader and create a snow globe with textured terrain
             // then add buildings from OSM - push up terrain inside footprints

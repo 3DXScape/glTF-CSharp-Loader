@@ -52,7 +52,7 @@ using System.Threading.Tasks;
 ///  
 /// </note>
 /// </summary>
-namespace GeoPoseF
+namespace GeoPoseX
 {
     // *******************************************************************************
 

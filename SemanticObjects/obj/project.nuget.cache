@@ -1,8 +1,49 @@
 {
   "version": 2,
-  "dgSpecHash": "UbOPtgG7BNYRz4dVrHFEVPnwd70+kuZvaz4yCSp8YB3DIVUxkWc8AwJRLE/OGPoI7eX993S109Fv6f8NrEmHAA==",
+  "dgSpecHash": "jOTakwwIfnJp+kOyqIfNjl7mBU0kG7GjTbKdBlzRwmbxKnc8aNgRHbffMUA9cLHEH2MsgZWnhK07mgt2sBOmBA==",
   "success": true,
   "projectFilePath": "D:\\Git\\glTF-CSharp-Loader\\SemanticObjects\\SemanticObjects.csproj",
-  "expectedPackageFiles": [],
-  "logs": []
+  "expectedPackageFiles": [
+    "C:\\Users\\steve.MOBILEGIS\\.nuget\\packages\\geoapi\\1.7.4\\geoapi.1.7.4.nupkg.sha512",
+    "C:\\Users\\steve.MOBILEGIS\\.nuget\\packages\\geoapi.core\\1.7.5\\geoapi.core.1.7.5.nupkg.sha512",
+    "C:\\Users\\steve.MOBILEGIS\\.nuget\\packages\\microsoft.netcore.platforms\\5.0.0\\microsoft.netcore.platforms.5.0.0.nupkg.sha512",
+    "C:\\Users\\steve.MOBILEGIS\\.nuget\\packages\\nettopologysuite\\1.14.0\\nettopologysuite.1.14.0.nupkg.sha512",
+    "C:\\Users\\steve.MOBILEGIS\\.nuget\\packages\\nettopologysuite.core\\1.15.3\\nettopologysuite.core.1.15.3.nupkg.sha512",
+    "C:\\Users\\steve.MOBILEGIS\\.nuget\\packages\\nettopologysuite.io\\1.14.0.1\\nettopologysuite.io.1.14.0.1.nupkg.sha512",
+    "C:\\Users\\steve.MOBILEGIS\\.nuget\\packages\\sixlabors.imagesharp\\2.1.3\\sixlabors.imagesharp.2.1.3.nupkg.sha512",
+    "C:\\Users\\steve.MOBILEGIS\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\5.0.0\\system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512",
+    "C:\\Users\\steve.MOBILEGIS\\.nuget\\packages\\system.text.encoding.codepages\\5.0.0\\system.text.encoding.codepages.5.0.0.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'GeoAPI 1.7.4' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "GeoAPI",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'NetTopologySuite 1.14.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "NetTopologySuite",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'NetTopologySuite.IO 1.14.0.1' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "NetTopologySuite.IO",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    }
+  ]
 }

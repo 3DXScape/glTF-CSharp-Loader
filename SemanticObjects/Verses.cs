@@ -84,6 +84,7 @@ namespace Verses
             this.Name = name;
         }
         public string Name { get; set; } = "";
+        public string Uri { get; set; } = "";
         public string ReferenceFrame { get; set; } = "Default";
         public GeoPose.BasicYPR FramePose { get; set; }
         // Size is nominally the diameter of a sphere centered on the origin of the Frame Pose

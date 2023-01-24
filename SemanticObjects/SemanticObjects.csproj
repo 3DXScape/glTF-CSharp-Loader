@@ -10,6 +10,7 @@
     <ProjectReference Include="..\GeoPose\GeoPose.csproj" />
     <ProjectReference Include="..\glTFInterface\glTFInterface.csproj" />
     <ProjectReference Include="..\SharedGeometry\SharedGeometry.csproj" />
+    <ProjectReference Include="..\TerrainComponents\TerrainComponents.csproj" />
   </ItemGroup>
 
   <ItemGroup>

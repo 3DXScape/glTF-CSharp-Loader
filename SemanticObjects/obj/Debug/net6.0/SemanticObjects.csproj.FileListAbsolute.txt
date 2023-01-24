@@ -19,3 +19,9 @@ D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\geometry4Sharp.dll
 D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\geometry4Sharp.pdb
 D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\GeoPose.dll
 D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\GeoPose.pdb
+D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\LTPENUWGS84.dll
+D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\TerrainComponents.dll
+D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\Util3857.dll
+D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\TerrainComponents.pdb
+D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\LTPENUWGS84.pdb
+D:\Git\glTF-CSharp-Loader\SemanticObjects\bin\Debug\net6.0\Util3857.pdb

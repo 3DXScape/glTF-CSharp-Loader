@@ -4,6 +4,8 @@ using Verses;
 using Entities;
 using g4;
 // 50.93813907737537, -1.4706584849810118
+//TerrainComponents.TerrainInfo results = await TerrainComponents.TerrainComponents.GetTerrainComponents("OS Southampton HQ", "c:/temp/models/world", 50.93765028067923, -1.4696398272318714, 19.08, 256.0);
+
 const int nCars = 4;
 const int nPersons = 8;
 const int nBuildings = 16;
@@ -15,13 +17,15 @@ const double h = -114.0;
 const double yaw = 0.0;
 const double pitch = -90.0;
 const double roll = 0.0;
-const double size = 200.0;
+const double size = 256.0;
 
-IntegratedWorld myWorld = new IntegratedWorld("Use Case 1");
+IntegratedWorld myWorld = new IntegratedWorld("OS Southampton HQ");
+myWorld.Uri = "c:/temp/models/world";
+
 GeoPose.BasicYPR myIntegratedFrame = new GeoPose.BasicYPR();
-myIntegratedFrame.Position.lat = lat;
-myIntegratedFrame.Position.lon = lon;
-myIntegratedFrame.Position.h = h;
+myIntegratedFrame.Position.lat = 50.93765028067923;
+myIntegratedFrame.Position.lon = -1.4696398272318714;
+myIntegratedFrame.Position.h = 19.08;
 myIntegratedFrame.Orientation.yaw = yaw;
 myIntegratedFrame.Orientation.pitch = pitch;
 myIntegratedFrame.Orientation.roll = roll;
@@ -34,13 +38,13 @@ myWorld.Size.Value = size;
 StaticWorld myBackground = new StaticWorld();
 myBackground.Name = "Background";
 SharedGeometry.Distance wSize = new SharedGeometry.Distance();
-wSize.Value = 200.0;
+wSize.Value = myWorld.Size.Value;
 myBackground.Size = wSize;
 
 GeoPose.BasicYPR myBackgroundFrame = new GeoPose.BasicYPR();
-myBackgroundFrame.Position.lat = lat;
-myBackgroundFrame.Position.lon = lon;
-myBackgroundFrame.Position.h = h;
+myBackgroundFrame.Position.lat = myIntegratedFrame.Position.lat;
+myBackgroundFrame.Position.lon = myIntegratedFrame.Position.lon;
+myBackgroundFrame.Position.h = myIntegratedFrame.Position.h;
 myBackground.FramePose = myBackgroundFrame;
 // Temporary placeholder for ENUPose
 GeoPose.ENUPose pose;
@@ -50,12 +54,12 @@ GeoPose.ENUPose pose;
 // add entities to background
 Entity boundingSphere = new Entity(myBackground, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, "Bounding Sphere", new SemanticClasses.BoundingSphere());
 boundingSphere.Material = boundingSphere.SemanticEntityClass.Material;
-boundingSphere.Meshes.Add(SemanticClasses.BoundingSphere.Generate(new Tuple<double, double, double>(0.0, 0.0, 0.0), 200.0));
+boundingSphere.Meshes.Add(SemanticClasses.BoundingSphere.Generate(new Tuple<double, double, double>(0.0, 0.0, 0.0), myBackground.Size.Value));
 myBackground.AddEntity(boundingSphere);
 
 Entity earthSurface = new Entity(myBackground, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, "Terrain", new SemanticClasses.LandSurface());
 earthSurface.Material = earthSurface.SemanticEntityClass.Material;
-SharedGeometry.Mesh aMesh = SemanticClasses.LandSurface.Generate(new Tuple<double, double, double>(0.0, 0.0, 0.0), 200.0);
+SharedGeometry.Mesh aMesh = SemanticClasses.LandSurface.Generate(new Tuple<double, double, double>(0.0, 0.0, 0.0), myBackground.Size.Value);
 if (aMesh != null)
 {
     earthSurface.Meshes.Add(aMesh);

@@ -143,7 +143,6 @@ namespace TerrainComponents
     }
     public class TerrainInfo
     {
-
         // groups of three east, north, up coordinates
         public Vec3[] Vertices { get; set; } = new Vec3[0];
         // groups of three i, j, k components of 3D unit vectors

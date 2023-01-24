@@ -106,7 +106,7 @@ namespace SemanticClasses
         {
             this.Material = new Entities.TerrainMaterial();
         }
-        public static Mesh? Generate(Tuple<double, double, double> center, double radius)
+        public static async Task<Mesh> Generate(Tuple<double, double, double> center, double radius)
         {
             // recipe: make a circle at center(from bounding sphere) and with radius size*1.25
             //    make a random point set inside circle; get elevations: this is prior elevation model
@@ -118,6 +118,23 @@ namespace SemanticClasses
             //    triangulate the set of non-random points: this is the constrained elevation model
             //    make new point set: constrained points plus random points inside traingles not inside constrated points.
             //    triangulate this point set: this is the terrain mesh
+
+            TerrainComponents.TerrainInfo results = await TerrainComponents.TerrainComponents.GetTerrainComponents("OS Southampton HQ", "c:/temp/models/world", 50.93765028067923, -1.4696398272318714, 19.08, 256.0);
+            Mesh terrainMesh = new Mesh();
+            for(int nV = 0; nV < results.Vertices.Length; nV++)
+            {
+                Tuple<double, double, double> d3 = new Tuple<double, double, double>(results.Vertices[nV].Components[0], results.Vertices[nV].Components[1], results.Vertices[nV].Components[2] );
+                terrainMesh.Vertices.Add(d3);
+                Tuple<float, float, float> f3 = new Tuple<float, float, float>(results.Normals[nV].Components[0], results.Normals[nV].Components[1], results.Normals[nV].Components[2]);
+                terrainMesh.Normals.Add(f3);
+                Tuple<float, float> f2 = new Tuple<float, float>(results.UVCoord[nV].Components[0], results.UVCoord[nV].Components[1]);
+                terrainMesh.UVs.Add(f2);
+            }
+            for(int nIndex = 0; nIndex < results.Indices.Length; nIndex += 3)
+            {
+                Tuple<ushort, ushort, ushort> u3 = new Tuple<ushort, ushort, ushort>((ushort)results.Indices[nIndex], (ushort)results.Indices[nIndex+1], (ushort)results.Indices[nIndex+2]);
+                terrainMesh.Indices.Add(u3);
+            }
             Mesh retval = new SharedGeometry.GeneratedTerrain(radius, new double[3] { center.Item1, center.Item2, center.Item3 }, 2).GetMesh();
             return retval;
         }

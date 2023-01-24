@@ -10,11 +10,93 @@
         "dependencies": {
           "GeoPose": "1.0.0",
           "SharedGeometry": "1.0.0",
+          "TerrainComponents": "1.0.0",
           "glTFInterface": "1.0.0",
           "geometry4Sharp": "1.0.0.0"
         },
         "runtime": {
           "SemanticObjects.dll": {}
+        }
+      },
+      "GeoAPI/1.7.4": {},
+      "GeoAPI.Core/1.7.5": {
+        "runtime": {
+          "lib/netstandard2.0/GeoAPI.dll": {
+            "assemblyVersion": "1.7.5.0",
+            "fileVersion": "1.7.5.0"
+          }
+        }
+      },
+      "Microsoft.NETCore.Platforms/5.0.0": {},
+      "NetTopologySuite/1.14.0": {
+        "dependencies": {
+          "GeoAPI": "1.7.4"
+        },
+        "runtime": {
+          "lib/net45/PowerCollections.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "NetTopologySuite.Core/1.15.3": {
+        "dependencies": {
+          "GeoAPI.Core": "1.7.5"
+        },
+        "runtime": {
+          "lib/netcoreapp2.0/NetTopologySuite.dll": {
+            "assemblyVersion": "1.15.3.0",
+            "fileVersion": "1.15.3.0"
+          }
+        }
+      },
+      "NetTopologySuite.IO/1.14.0.1": {
+        "dependencies": {
+          "NetTopologySuite": "1.14.0"
+        },
+        "runtime": {
+          "lib/net45/NetTopologySuite.IO.GeoTools.dll": {
+            "assemblyVersion": "1.14.0.0",
+            "fileVersion": "1.14.0.0"
+          },
+          "lib/net45/NetTopologySuite.IO.MsSqlSpatial.dll": {
+            "assemblyVersion": "1.14.0.0",
+            "fileVersion": "1.14.0.0"
+          },
+          "lib/net45/NetTopologySuite.IO.PostGis.dll": {
+            "assemblyVersion": "1.14.0.0",
+            "fileVersion": "1.14.0.0"
+          },
+          "lib/net45/NetTopologySuite.IO.ShapeFile.Extended.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          },
+          "lib/net45/NetTopologySuite.IO.ShapeFile.dll": {
+            "assemblyVersion": "1.14.0.0",
+            "fileVersion": "1.14.0.0"
+          },
+          "lib/net45/NetTopologySuite.IO.dll": {
+            "assemblyVersion": "1.14.0.0",
+            "fileVersion": "1.14.0.0"
+          }
+        }
+      },
+      "SixLabors.ImageSharp/2.1.3": {
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0",
+          "System.Text.Encoding.CodePages": "5.0.0"
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/SixLabors.ImageSharp.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.1.3.0"
+          }
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe/5.0.0": {},
+      "System.Text.Encoding.CodePages/5.0.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "5.0.0"
         }
       },
       "GeoPose/1.0.0": {
@@ -31,9 +113,31 @@
           "glTFInterface.dll": {}
         }
       },
+      "LTPENUWGS84/1.0.0": {
+        "runtime": {
+          "LTPENUWGS84.dll": {}
+        }
+      },
       "SharedGeometry/1.0.0": {
         "runtime": {
           "SharedGeometry.dll": {}
+        }
+      },
+      "TerrainComponents/1.0.0": {
+        "dependencies": {
+          "LTPENUWGS84": "1.0.0",
+          "NetTopologySuite.Core": "1.15.3",
+          "NetTopologySuite.IO": "1.14.0.1",
+          "SixLabors.ImageSharp": "2.1.3",
+          "Util3857": "1.0.0"
+        },
+        "runtime": {
+          "TerrainComponents.dll": {}
+        }
+      },
+      "Util3857/1.0.0": {
+        "runtime": {
+          "Util3857.dll": {}
         }
       },
       "geometry4Sharp/1.0.0.0": {
@@ -52,6 +156,69 @@
       "serviceable": false,
       "sha512": ""
     },
+    "GeoAPI/1.7.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-joDULkwmUsXSZPsqQ6H62QmQOi54t3TWyhiKDb48PVUfIox1nSy1RRuEIDQ51h/jBmgb+ZeCsUmMoETVddKJ1A==",
+      "path": "geoapi/1.7.4",
+      "hashPath": "geoapi.1.7.4.nupkg.sha512"
+    },
+    "GeoAPI.Core/1.7.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Dy/YkgZ1szgx+xbVWqMi+4++Fm6v3szbVdei1LKPRZ3meSvgNSMZxqhar5IAeaTj5LcUHLtLGdfyUtkjnYbg3A==",
+      "path": "geoapi.core/1.7.5",
+      "hashPath": "geoapi.core.1.7.5.nupkg.sha512"
+    },
+    "Microsoft.NETCore.Platforms/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-VyPlqzH2wavqquTcYpkIIAQ6WdenuKoFN0BdYBbCWsclXacSOHNQn66Gt4z5NBqEYW0FAPm5rlvki9ZiCij5xQ==",
+      "path": "microsoft.netcore.platforms/5.0.0",
+      "hashPath": "microsoft.netcore.platforms.5.0.0.nupkg.sha512"
+    },
+    "NetTopologySuite/1.14.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WZxN1WPRELed8vrTFZXc1lxRuLB29hJMx7W6FiisgZc27XGV+1Q9tdwb9ESAimc1i1sFfG7jQqVW9v090wtchQ==",
+      "path": "nettopologysuite/1.14.0",
+      "hashPath": "nettopologysuite.1.14.0.nupkg.sha512"
+    },
+    "NetTopologySuite.Core/1.15.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-PvO7lSWjzaazm1m9fYBZkxAtXSkF+t9jneGyyMxKQ/4lso2RzZWrBO0KWeA5Zp8IWoI1Ar/jTodYmC5Nbwo4xw==",
+      "path": "nettopologysuite.core/1.15.3",
+      "hashPath": "nettopologysuite.core.1.15.3.nupkg.sha512"
+    },
+    "NetTopologySuite.IO/1.14.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XTsFycrhC/tUBepRnSwWvLDUWRMO0rxemU5HmXYfk4/vP626t9g/xcy2ZiN6qroFDWGEB2tPbSPnwwINaWefpA==",
+      "path": "nettopologysuite.io/1.14.0.1",
+      "hashPath": "nettopologysuite.io.1.14.0.1.nupkg.sha512"
+    },
+    "SixLabors.ImageSharp/2.1.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8yonNRWX3vUE9k29ta0Hbfa0AEc0hbDjSH/nZ3vOTJEXmY6hLnGsjDKoz96Z+AgOsrdkAu6PdL/Ebaf70aitzw==",
+      "path": "sixlabors.imagesharp/2.1.3",
+      "hashPath": "sixlabors.imagesharp.2.1.3.nupkg.sha512"
+    },
+    "System.Runtime.CompilerServices.Unsafe/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA==",
+      "path": "system.runtime.compilerservices.unsafe/5.0.0",
+      "hashPath": "system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512"
+    },
+    "System.Text.Encoding.CodePages/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-NyscU59xX6Uo91qvhOs2Ccho3AR2TnZPomo1Z0K6YpyztBPM/A5VbkzOO19sy3A3i1TtEnTxA7bCe3Us+r5MWg==",
+      "path": "system.text.encoding.codepages/5.0.0",
+      "hashPath": "system.text.encoding.codepages.5.0.0.nupkg.sha512"
+    },
     "GeoPose/1.0.0": {
       "type": "project",
       "serviceable": false,
@@ -62,7 +229,22 @@
       "serviceable": false,
       "sha512": ""
     },
+    "LTPENUWGS84/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
     "SharedGeometry/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "TerrainComponents/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Util3857/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

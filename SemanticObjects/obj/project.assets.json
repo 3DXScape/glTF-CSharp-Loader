@@ -2,6 +2,121 @@
   "version": 3,
   "targets": {
     "net6.0": {
+      "GeoAPI/1.7.4": {
+        "type": "package",
+        "compile": {
+          "lib/net45/GeoAPI.dll": {}
+        },
+        "runtime": {
+          "lib/net45/GeoAPI.dll": {}
+        }
+      },
+      "GeoAPI.Core/1.7.5": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/GeoAPI.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/GeoAPI.dll": {}
+        }
+      },
+      "Microsoft.NETCore.Platforms/5.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard1.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard1.0/_._": {}
+        }
+      },
+      "NetTopologySuite/1.14.0": {
+        "type": "package",
+        "dependencies": {
+          "GeoAPI": "[1.7.4, 1.8.0)"
+        },
+        "compile": {
+          "lib/net45/NetTopologySuite.dll": {},
+          "lib/net45/PowerCollections.dll": {}
+        },
+        "runtime": {
+          "lib/net45/NetTopologySuite.dll": {},
+          "lib/net45/PowerCollections.dll": {}
+        }
+      },
+      "NetTopologySuite.Core/1.15.3": {
+        "type": "package",
+        "dependencies": {
+          "GeoAPI.Core": "[1.7.5, 2.0.0-A)"
+        },
+        "compile": {
+          "lib/netcoreapp2.0/NetTopologySuite.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp2.0/NetTopologySuite.dll": {}
+        }
+      },
+      "NetTopologySuite.IO/1.14.0.1": {
+        "type": "package",
+        "dependencies": {
+          "NetTopologySuite": "1.14.0"
+        },
+        "compile": {
+          "lib/net45/NetTopologySuite.IO.GeoTools.dll": {},
+          "lib/net45/NetTopologySuite.IO.MsSqlSpatial.dll": {},
+          "lib/net45/NetTopologySuite.IO.PostGis.dll": {},
+          "lib/net45/NetTopologySuite.IO.ShapeFile.Extended.dll": {},
+          "lib/net45/NetTopologySuite.IO.ShapeFile.dll": {},
+          "lib/net45/NetTopologySuite.IO.dll": {}
+        },
+        "runtime": {
+          "lib/net45/NetTopologySuite.IO.GeoTools.dll": {},
+          "lib/net45/NetTopologySuite.IO.MsSqlSpatial.dll": {},
+          "lib/net45/NetTopologySuite.IO.PostGis.dll": {},
+          "lib/net45/NetTopologySuite.IO.ShapeFile.Extended.dll": {},
+          "lib/net45/NetTopologySuite.IO.ShapeFile.dll": {},
+          "lib/net45/NetTopologySuite.IO.dll": {}
+        }
+      },
+      "SixLabors.ImageSharp/2.1.3": {
+        "type": "package",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0",
+          "System.Text.Encoding.CodePages": "5.0.0"
+        },
+        "compile": {
+          "lib/netcoreapp3.1/SixLabors.ImageSharp.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/SixLabors.ImageSharp.dll": {}
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe/5.0.0": {
+        "type": "package",
+        "compile": {
+          "ref/netstandard2.1/System.Runtime.CompilerServices.Unsafe.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp2.0/System.Runtime.CompilerServices.Unsafe.dll": {}
+        }
+      },
+      "System.Text.Encoding.CodePages/5.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "5.0.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/System.Text.Encoding.CodePages.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Text.Encoding.CodePages.dll": {}
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll": {
+            "assetType": "runtime",
+            "rid": "win"
+          }
+        }
+      },
       "GeoPose/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
@@ -26,6 +141,16 @@
           "bin/placeholder/glTFInterface.dll": {}
         }
       },
+      "LTPENUWGS84/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "compile": {
+          "bin/placeholder/LTPENUWGS84.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/LTPENUWGS84.dll": {}
+        }
+      },
       "SharedGeometry/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
@@ -35,10 +160,406 @@
         "runtime": {
           "bin/placeholder/SharedGeometry.dll": {}
         }
+      },
+      "TerrainComponents/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "LTPENUWGS84": "1.0.0",
+          "NetTopologySuite.Core": "1.15.3",
+          "NetTopologySuite.IO": "1.14.0.1",
+          "SixLabors.ImageSharp": "2.1.3",
+          "Util3857": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/TerrainComponents.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/TerrainComponents.dll": {}
+        }
+      },
+      "Util3857/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "compile": {
+          "bin/placeholder/Util3857.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Util3857.dll": {}
+        }
       }
     }
   },
   "libraries": {
+    "GeoAPI/1.7.4": {
+      "sha512": "joDULkwmUsXSZPsqQ6H62QmQOi54t3TWyhiKDb48PVUfIox1nSy1RRuEIDQ51h/jBmgb+ZeCsUmMoETVddKJ1A==",
+      "type": "package",
+      "path": "geoapi/1.7.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "geoapi.1.7.4.nupkg.sha512",
+        "geoapi.nuspec",
+        "lib/net20/GeoAPI.dll",
+        "lib/net20/GeoAPI.xml",
+        "lib/net35-client/GeoAPI.dll",
+        "lib/net35-client/GeoAPI.xml",
+        "lib/net40-client/GeoAPI.dll",
+        "lib/net40-client/GeoAPI.xml",
+        "lib/net403-client/GeoAPI.dll",
+        "lib/net403-client/GeoAPI.xml",
+        "lib/net45/GeoAPI.dll",
+        "lib/net45/GeoAPI.xml",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/GeoAPI.dll",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/GeoAPI.xml"
+      ]
+    },
+    "GeoAPI.Core/1.7.5": {
+      "sha512": "Dy/YkgZ1szgx+xbVWqMi+4++Fm6v3szbVdei1LKPRZ3meSvgNSMZxqhar5IAeaTj5LcUHLtLGdfyUtkjnYbg3A==",
+      "type": "package",
+      "path": "geoapi.core/1.7.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "geoapi.core.1.7.5.nupkg.sha512",
+        "geoapi.core.nuspec",
+        "lib/net20/GeoAPI.dll",
+        "lib/net20/GeoAPI.pdb",
+        "lib/net20/GeoAPI.xml",
+        "lib/net35-cf/GeoAPI.dll",
+        "lib/net35-cf/GeoAPI.pdb",
+        "lib/net35-cf/GeoAPI.xml",
+        "lib/net35-client/GeoAPI.dll",
+        "lib/net35-client/GeoAPI.pdb",
+        "lib/net35-client/GeoAPI.xml",
+        "lib/net40-client/GeoAPI.dll",
+        "lib/net40-client/GeoAPI.pdb",
+        "lib/net40-client/GeoAPI.xml",
+        "lib/net403-client/GeoAPI.dll",
+        "lib/net403-client/GeoAPI.pdb",
+        "lib/net403-client/GeoAPI.xml",
+        "lib/net45/GeoAPI.dll",
+        "lib/net45/GeoAPI.pdb",
+        "lib/net45/GeoAPI.xml",
+        "lib/netstandard1.0/GeoAPI.deps.json",
+        "lib/netstandard1.0/GeoAPI.dll",
+        "lib/netstandard1.0/GeoAPI.pdb",
+        "lib/netstandard1.0/GeoAPI.xml",
+        "lib/netstandard2.0/GeoAPI.deps.json",
+        "lib/netstandard2.0/GeoAPI.dll",
+        "lib/netstandard2.0/GeoAPI.pdb",
+        "lib/netstandard2.0/GeoAPI.xml",
+        "lib/portable40-net40+sl5+win8+wp8+wpa81/GeoAPI.dll",
+        "lib/portable40-net40+sl5+win8+wp8+wpa81/GeoAPI.pdb",
+        "lib/portable40-net40+sl5+win8+wp8+wpa81/GeoAPI.xml",
+        "lib/portable40-net403+sl5+win8+wp8+wpa81/GeoAPI.dll",
+        "lib/portable40-net403+sl5+win8+wp8+wpa81/GeoAPI.pdb",
+        "lib/portable40-net403+sl5+win8+wp8+wpa81/GeoAPI.xml",
+        "src/Consts.cs",
+        "src/DataStructures/Interval.cs",
+        "src/Geometries/Coordinate.cs",
+        "src/Geometries/Dimension.cs",
+        "src/Geometries/Envelope.cs",
+        "src/Geometries/IBoundable.cs",
+        "src/Geometries/ICoordinate.cs",
+        "src/Geometries/ICoordinateBuffer.cs",
+        "src/Geometries/ICoordinateFilter.cs",
+        "src/Geometries/ICoordinateSequence.cs",
+        "src/Geometries/ICoordinateSequenceFactory.cs",
+        "src/Geometries/ICoordinateSequenceFilter.cs",
+        "src/Geometries/ICurve.cs",
+        "src/Geometries/IEnvelope.cs",
+        "src/Geometries/IExpandable.cs",
+        "src/Geometries/IGeometry.cs",
+        "src/Geometries/IGeometryCollection.cs",
+        "src/Geometries/IGeometryComponentFilter.cs",
+        "src/Geometries/IGeometryFactory.cs",
+        "src/Geometries/IGeometryFilter.cs",
+        "src/Geometries/IIntersectable.cs",
+        "src/Geometries/ILineString.cs",
+        "src/Geometries/ILineal.cs",
+        "src/Geometries/ILinearRing.cs",
+        "src/Geometries/IMultiCurve.cs",
+        "src/Geometries/IMultiLineString.cs",
+        "src/Geometries/IMultiPoint.cs",
+        "src/Geometries/IMultiPolygon.cs",
+        "src/Geometries/IMultiSurface.cs",
+        "src/Geometries/IPoint.cs",
+        "src/Geometries/IPolygon.cs",
+        "src/Geometries/IPolygonal.cs",
+        "src/Geometries/IPrecisionModel.cs",
+        "src/Geometries/IPuntal.cs",
+        "src/Geometries/ISurface.cs",
+        "src/Geometries/IntersectionMatrix.cs",
+        "src/Geometries/Location.cs",
+        "src/Geometries/OgcGeometryType.cs",
+        "src/Geometries/Ordinate.cs",
+        "src/Geometries/Ordinates.cs",
+        "src/Geometries/OridinatesUtility.cs",
+        "src/Geometries/Prepared/IPreparedGeometry.cs",
+        "src/GeometryServiceProvider.cs",
+        "src/ICloneable.cs",
+        "src/IGeometryServices.cs",
+        "src/IO/ByteOrder.cs",
+        "src/IO/GeometryType.cs",
+        "src/IO/IGeometryReader.cs",
+        "src/IO/IGeometryWriter.cs",
+        "src/IO/ParseException.cs",
+        "src/Operation/Buffer/BufferStyle.cs",
+        "src/Operation/Buffer/EndCapStyle.cs",
+        "src/Operation/Buffer/IBufferParameters.cs",
+        "src/Operation/Buffer/JoinStyle.cs",
+        "src/Properties/AssemblyInfo.cs",
+        "src/ValueParser.cs"
+      ]
+    },
+    "Microsoft.NETCore.Platforms/5.0.0": {
+      "sha512": "VyPlqzH2wavqquTcYpkIIAQ6WdenuKoFN0BdYBbCWsclXacSOHNQn66Gt4z5NBqEYW0FAPm5rlvki9ZiCij5xQ==",
+      "type": "package",
+      "path": "microsoft.netcore.platforms/5.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/netstandard1.0/_._",
+        "microsoft.netcore.platforms.5.0.0.nupkg.sha512",
+        "microsoft.netcore.platforms.nuspec",
+        "runtime.json",
+        "useSharedDesignerContext.txt",
+        "version.txt"
+      ]
+    },
+    "NetTopologySuite/1.14.0": {
+      "sha512": "WZxN1WPRELed8vrTFZXc1lxRuLB29hJMx7W6FiisgZc27XGV+1Q9tdwb9ESAimc1i1sFfG7jQqVW9v090wtchQ==",
+      "type": "package",
+      "path": "nettopologysuite/1.14.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net20/NetTopologySuite.dll",
+        "lib/net20/NetTopologySuite.xml",
+        "lib/net20/PowerCollections.dll",
+        "lib/net20/PowerCollections.xml",
+        "lib/net35-client/NetTopologySuite.dll",
+        "lib/net35-client/NetTopologySuite.xml",
+        "lib/net35-client/PowerCollections.dll",
+        "lib/net35-client/PowerCollections.xml",
+        "lib/net40-client/NetTopologySuite.dll",
+        "lib/net40-client/NetTopologySuite.xml",
+        "lib/net40-client/PowerCollections.dll",
+        "lib/net40-client/PowerCollections.xml",
+        "lib/net403-client/NetTopologySuite.dll",
+        "lib/net403-client/NetTopologySuite.xml",
+        "lib/net403-client/PowerCollections.dll",
+        "lib/net403-client/PowerCollections.xml",
+        "lib/net45/NetTopologySuite.dll",
+        "lib/net45/NetTopologySuite.xml",
+        "lib/net45/PowerCollections.dll",
+        "lib/net45/PowerCollections.xml",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/GeoAPI.Bootstrapper.NetTopologySuite.dll",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/GeoAPI.Bootstrapper.NetTopologySuite.xml",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/NetTopologySuite.dll",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/NetTopologySuite.xml",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/PowerCollections.dll",
+        "lib/portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid10+XamariniOS10+MonoTouch10/PowerCollections.xml",
+        "nettopologysuite.1.14.0.nupkg.sha512",
+        "nettopologysuite.nuspec"
+      ]
+    },
+    "NetTopologySuite.Core/1.15.3": {
+      "sha512": "PvO7lSWjzaazm1m9fYBZkxAtXSkF+t9jneGyyMxKQ/4lso2RzZWrBO0KWeA5Zp8IWoI1Ar/jTodYmC5Nbwo4xw==",
+      "type": "package",
+      "path": "nettopologysuite.core/1.15.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net35-client/NetTopologySuite.dll",
+        "lib/net35-client/NetTopologySuite.xml",
+        "lib/net40-client/NetTopologySuite.dll",
+        "lib/net40-client/NetTopologySuite.xml",
+        "lib/net403-client/NetTopologySuite.dll",
+        "lib/net403-client/NetTopologySuite.xml",
+        "lib/net45/NetTopologySuite.dll",
+        "lib/net45/NetTopologySuite.xml",
+        "lib/netcoreapp2.0/NetTopologySuite.dll",
+        "lib/netcoreapp2.0/NetTopologySuite.xml",
+        "lib/netstandard1.0/NetTopologySuite.deps.json",
+        "lib/netstandard1.0/NetTopologySuite.dll",
+        "lib/netstandard1.0/NetTopologySuite.xml",
+        "lib/netstandard1.3/NetTopologySuite.deps.json",
+        "lib/netstandard1.3/NetTopologySuite.dll",
+        "lib/netstandard1.3/NetTopologySuite.xml",
+        "lib/netstandard2.0/NetTopologySuite.deps.json",
+        "lib/netstandard2.0/NetTopologySuite.dll",
+        "lib/netstandard2.0/NetTopologySuite.xml",
+        "nettopologysuite.core.1.15.3.nupkg.sha512",
+        "nettopologysuite.core.nuspec"
+      ]
+    },
+    "NetTopologySuite.IO/1.14.0.1": {
+      "sha512": "XTsFycrhC/tUBepRnSwWvLDUWRMO0rxemU5HmXYfk4/vP626t9g/xcy2ZiN6qroFDWGEB2tPbSPnwwINaWefpA==",
+      "type": "package",
+      "path": "nettopologysuite.io/1.14.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net20/NetTopologySuite.IO.GeoTools.dll",
+        "lib/net20/NetTopologySuite.IO.GeoTools.xml",
+        "lib/net20/NetTopologySuite.IO.MsSqlSpatial.dll",
+        "lib/net20/NetTopologySuite.IO.MsSqlSpatial.xml",
+        "lib/net20/NetTopologySuite.IO.PostGis.dll",
+        "lib/net20/NetTopologySuite.IO.PostGis.xml",
+        "lib/net20/NetTopologySuite.IO.ShapeFile.dll",
+        "lib/net20/NetTopologySuite.IO.ShapeFile.xml",
+        "lib/net20/NetTopologySuite.IO.dll",
+        "lib/net20/NetTopologySuite.IO.xml",
+        "lib/net35-client/NetTopologySuite.IO.GeoTools.dll",
+        "lib/net35-client/NetTopologySuite.IO.GeoTools.xml",
+        "lib/net35-client/NetTopologySuite.IO.MsSqlSpatial.dll",
+        "lib/net35-client/NetTopologySuite.IO.MsSqlSpatial.xml",
+        "lib/net35-client/NetTopologySuite.IO.PostGis.dll",
+        "lib/net35-client/NetTopologySuite.IO.PostGis.xml",
+        "lib/net35-client/NetTopologySuite.IO.ShapeFile.dll",
+        "lib/net35-client/NetTopologySuite.IO.ShapeFile.xml",
+        "lib/net35-client/NetTopologySuite.IO.dll",
+        "lib/net35-client/NetTopologySuite.IO.xml",
+        "lib/net40-client/NetTopologySuite.IO.GeoTools.dll",
+        "lib/net40-client/NetTopologySuite.IO.GeoTools.xml",
+        "lib/net40-client/NetTopologySuite.IO.MsSqlSpatial.dll",
+        "lib/net40-client/NetTopologySuite.IO.MsSqlSpatial.xml",
+        "lib/net40-client/NetTopologySuite.IO.PostGis.dll",
+        "lib/net40-client/NetTopologySuite.IO.PostGis.xml",
+        "lib/net40-client/NetTopologySuite.IO.ShapeFile.Extended.dll",
+        "lib/net40-client/NetTopologySuite.IO.ShapeFile.Extended.xml",
+        "lib/net40-client/NetTopologySuite.IO.ShapeFile.dll",
+        "lib/net40-client/NetTopologySuite.IO.ShapeFile.xml",
+        "lib/net40-client/NetTopologySuite.IO.dll",
+        "lib/net40-client/NetTopologySuite.IO.xml",
+        "lib/net403-client/NetTopologySuite.IO.GeoTools.dll",
+        "lib/net403-client/NetTopologySuite.IO.GeoTools.xml",
+        "lib/net403-client/NetTopologySuite.IO.MsSqlSpatial.dll",
+        "lib/net403-client/NetTopologySuite.IO.MsSqlSpatial.xml",
+        "lib/net403-client/NetTopologySuite.IO.PostGis.dll",
+        "lib/net403-client/NetTopologySuite.IO.PostGis.xml",
+        "lib/net403-client/NetTopologySuite.IO.ShapeFile.Extended.dll",
+        "lib/net403-client/NetTopologySuite.IO.ShapeFile.Extended.xml",
+        "lib/net403-client/NetTopologySuite.IO.ShapeFile.dll",
+        "lib/net403-client/NetTopologySuite.IO.ShapeFile.xml",
+        "lib/net403-client/NetTopologySuite.IO.dll",
+        "lib/net403-client/NetTopologySuite.IO.xml",
+        "lib/net45/NetTopologySuite.IO.GeoTools.dll",
+        "lib/net45/NetTopologySuite.IO.GeoTools.xml",
+        "lib/net45/NetTopologySuite.IO.MsSqlSpatial.dll",
+        "lib/net45/NetTopologySuite.IO.MsSqlSpatial.xml",
+        "lib/net45/NetTopologySuite.IO.PostGis.dll",
+        "lib/net45/NetTopologySuite.IO.PostGis.xml",
+        "lib/net45/NetTopologySuite.IO.ShapeFile.Extended.dll",
+        "lib/net45/NetTopologySuite.IO.ShapeFile.Extended.xml",
+        "lib/net45/NetTopologySuite.IO.ShapeFile.dll",
+        "lib/net45/NetTopologySuite.IO.ShapeFile.xml",
+        "lib/net45/NetTopologySuite.IO.dll",
+        "lib/net45/NetTopologySuite.IO.xml",
+        "nettopologysuite.io.1.14.0.1.nupkg.sha512",
+        "nettopologysuite.io.nuspec"
+      ]
+    },
+    "SixLabors.ImageSharp/2.1.3": {
+      "sha512": "8yonNRWX3vUE9k29ta0Hbfa0AEc0hbDjSH/nZ3vOTJEXmY6hLnGsjDKoz96Z+AgOsrdkAu6PdL/Ebaf70aitzw==",
+      "type": "package",
+      "path": "sixlabors.imagesharp/2.1.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net472/SixLabors.ImageSharp.dll",
+        "lib/net472/SixLabors.ImageSharp.xml",
+        "lib/netcoreapp2.1/SixLabors.ImageSharp.dll",
+        "lib/netcoreapp2.1/SixLabors.ImageSharp.xml",
+        "lib/netcoreapp3.1/SixLabors.ImageSharp.dll",
+        "lib/netcoreapp3.1/SixLabors.ImageSharp.xml",
+        "lib/netstandard2.0/SixLabors.ImageSharp.dll",
+        "lib/netstandard2.0/SixLabors.ImageSharp.xml",
+        "lib/netstandard2.1/SixLabors.ImageSharp.dll",
+        "lib/netstandard2.1/SixLabors.ImageSharp.xml",
+        "sixlabors.imagesharp.128.png",
+        "sixlabors.imagesharp.2.1.3.nupkg.sha512",
+        "sixlabors.imagesharp.nuspec"
+      ]
+    },
+    "System.Runtime.CompilerServices.Unsafe/5.0.0": {
+      "sha512": "ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA==",
+      "type": "package",
+      "path": "system.runtime.compilerservices.unsafe/5.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net45/System.Runtime.CompilerServices.Unsafe.dll",
+        "lib/net45/System.Runtime.CompilerServices.Unsafe.xml",
+        "lib/netcoreapp2.0/System.Runtime.CompilerServices.Unsafe.dll",
+        "lib/netcoreapp2.0/System.Runtime.CompilerServices.Unsafe.xml",
+        "lib/netstandard1.0/System.Runtime.CompilerServices.Unsafe.dll",
+        "lib/netstandard1.0/System.Runtime.CompilerServices.Unsafe.xml",
+        "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll",
+        "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.xml",
+        "ref/net461/System.Runtime.CompilerServices.Unsafe.dll",
+        "ref/net461/System.Runtime.CompilerServices.Unsafe.xml",
+        "ref/netstandard1.0/System.Runtime.CompilerServices.Unsafe.dll",
+        "ref/netstandard1.0/System.Runtime.CompilerServices.Unsafe.xml",
+        "ref/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll",
+        "ref/netstandard2.0/System.Runtime.CompilerServices.Unsafe.xml",
+        "ref/netstandard2.1/System.Runtime.CompilerServices.Unsafe.dll",
+        "ref/netstandard2.1/System.Runtime.CompilerServices.Unsafe.xml",
+        "system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512",
+        "system.runtime.compilerservices.unsafe.nuspec",
+        "useSharedDesignerContext.txt",
+        "version.txt"
+      ]
+    },
+    "System.Text.Encoding.CodePages/5.0.0": {
+      "sha512": "NyscU59xX6Uo91qvhOs2Ccho3AR2TnZPomo1Z0K6YpyztBPM/A5VbkzOO19sy3A3i1TtEnTxA7bCe3Us+r5MWg==",
+      "type": "package",
+      "path": "system.text.encoding.codepages/5.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/MonoAndroid10/_._",
+        "lib/MonoTouch10/_._",
+        "lib/net46/System.Text.Encoding.CodePages.dll",
+        "lib/net461/System.Text.Encoding.CodePages.dll",
+        "lib/net461/System.Text.Encoding.CodePages.xml",
+        "lib/netstandard1.3/System.Text.Encoding.CodePages.dll",
+        "lib/netstandard2.0/System.Text.Encoding.CodePages.dll",
+        "lib/netstandard2.0/System.Text.Encoding.CodePages.xml",
+        "lib/xamarinios10/_._",
+        "lib/xamarinmac20/_._",
+        "lib/xamarintvos10/_._",
+        "lib/xamarinwatchos10/_._",
+        "ref/MonoAndroid10/_._",
+        "ref/MonoTouch10/_._",
+        "ref/xamarinios10/_._",
+        "ref/xamarinmac20/_._",
+        "ref/xamarintvos10/_._",
+        "ref/xamarinwatchos10/_._",
+        "runtimes/win/lib/net461/System.Text.Encoding.CodePages.dll",
+        "runtimes/win/lib/net461/System.Text.Encoding.CodePages.xml",
+        "runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll",
+        "runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.xml",
+        "runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll",
+        "runtimes/win/lib/netstandard2.0/System.Text.Encoding.CodePages.dll",
+        "runtimes/win/lib/netstandard2.0/System.Text.Encoding.CodePages.xml",
+        "system.text.encoding.codepages.5.0.0.nupkg.sha512",
+        "system.text.encoding.codepages.nuspec",
+        "useSharedDesignerContext.txt",
+        "version.txt"
+      ]
+    },
     "GeoPose/1.0.0": {
       "type": "project",
       "path": "../GeoPose/GeoPose.csproj",
@@ -49,16 +570,32 @@
       "path": "../glTFInterface/glTFInterface.csproj",
       "msbuildProject": "../glTFInterface/glTFInterface.csproj"
     },
+    "LTPENUWGS84/1.0.0": {
+      "type": "project",
+      "path": "../LTPENE_WGS84/LTPENUWGS84.csproj",
+      "msbuildProject": "../LTPENE_WGS84/LTPENUWGS84.csproj"
+    },
     "SharedGeometry/1.0.0": {
       "type": "project",
       "path": "../SharedGeometry/SharedGeometry.csproj",
       "msbuildProject": "../SharedGeometry/SharedGeometry.csproj"
+    },
+    "TerrainComponents/1.0.0": {
+      "type": "project",
+      "path": "../TerrainComponents/TerrainComponents.csproj",
+      "msbuildProject": "../TerrainComponents/TerrainComponents.csproj"
+    },
+    "Util3857/1.0.0": {
+      "type": "project",
+      "path": "../Util3857/Util3857.csproj",
+      "msbuildProject": "../Util3857/Util3857.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net6.0": [
       "GeoPose >= 1.0.0",
       "SharedGeometry >= 1.0.0",
+      "TerrainComponents >= 1.0.0",
       "glTFInterface >= 1.0.0"
     ]
   },
@@ -101,6 +638,9 @@
             },
             "D:\\Git\\glTF-CSharp-Loader\\SharedGeometry\\SharedGeometry.csproj": {
               "projectPath": "D:\\Git\\glTF-CSharp-Loader\\SharedGeometry\\SharedGeometry.csproj"
+            },
+            "D:\\Git\\glTF-CSharp-Loader\\TerrainComponents\\TerrainComponents.csproj": {
+              "projectPath": "D:\\Git\\glTF-CSharp-Loader\\TerrainComponents\\TerrainComponents.csproj"
             }
           }
         }
@@ -132,5 +672,37 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.308\\RuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'GeoAPI 1.7.4' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "GeoAPI",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'NetTopologySuite 1.14.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "NetTopologySuite",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'NetTopologySuite.IO 1.14.0.1' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "NetTopologySuite.IO",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    }
+  ]
 }

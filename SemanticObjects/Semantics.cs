@@ -135,7 +135,7 @@ namespace SemanticClasses
                 Tuple<ushort, ushort, ushort> u3 = new Tuple<ushort, ushort, ushort>((ushort)results.Indices[nIndex], (ushort)results.Indices[nIndex+1], (ushort)results.Indices[nIndex+2]);
                 terrainMesh.Indices.Add(u3);
             }
-            Mesh retval = new SharedGeometry.GeneratedTerrain(radius, new double[3] { center.Item1, center.Item2, center.Item3 }, 2).GetMesh();
+            Mesh retval = terrainMesh; // new SharedGeometry.GeneratedTerrain(radius, new double[3] { center.Item1, center.Item2, center.Item3 }, 2).GetMesh();
             return retval;
         }
 

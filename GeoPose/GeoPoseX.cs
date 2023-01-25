@@ -64,8 +64,8 @@ namespace GeoPoseX
         public PoseID? poseID { get; set; } = null;
         public PoseID? parentPoseID { get; set; } = null;
         public UnixTime? validTime { get; set; } = null;
-        public virtual FrameTransform? FrameTransform { get; set; } = null;
-        public virtual Orientation? Orientation { get; set; } = null;
+        public abstract FrameTransform? FrameTransform { get; set; }
+        public abstract Orientation? Orientation { get; set; }
     }
     /// <summary>
     /// The abstract root of the Position hierarchy.
@@ -88,7 +88,7 @@ namespace GeoPoseX
         /// A Position specified in spherical coordinates with height above a reference surface -
         /// usually an ellipsoid of revolution or a gravitational equipotential surface.
         /// </summary>
-        public new WGS84ToLTP_ENUTransform FrameTransform { get; set; } = new WGS84ToLTP_ENUTransform();
+        public override FrameTransform FrameTransform { get; set; } = new WGS84ToLTP_ENUTransform();
     }
 
     /// <summary>
@@ -142,7 +142,7 @@ namespace GeoPoseX
         /// <summary>
         /// An Orientation specified as a unit quaternion.
         /// </summary>
-        public new Quaternion Orientation { get; set; } = new Quaternion();
+        public override Orientation Orientation { get; set; } = new Quaternion();
         /// <summary>
         /// This function returns a Json encoding of a Basic-Quaternion GeoPose
         /// </summary>
@@ -152,21 +152,62 @@ namespace GeoPoseX
             if (((WGS84ToLTP_ENUTransform)FrameTransform).Position != null && Orientation != null)
             {
                 sb.Append("{\r\n\t\t" + indent);
-                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + ((WGS84ToLTP_ENUTransform)FrameTransform).Position.lat + ",\r\n\t\t\t" + indent +
-                    "\"lon\": " + ((WGS84ToLTP_ENUTransform)FrameTransform).Position.lon + ",\r\n\t\t\t" + indent +
+                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " +
+                    ((WGS84ToLTP_ENUTransform)FrameTransform).Position.lat + ",\r\n\t\t\t" + indent +
+                    "\"lon\": " + ((WGS84ToLTP_ENUTransform)FrameTransform).Position.lon +
+                    ",\r\n\t\t\t" + indent +
                     "\"h\":   " + ((WGS84ToLTP_ENUTransform)FrameTransform).Position.h);
                 sb.Append("\r\n\t\t" + indent + "},");
                 sb.Append("\r\n\t\t" + indent);
-                sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"x\":   " + Orientation.x + ",\r\n\t\t\t" + indent +
-                    "\"y\": " + Orientation.y + ",\r\n\t\t\t" + indent +
-                    "\"z\": " + Orientation.z + ",\r\n\t\t\t" + indent +
-                    "\"w\":  " + Orientation.w);
+                sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"x\":   " + ((Quaternion)Orientation).x + ",\r\n\t\t\t" + indent +
+                    "\"y\": " + ((Quaternion)Orientation).y + ",\r\n\t\t\t" + indent +
+                    "\"z\": " + ((Quaternion)Orientation).z + ",\r\n\t\t\t" + indent +
+                    "\"w\":  " + ((Quaternion)Orientation).w);
                 sb.Append("\r\n\t\t" + indent + "}");
                 sb.Append("\r\n\t" + indent + "}");
             }
             return sb.ToString();
         }
     }
+    /// <summary>
+    /// A derived pose within an engineering CRS with a Cartesian coordinate system.
+    /// This form is the closest to the classical computer graphics pose concept.
+    /// <remark>
+    /// Not (yet) part of the OGC GeoPose standard and not backwards-compatible.
+    /// Useful when operating within a local Cartesian frame defined by a Basic (or other) GeoPose.
+    /// </remark>
+    /// </summary>
+    public class Local : GeoPose
+    {
+        /// <summary>
+        /// The xOffset, yOffset, zOffset from the origin of the rotated inner frame of a "parent" GeoPose.
+        /// </summary>
+        public override FrameTransform FrameTransform { get; set; } = new Translation();
+        /// <summary>
+        /// The yaw, pitch, roll orientation.
+        /// </summary>
+        public override Orientation Orientation { get; set; } = new YPRAngles();
+        /// <summary>
+        /// This function returns a Json encoding of a Basic-YPR GeoPose
+        /// </summary>
+        public string ToJSON(string indent = "")
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("{\r\n\t\t" + indent);
+            sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"east\": " + ((Translation)FrameTransform).xOffset + ",\r\n\t\t\t" + indent +
+                "\"north\": " + ((Translation)FrameTransform).yOffset + ",\r\n\t\t\t" + indent +
+                "\"up\":   " + ((Translation)FrameTransform).zOffset);
+            sb.Append("\r\n\t\t" + indent + "},");
+            sb.Append("\r\n\t\t" + indent);
+            sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + ((YPRAngles)Orientation).yaw + ",\r\n\t\t\t" + indent +
+                "\"pitch\": " + ((YPRAngles)Orientation).pitch + ",\r\n\t\t\t" + indent +
+                "\"roll\":  " + ((YPRAngles)Orientation).roll);
+            sb.Append("\r\n\t\t" + indent + "}");
+            sb.Append("\r\n\t" + indent + "}");
+            return sb.ToString();
+        }
+    }
+
 
     /// <summary>
     /// Advanced GeoPose.
@@ -176,11 +217,11 @@ namespace GeoPoseX
         /// <summary>
         /// A Frame Specification defining a frame with associated coordinate system whose Position is the origin.
         /// </summary>
-        public new ExtrinsicFrameSpecification FrameTransform { get; set; } = new ExtrinsicFrameSpecification();
+        public override FrameTransform FrameTransform { get; set; } = new Extrinsic();
         /// <summary>
         /// An Orientation specified as a unit quaternion.
         /// </summary>
-        public new Quaternion Orientation { get; set; } = new Quaternion();
+        public override Orientation Orientation { get; set; } = new Quaternion();
         /// <summary>
         /// Milliseconds of Unix time ticks (optional).
         /// </summary>
@@ -191,10 +232,14 @@ namespace GeoPoseX
         public string ToJSON()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("{\"frameSpecification\":{\"authority\":" + FrameTransform.authority + ",\"id\":" +
-                FrameTransform.id + ",\"parameters\":" +
-                FrameTransform.parameters + "},");
-            sb.Append("\"quaternion\":{\"x\":" + Orientation.x + ",\"y\":" + Orientation.y + ",\"z\":" + Orientation.z + ",\"w\":" + Orientation.w);
+            sb.Append("{\"frameSpecification\":{\"authority\":" +
+                ((Extrinsic)FrameTransform).authority + ",\"id\":" +
+                ((Extrinsic)FrameTransform).id + ",\"parameters\":" +
+                ((Extrinsic)FrameTransform).parameters + "},");
+            sb.Append("\"quaternion\":{\"x\":" + ((Quaternion)Orientation).x + ",\"y\":" +
+                ((Quaternion)Orientation).y + ",\"z\":" +
+                ((Quaternion)Orientation).z + ",\"w\":" +
+                ((Quaternion)Orientation).w);
             sb.Append("}}");
             return sb.ToString();
         }
@@ -336,42 +381,6 @@ namespace GeoPoseX
         public double w { get; set; } = double.NaN;
     }
     /// <summary>
-    /// A derived pose within a LTP-ENU frame.
-    /// <remark>
-    /// Not part of the standard, but usefl when operating within the LTP-ENU frame defined by a Basic GeoPose.
-    /// </remark>
-    /// </summary>
-    public class Node : GeoPose
-    {
-        /// <summary>
-        /// The xOffset, yOffset, zOffset from the rotated ENU origin
-        /// </summary>
-        public FrameTransform Translation { get; set; } = new Translation();
-        /// <summary>
-        /// The yaw, pitch, roll orientation.
-        /// </summary>
-        public new YPRAngles Orientation { get; set; } = new YPRAngles();
-        /// <summary>
-        /// This function returns a Json encoding of a Basic-YPR GeoPose
-        /// </summary>
-        public string ToJSON(string indent = "")
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("{\r\n\t\t" + indent);
-            sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"east\": " + ((Translation)Translation).xOffset + ",\r\n\t\t\t" + indent +
-                "\"north\": " + ((Translation)Translation).yOffset + ",\r\n\t\t\t" + indent +
-                "\"up\":   " + ((Translation)Translation).zOffset);
-            sb.Append("\r\n\t\t" + indent + "},");
-            sb.Append("\r\n\t\t" + indent);
-            sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + Orientation.yaw + ",\r\n\t\t\t" + indent +
-                "\"pitch\": " + Orientation.pitch + ",\r\n\t\t\t" + indent +
-                "\"roll\":  " + Orientation.roll);
-            sb.Append("\r\n\t\t" + indent + "}");
-            sb.Append("\r\n\t" + indent + "}");
-            return sb.ToString();
-        }
-    }
-    /// <summary>
     /// A FrameTransform is a generic container for information that defines mapping between reference frames.
     /// <remark>
     /// </remark>
@@ -390,7 +399,7 @@ namespace GeoPoseX
     /// The origin, is in fact the *only* distinguished Position associated with the coodinate system.
     /// </remark>
     /// </summary>
-    public class ExtrinsicFrameSpecification : FrameTransform
+    public class Extrinsic : FrameTransform
     {
         /// <summary>
         /// The name or identification of the definer of the category of frame specification.

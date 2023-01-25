@@ -88,7 +88,7 @@ namespace GeoPoseX
         /// A Position specified in spherical coordinates with height above a reference surface -
         /// usually an ellipsoid of revolution or a gravitational equipotential surface.
         /// </summary>
-        public override FrameTransform FrameTransform { get; set; } = new WGS84ToLTP_ENUTransform();
+        public override FrameTransform FrameTransform { get; set; } = new WGS84ToLTP_ENU();
     }
 
     /// <summary>
@@ -112,9 +112,9 @@ namespace GeoPoseX
             if (FrameTransform != null && Orientation != null)
             {
                 sb.Append("{\r\n\t\t" + indent);
-                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + ((WGS84ToLTP_ENUTransform)FrameTransform).Position.lat + ",\r\n\t\t\t" + indent +
-                    "\"lon\": " + ((WGS84ToLTP_ENUTransform)FrameTransform).Position.lon + ",\r\n\t\t\t" + indent +
-                    "\"h\":   " + ((WGS84ToLTP_ENUTransform)FrameTransform).Position.h);
+                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + ((WGS84ToLTP_ENU)FrameTransform).Position.lat + ",\r\n\t\t\t" + indent +
+                    "\"lon\": " + ((WGS84ToLTP_ENU)FrameTransform).Position.lon + ",\r\n\t\t\t" + indent +
+                    "\"h\":   " + ((WGS84ToLTP_ENU)FrameTransform).Position.h);
                 sb.Append("\r\n\t\t" + indent + "},");
                 sb.Append("\r\n\t\t" + indent);
                 sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " +((YPRAngles)Orientation).yaw + ",\r\n\t\t\t" + indent +
@@ -149,14 +149,14 @@ namespace GeoPoseX
         public string ToJSON(string indent = "")
         {
             StringBuilder sb = new StringBuilder();
-            if (((WGS84ToLTP_ENUTransform)FrameTransform).Position != null && Orientation != null)
+            if (((WGS84ToLTP_ENU)FrameTransform).Position != null && Orientation != null)
             {
                 sb.Append("{\r\n\t\t" + indent);
                 sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " +
-                    ((WGS84ToLTP_ENUTransform)FrameTransform).Position.lat + ",\r\n\t\t\t" + indent +
-                    "\"lon\": " + ((WGS84ToLTP_ENUTransform)FrameTransform).Position.lon +
+                    ((WGS84ToLTP_ENU)FrameTransform).Position.lat + ",\r\n\t\t\t" + indent +
+                    "\"lon\": " + ((WGS84ToLTP_ENU)FrameTransform).Position.lon +
                     ",\r\n\t\t\t" + indent +
-                    "\"h\":   " + ((WGS84ToLTP_ENUTransform)FrameTransform).Position.h);
+                    "\"h\":   " + ((WGS84ToLTP_ENU)FrameTransform).Position.h);
                 sb.Append("\r\n\t\t" + indent + "},");
                 sb.Append("\r\n\t\t" + indent);
                 sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"x\":   " + ((Quaternion)Orientation).x + ",\r\n\t\t\t" + indent +
@@ -424,7 +424,7 @@ namespace GeoPoseX
     /// which is the *only* distinguished Position associated with the coodinate system associated with the inner frame (range).
     /// </remark>
     /// </summary>
-    public class WGS84ToLTP_ENUTransform : FrameTransform
+    public class WGS84ToLTP_ENU : FrameTransform
     {
         /// <summary>
         /// A single geodetic position defines the tangent point for a transform to LTP-ENU.

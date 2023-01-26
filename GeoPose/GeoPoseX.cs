@@ -66,6 +66,7 @@ namespace GeoPoseX
         public UnixTime? validTime { get; set; } = null;
         public abstract FrameTransform? FrameTransform { get; set; }
         public abstract Orientation? Orientation { get; set; }
+        public abstract string ToJSON(string indent);
     }
     /// <summary>
     /// The abstract root of the Position hierarchy.
@@ -76,10 +77,26 @@ namespace GeoPoseX
     /// </summary>
     public class UnixTime
     {
+        internal UnixTime()
+        {
+
+        }
+        public UnixTime(long longTime)
+        {
+            timeValue = longTime.ToString();
+        }
         public string timeValue { get; set; } = string.Empty;
     }
     public class PoseID
     {
+        internal PoseID()
+        {
+
+        }
+        public PoseID(string id)
+        {
+            this.id = id;
+        }
         public string id { get; set; } = string.Empty;
     }
     public abstract class Basic : GeoPose
@@ -99,6 +116,17 @@ namespace GeoPoseX
     /// </summary>
     public class BasicYPR : Basic
     {
+        internal BasicYPR()
+        {
+
+        }
+        public BasicYPR(string id, GeodeticPosition position, YPRAngles yprAngles )
+        {
+
+            this.poseID = new PoseID(id);
+            this.FrameTransform = new WGS84ToLTP_ENU(position);
+            this.Orientation = yprAngles;
+        }
         /// <summary>
         /// An Orientation specified as three rotations.
         /// </summary>
@@ -106,7 +134,7 @@ namespace GeoPoseX
         /// <summary>
         /// This function returns a Json encoding of a Basic-YPR GeoPose
         /// </summary>
-        public string ToJSON(string indent = "")
+        public override string ToJSON(string indent = "")
         {
             StringBuilder sb = new StringBuilder();
             if (FrameTransform != null && Orientation != null)
@@ -142,11 +170,11 @@ namespace GeoPoseX
         /// <summary>
         /// An Orientation specified as a unit quaternion.
         /// </summary>
-        public override Orientation Orientation { get; set; } = new Quaternion();
+        public override Orientation Orientation { get; set; } = new Quaternion(0,0,0,1);
         /// <summary>
         /// This function returns a Json encoding of a Basic-Quaternion GeoPose
         /// </summary>
-        public string ToJSON(string indent = "")
+        public override string ToJSON(string indent = "")
         {
             StringBuilder sb = new StringBuilder();
             if (((WGS84ToLTP_ENU)FrameTransform).Position != null && Orientation != null)
@@ -179,6 +207,12 @@ namespace GeoPoseX
     /// </summary>
     public class Local : GeoPose
     {
+        public Local(string id, Translation frameTransform, Orientation quaternion)
+        {
+            this.poseID = new PoseID(id);
+            this.FrameTransform = frameTransform;
+            this.Orientation = quaternion;
+        }
         /// <summary>
         /// The xOffset, yOffset, zOffset from the origin of the rotated inner frame of a "parent" GeoPose.
         /// </summary>
@@ -190,13 +224,13 @@ namespace GeoPoseX
         /// <summary>
         /// This function returns a Json encoding of a Basic-YPR GeoPose
         /// </summary>
-        public string ToJSON(string indent = "")
+        public override string ToJSON(string indent = "")
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("{\r\n\t\t" + indent);
-            sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"east\": " + ((Translation)FrameTransform).xOffset + ",\r\n\t\t\t" + indent +
-                "\"north\": " + ((Translation)FrameTransform).yOffset + ",\r\n\t\t\t" + indent +
-                "\"up\":   " + ((Translation)FrameTransform).zOffset);
+            sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"x\": " + ((Translation)FrameTransform).xOffset + ",\r\n\t\t\t" + indent +
+                "\"y\": " + ((Translation)FrameTransform).yOffset + ",\r\n\t\t\t" + indent +
+                "\"z\":   " + ((Translation)FrameTransform).zOffset);
             sb.Append("\r\n\t\t" + indent + "},");
             sb.Append("\r\n\t\t" + indent);
             sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + ((YPRAngles)Orientation).yaw + ",\r\n\t\t\t" + indent +
@@ -214,6 +248,17 @@ namespace GeoPoseX
     /// </summary>
     public class Advanced : GeoPose
     {
+        internal Advanced()
+        {
+
+        }
+        public Advanced(PoseID poseID, Extrinsic frameTransform, Quaternion orientation)
+        {
+            this.poseID = poseID;
+            FrameTransform = frameTransform;
+            Orientation = orientation;
+        }
+
         /// <summary>
         /// A Frame Specification defining a frame with associated coordinate system whose Position is the origin.
         /// </summary>
@@ -221,7 +266,7 @@ namespace GeoPoseX
         /// <summary>
         /// An Orientation specified as a unit quaternion.
         /// </summary>
-        public override Orientation Orientation { get; set; } = new Quaternion();
+        public override Orientation Orientation { get; set; } = new Quaternion(0,0,0,1);
         /// <summary>
         /// Milliseconds of Unix time ticks (optional).
         /// </summary>
@@ -229,7 +274,7 @@ namespace GeoPoseX
         /// <summary>
         /// This function returns a Json encoding of an Advanced GeoPose
         /// </summary>
-        public string ToJSON()
+        public override string ToJSON(string indent)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("{\"frameSpecification\":{\"authority\":" +
@@ -267,6 +312,17 @@ namespace GeoPoseX
     /// </summary>
     public class GeodeticPosition : Position
     {
+        internal GeodeticPosition()
+        {
+
+        }
+        public GeodeticPosition(double lat, double lon, double h)
+        {
+            this.lat = lat;
+            this.lon = lon;
+            this.h = h;
+        }
+
         /// <summary>
         /// A latitude in degrees, positive north of equator and negative south of equator.
         /// The latitude is the angle between the plane of the equator and a plane tangent to the ellipsoid at the given point.
@@ -341,6 +397,16 @@ namespace GeoPoseX
     /// </summary>
     public class YPRAngles : Orientation
     {
+        internal YPRAngles()
+        {
+
+        }
+        public YPRAngles(double yaw, double pitch, double roll)
+        {
+            this.yaw = yaw;
+            this.pitch = pitch;
+            this.roll = roll;
+        }
         /// <summary>
         /// A left-right angle in degrees.
         /// </summary>
@@ -363,6 +429,13 @@ namespace GeoPoseX
     /// </remark>
     public class Quaternion : Orientation
     {
+        public Quaternion(double x, double y, double z, double w)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
         /// <summary>
         /// The x component.
         /// </summary>
@@ -401,6 +474,16 @@ namespace GeoPoseX
     /// </summary>
     public class Extrinsic : FrameTransform
     {
+        internal Extrinsic()
+        {
+
+        }
+        public Extrinsic(string authority, string id, string parameters)
+        {
+            this.authority = authority;
+            this.id = id;
+            this.parameters = parameters;
+        }
         /// <summary>
         /// The name or identification of the definer of the category of frame specification.
         /// A Uri that usually but not always points to a valid web address.
@@ -426,6 +509,15 @@ namespace GeoPoseX
     /// </summary>
     public class WGS84ToLTP_ENU : FrameTransform
     {
+        internal WGS84ToLTP_ENU()
+        {
+
+        }
+        public WGS84ToLTP_ENU(GeodeticPosition position)
+        {
+            this.Position = position;
+        }
+
         /// <summary>
         /// A single geodetic position defines the tangent point for a transform to LTP-ENU.
         /// </summary>
@@ -434,6 +526,15 @@ namespace GeoPoseX
 
     public class Translation : FrameTransform
     {
+        internal Translation()
+        {
+        }
+        public Translation (double xOffset, double yOffset, double zOffset)
+        {
+            this.xOffset = xOffset;
+            this.yOffset = yOffset;
+            this.zOffset = zOffset; 
+        }
         public double xOffset { get; set; } = 0.0;
         public double yOffset { get; set; } = 0.0;
         public double zOffset { get; set; } = 0.0;

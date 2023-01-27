@@ -140,6 +140,18 @@ namespace GeoPoseX
             if (FrameTransform != null && Orientation != null)
             {
                 sb.Append("{\r\n\t\t" + indent);
+                if (validTime != null && validTime.timeValue != String.Empty)
+                {
+                    sb.Append("\"validTime\": " + validTime.timeValue + ",\r\n" + indent + "  ");
+                }
+                if (poseID != null && poseID.id != String.Empty)
+                {
+                    sb.Append("\"poseID\": \"" + poseID.id + "\",\r\n" + indent + "  ");
+                }
+                if (parentPoseID != null && parentPoseID.id != String.Empty)
+                {
+                    sb.Append("\"parentPoseID\": \"" + parentPoseID.id + "\",\r\n" + indent + "  ");
+                }
                 sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + ((WGS84ToLTP_ENU)FrameTransform).Position.lat + ",\r\n\t\t\t" + indent +
                     "\"lon\": " + ((WGS84ToLTP_ENU)FrameTransform).Position.lon + ",\r\n\t\t\t" + indent +
                     "\"h\":   " + ((WGS84ToLTP_ENU)FrameTransform).Position.h);
@@ -180,6 +192,18 @@ namespace GeoPoseX
             if (((WGS84ToLTP_ENU)FrameTransform).Position != null && Orientation != null)
             {
                 sb.Append("{\r\n\t\t" + indent);
+                if (validTime != null && validTime.timeValue != String.Empty)
+                {
+                    sb.Append("\"validTime\": " + validTime.timeValue + ",\r\n" + indent + "  ");
+                }
+                if (poseID != null && poseID.id != String.Empty)
+                {
+                    sb.Append("\"poseID\": \"" + poseID.id + "\",\r\n" + indent + "  ");
+                }
+                if (parentPoseID != null && parentPoseID.id != String.Empty)
+                {
+                    sb.Append("\"parentPoseID\": \"" + parentPoseID.id + "\",\r\n" + indent + "  ");
+                }
                 sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " +
                     ((WGS84ToLTP_ENU)FrameTransform).Position.lat + ",\r\n\t\t\t" + indent +
                     "\"lon\": " + ((WGS84ToLTP_ENU)FrameTransform).Position.lon +
@@ -227,17 +251,29 @@ namespace GeoPoseX
         public override string ToJSON(string indent = "")
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("{\r\n\t\t" + indent);
-            sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"x\": " + ((Translation)FrameTransform).xOffset + ",\r\n\t\t\t" + indent +
-                "\"y\": " + ((Translation)FrameTransform).yOffset + ",\r\n\t\t\t" + indent +
+            sb.Append("{\r\n  ");
+            if (validTime != null && validTime.timeValue != String.Empty)
+            {
+                sb.Append("\"validTime\": " + validTime.timeValue + ",\r\n" + indent + "  ");
+            }
+            if (poseID != null && poseID.id != String.Empty)
+            {
+                sb.Append("\"poseID\": \"" + poseID.id + "\",\r\n" + indent + "  ");
+            }
+            if (parentPoseID != null && parentPoseID.id != String.Empty)
+            {
+                sb.Append("\"parentPoseID\": \"" + parentPoseID.id + "\",\r\n" + indent + "  ");
+            }
+            sb.Append("\"position\": \r\n  {\r\n    " + "\"x\": " + ((Translation)FrameTransform).xOffset + ",\r\n    " +
+                "\"y\": " + ((Translation)FrameTransform).yOffset + ",\r\n    " +
                 "\"z\":   " + ((Translation)FrameTransform).zOffset);
-            sb.Append("\r\n\t\t" + indent + "},");
-            sb.Append("\r\n\t\t" + indent);
-            sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + ((YPRAngles)Orientation).yaw + ",\r\n\t\t\t" + indent +
-                "\"pitch\": " + ((YPRAngles)Orientation).pitch + ",\r\n\t\t\t" + indent +
+            sb.Append("\r\n  " + "},");
+            sb.Append("\r\n  ");
+            sb.Append("\"angles\": \r\n  {\r\n    " + "\"yaw\":   " + ((YPRAngles)Orientation).yaw + ",\r\n    "  +
+                "\"pitch\": " + ((YPRAngles)Orientation).pitch + ",\r\n    " +
                 "\"roll\":  " + ((YPRAngles)Orientation).roll);
-            sb.Append("\r\n\t\t" + indent + "}");
-            sb.Append("\r\n\t" + indent + "}");
+            sb.Append("\r\n  "  + "}");
+            sb.Append("\r\n" + "}\r\n");
             return sb.ToString();
         }
     }
@@ -274,22 +310,22 @@ namespace GeoPoseX
         /// <summary>
         /// This function returns a Json encoding of an Advanced GeoPose
         /// </summary>
-        /*
-           sb.Append("{\r\n\t\t" + indent);
-            sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"x\": " + ((Translation)FrameTransform).xOffset + ",\r\n\t\t\t" + indent +
-                "\"y\": " + ((Translation)FrameTransform).yOffset + ",\r\n\t\t\t" + indent +
-                "\"z\":   " + ((Translation)FrameTransform).zOffset);
-            sb.Append("\r\n\t\t" + indent + "},");
-            sb.Append("\r\n\t\t" + indent);
-            sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + ((YPRAngles)Orientation).yaw + ",\r\n\t\t\t" + indent +
-                "\"pitch\": " + ((YPRAngles)Orientation).pitch + ",\r\n\t\t\t" + indent +
-                "\"roll\":  " + ((YPRAngles)Orientation).roll);
-            sb.Append("\r\n\t\t" + indent + "}");
-          */
         public override string ToJSON(string indent)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("{\r\n" + indent + "  ");
+            if (validTime != null && validTime.timeValue != String.Empty)
+            {
+                sb.Append("\"validTime\": " + validTime.timeValue + ",\r\n" + indent + "  ");
+            }
+            if (poseID != null && poseID.id != String.Empty)
+            {
+                sb.Append("\"poseID\": \"" + poseID.id + "\",\r\n" + indent + "  ");
+            }
+            if (parentPoseID != null && parentPoseID.id != String.Empty)
+            {
+                sb.Append("\"parentPoseID\": \"" + parentPoseID.id + "\",\r\n" + indent + "  ");
+            }
             sb.Append("\"frameSpecification\":\r\n" + indent + "  " + "{\r\n" + indent + "    \"authority\": \"" +
                 ((Extrinsic)FrameTransform).authority.Replace("\"","\\\"") + "\",\r\n" + indent + "    \"id\": \"" +
                 ((Extrinsic)FrameTransform).id.Replace("\"", "\\\"") + "\",\r\n" + indent + "    \"parameters\": \"" +
@@ -298,7 +334,7 @@ namespace GeoPoseX
                 ((Quaternion)Orientation).y + ",\"z\":" +
                 ((Quaternion)Orientation).z + ",\"w\":" +
                 ((Quaternion)Orientation).w);
-            sb.Append("\r\n" + indent + "  }\r\n" + indent + "}\r\n" + indent + "");
+            sb.Append("\r\n" + indent + "  }\r\n" + indent + "}\r\n");
             return sb.ToString();
         }
     }

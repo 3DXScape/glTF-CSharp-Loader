@@ -274,18 +274,31 @@ namespace GeoPoseX
         /// <summary>
         /// This function returns a Json encoding of an Advanced GeoPose
         /// </summary>
+        /*
+           sb.Append("{\r\n\t\t" + indent);
+            sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"x\": " + ((Translation)FrameTransform).xOffset + ",\r\n\t\t\t" + indent +
+                "\"y\": " + ((Translation)FrameTransform).yOffset + ",\r\n\t\t\t" + indent +
+                "\"z\":   " + ((Translation)FrameTransform).zOffset);
+            sb.Append("\r\n\t\t" + indent + "},");
+            sb.Append("\r\n\t\t" + indent);
+            sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + ((YPRAngles)Orientation).yaw + ",\r\n\t\t\t" + indent +
+                "\"pitch\": " + ((YPRAngles)Orientation).pitch + ",\r\n\t\t\t" + indent +
+                "\"roll\":  " + ((YPRAngles)Orientation).roll);
+            sb.Append("\r\n\t\t" + indent + "}");
+          */
         public override string ToJSON(string indent)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("{\"frameSpecification\":{\"authority\":" +
-                ((Extrinsic)FrameTransform).authority + ",\"id\":" +
-                ((Extrinsic)FrameTransform).id + ",\"parameters\":" +
-                ((Extrinsic)FrameTransform).parameters + "},");
-            sb.Append("\"quaternion\":{\"x\":" + ((Quaternion)Orientation).x + ",\"y\":" +
+            sb.Append("{\r\n" + indent + "  ");
+            sb.Append("\"frameSpecification\":\r\n" + indent + "  " + "{\r\n" + indent + "    \"authority\": \"" +
+                ((Extrinsic)FrameTransform).authority.Replace("\"","\\\"") + "\",\r\n" + indent + "    \"id\": \"" +
+                ((Extrinsic)FrameTransform).id.Replace("\"", "\\\"") + "\",\r\n" + indent + "    \"parameters\": \"" +
+                ((Extrinsic)FrameTransform).parameters.Replace("\"", "\\\"") + "\"\r\n" + indent + "  },\r\n" + indent + "  ");
+            sb.Append("\"quaternion\":\r\n" + indent + "  {\r\n" + indent + "    \"x\":" + ((Quaternion)Orientation).x + ",\"y\":" +
                 ((Quaternion)Orientation).y + ",\"z\":" +
                 ((Quaternion)Orientation).z + ",\"w\":" +
                 ((Quaternion)Orientation).w);
-            sb.Append("}}");
+            sb.Append("\r\n" + indent + "  }\r\n" + indent + "}\r\n" + indent + "");
             return sb.ToString();
         }
     }

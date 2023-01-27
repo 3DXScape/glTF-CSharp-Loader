@@ -10,7 +10,7 @@ namespace Example
     {
         public static void Output(GeoPoseX.GeoPose marsExpress, List<GeoPoseX.Local> wagons, List<GeoPoseX.GeoPose> passengers)
         {
-            Console.WriteLine("\r\n========== Mars Express at Local Clock UNIX Time " + marsExpress.validTime.timeValue + "==========");
+            Console.WriteLine("\r\n========== Mars Express at Local Clock UNIX Time " + marsExpress.validTime.timeValue + "==========\r\n");
             Console.WriteLine(marsExpress.ToJSON(""));
             foreach (GeoPoseX.GeoPose wagon in wagons)
             {

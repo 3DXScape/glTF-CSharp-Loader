@@ -25,10 +25,10 @@ using System.Threading.Tasks;
 /// This library is a C# implementation of the three OGC GeoPose 1.0 Basic and Advanced targets
 /// with Json serialization of each, conforming to the OGC GeoPose 1.0 standard.
 /// <version>
-/// Version 0.9.13 
+/// Version 0.9.23 
 /// </version>
 /// <date>
-/// 13 December 2022
+/// 18 January 2023
 /// </date>
 /// <note>
 /// This library was created as a part of the CitySharp encoding of OGC CityGML 3.0.
@@ -37,7 +37,7 @@ using System.Threading.Tasks;
 /// <note>
 /// This version targets the open source and platform-independent .NET 6 Core framework
 ///  and is an alternative to the GeoPose implementation.
-/// This GeoPoseF design differs from the GeoPose design in that it directly follows the template from the standard,
+/// This GeoPoseF2 design differs from the GeoPose design in that it directly follows the template from the standard,
 ///  where every GeoPose consists of a frame transformation and an orientation.
 ///  Every transform defines the relationship
 ///  between an outer and an inner frame and expresses the origin of the inner frame as a
@@ -49,7 +49,16 @@ using System.Threading.Tasks;
 ///  the "GeoPose" namespace version. It makes the derivation of the distinguished point "Position"
 ///  as the origin of the coordinate system associated with the inner frame explicit.
 ///  This structure also makes it easy to add new categories of FrameTransfom directly in the inheritance scheme.**
-///  
+///  </note>note>
+///  <note>
+///  **WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**
+///  The *Local* GeoPose is NOT defined in the OGC GeoPose 1.0 standard.
+///  It *may* appear in a future version of the standard.
+///  *Local* is shorthand for a local CRS with
+///  a Cartesian 3- coordinate system.
+///  Every Local GeoPose can be written as an Advanced GeoPose with a suitable
+///  authority, id, parameters, and quaterion orientation.
+///  **WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**
 /// </note>
 /// </summary>
 namespace GeoPoseX
@@ -61,8 +70,14 @@ namespace GeoPoseX
     /// </summary>
     public abstract class GeoPose
     {
+        // Optional an non-standard but conforming added property:
+        //   an identifier unique within an application.
         public PoseID? poseID { get; set; } = null;
+        // Optional an non-standard but conforming added property:
+        //  a PoseID type identifier of another GeoPose in the direction of the root of a pose tree.
         public PoseID? parentPoseID { get; set; } = null;
+        // Optional an non-standard but conforming added property:
+        //   a poseID identifier in the direction of the root of a pose tree.
         public UnixTime? validTime { get; set; } = null;
         public abstract FrameTransform? FrameTransform { get; set; }
         public abstract Orientation? Orientation { get; set; }
@@ -81,6 +96,7 @@ namespace GeoPoseX
         {
 
         }
+        // Constructor from long integer count of UNIX Time seconds x 1000
         public UnixTime(long longTime)
         {
             timeValue = longTime.ToString();
@@ -175,10 +191,6 @@ namespace GeoPoseX
     /// </summary>
     public class BasicQuaternion : Basic
     {
- /*       /// <summary>
-        /// A WGS84 (EPSG 4327) Position specified in spherical coordinates with height above the WGS84 ellipsoid.
-        /// </summary>
-        public WGS84ToLTP_ENUTransform WGS84ToLTP_ENU { get; set; } = new WGS84ToLTP_ENUTransform(); */
         /// <summary>
         /// An Orientation specified as a unit quaternion.
         /// </summary>
@@ -411,33 +423,6 @@ namespace GeoPoseX
         public double z { get; set; } = double.NaN;
     }
     /// <summary>
-    /// A specialization of Position for using two angles and a height for geodetic positions.
-    /// </summary>
-    /*public class CartesianPosition : Position
-    {
-        /// <summary>
-        /// A coordinate value in meters, along an axis (east-axis) that has origin at
-        /// a point tangent to an ellisoid defined by a geodetic frame,
-        /// is perpendicular to the north axis,
-        /// forms a right-hand coordinate system with the north and up axes, and
-        /// which lies in a plane tangent to the ellisoid at that point.
-        /// </summary>
-        public double east { get; set; } = double.NaN;
-        /// <summary>
-        /// A coordinate value in meters, along an axis (north-axis) that has origin at
-        /// a point tangent to an ellisoid defined by a geodetic frame,
-        /// is perpendicular to the east axis,
-        /// forms a right-hand coordinate system with the east and up axes, and
-        /// which lies in a plane tangent to the ellisoid at that point.
-        /// </summary>
-        public double north { get; set; } = double.NaN;
-        /// <summary>
-        /// A coordinate value in meters, measured perpendicular to the tangent plane,
-        /// positive in the up direction.
-        /// </summary>
-        public double up { get; set; } = double.NaN;
-    }*/
-    /// <summary>
     /// A specialization of Orientation using Yaw, Pitch, and Roll angles in degrees.
     /// <remark>
     /// This style of Orientation is best for easy human interpretation.
@@ -572,7 +557,7 @@ namespace GeoPoseX
         /// </summary>
         public GeodeticPosition Position { get; set; } = null;
     }
-
+    // A simple translation frame transform.
     public class Translation : FrameTransform
     {
         internal Translation()

@@ -1,4 +1,5 @@
 using GeoPoseX;
+
 // Create Mars Express in the current International Celestial Reference Frame ICRF2 
 Advanced marsExpress = new Advanced(new PoseID("https://example.com/nodes/MarsExpress/1"),
     new Extrinsic("https://www.iers.org/", "icrf3", "{\"x\": 1234567890.9876,\"y\": 2345678901.8765, \"z\": 3456789012.7654}"),
@@ -22,18 +23,22 @@ wagons.Add(wagon4);
 
 // Create passengers from the SWG in wagons 1 and 3 in local frames local to specific wagons and remember them in a passenger list
 List<GeoPoseX.GeoPose> passengers = new List<GeoPoseX.GeoPose>();
+
 //  - Jerome is a clever thinker who has many questions and good ideas
 Local jerome = new Local("https://example.com/nodes/MarsExpress/1/Passengers/Jerome", new Translation(2.2, 0.8, -7.0), new YPRAngles(180.0, 1.0, 0.0));
 jerome.parentPoseID = wagon1.poseID;
 passengers.Add(jerome);
+
 //  - Josh is a nice fellow who guided us towrd the frame transform in the early days
 Local josh = new Local("https://example.com/nodes/MarsExpress/1/Passengers/Josh", new Translation(2.0, 0.8, -6.0), new YPRAngles(180.0, 2.0, 0.0));
 josh.parentPoseID = wagon1.poseID;
 passengers.Add(josh);
+
 //  - Steve thinks that the Local GeoPose is needed and should be added to version 1.1.0
 Local steve = new Local("https://example.com/nodes/MarsExpress/1/Passengers/Steve", new Translation(-5.0, 0.82, 6.0), new YPRAngles(-2.0, 1.5, 0.0));
 steve.parentPoseID = wagon3.poseID;
 passengers.Add(steve);
+
 //  - Carl is one of Steve's multiple personalities who does not believe in using any GeoPose not in the 1.0.0 standard
 Advanced carl =
     new Advanced(new PoseID("https://carlsmyth.com"),
@@ -43,26 +48,13 @@ Advanced carl =
         "{\"x\": 1234567890.9876,\"y\": 2345678901.8765, \"z\": 3456789012.7654}"),
     new Quaternion(0.0174509, 0.0130876, -0.0002284, 0.9997621));
 carl.parentPoseID = wagon3.poseID;
+
 // Carl is going to do something time-dependent so we need to timestamp the current info
 carl.validTime = marsExpress.validTime; // Use the Mars Express local clock
 passengers.Add(carl);
 
 // Display the pose tree
-Console.WriteLine("\r\n========== Mars Express at Local Clock UNIX Time " + marsExpress.validTime.timeValue + "==========\r\n");
-Console.WriteLine(marsExpress.ToJSON(""));
-foreach (GeoPoseX.GeoPose wagon in wagons)
-{
-    Console.WriteLine("=-=-=-=-=- Wagon -=-=-=-=-=: " + wagon.poseID.id.Substring(1 + wagon.poseID.id.LastIndexOf('/')) +"\r\n");
-    Console.WriteLine(wagon.ToJSON(""));
-    foreach(GeoPoseX.GeoPose passenger in passengers)
-    {
-        if(passenger.parentPoseID.id == wagon.poseID.id)
-        {
-            Console.WriteLine("---------- Passenger ----------: " + passenger.poseID.id.Substring(1 + passenger.poseID.id.LastIndexOf('/')) + "\r\n");
-            Console.WriteLine(passenger.ToJSON(""));
-        }
-    }
-}
+Example.Display.Output(marsExpress, wagons, passengers);
 
 // After a minute, the Carl personality decides that he must split from the Steve personality and moves to the same seat in wagon 4
 marsExpress.validTime = new UnixTime(1674767748003 + 60*1000 + 327);
@@ -70,23 +62,6 @@ carl.parentPoseID = wagon4.poseID;
 // Carl moved so we need to update the validTime
 carl.validTime = marsExpress.validTime; // Use the Mars Express local clock
 
-Example.Display.Output(marsExpress, wagons, passengers);
-
 // Display new pose tree
-Console.WriteLine("\r\n========== Mars Express at Local Clock UNIX Time " + marsExpress.validTime.timeValue + "==========");
-Console.WriteLine(marsExpress.ToJSON(""));
-foreach (GeoPoseX.GeoPose wagon in wagons)
-{
-    Console.WriteLine("=-=-=-=-=- Wagon -=-=-=-=-=: " + wagon.poseID.id.Substring(1 + wagon.poseID.id.LastIndexOf('/')) + "\r\n");
-    Console.WriteLine(wagon.ToJSON(""));
-    foreach (GeoPoseX.GeoPose passenger in passengers)
-    {
-        if (passenger.parentPoseID.id == wagon.poseID.id)
-        {
-            Console.WriteLine("---------- Passenger ----------: " + passenger.poseID.id.Substring(1 + passenger.poseID.id.LastIndexOf('/')) + "\r\n");
-            Console.WriteLine(passenger.ToJSON(""));
-        }
-    }
-}
-
+Example.Display.Output(marsExpress, wagons, passengers);
 

@@ -366,7 +366,11 @@ namespace GeoPoseX
     /// </summary>
     public abstract class Orientation
     {
-
+        public virtual Tuple<double, double, double> Rotate(Tuple<double, double, double> point)
+        {
+            return notRotated;
+        }
+        public readonly Tuple<double, double, double> notRotated = new( double.NaN, double.NaN, double.NaN);
     }
     /// <summary>
     /// A specialization of Position for using two angles and a height for geodetic positions.
@@ -441,6 +445,38 @@ namespace GeoPoseX
             this.pitch = pitch;
             this.roll = roll;
         }
+        public override Tuple<double, double, double> Rotate(Tuple<double, double, double> point)
+        {
+            // implementation using ypr angles
+            return notRotated;
+        }
+        public Quaternion ToQuaternion(double yaw, double pitch, double roll) 
+        {
+            // GeoPose uses angles in degrees for human readability
+            // Convert to radians.
+            yaw   *= (Math.PI / 180.0);
+            pitch *= (Math.PI / 180.0);
+            roll  *= (Math.PI / 180.0);
+
+            double cosRoll = Math.Cos(roll * 0.5);
+            double sinRoll = Math.Sin(roll * 0.5);
+            double cosPitch = Math.Cos(pitch * 0.5);
+            double sinPitch = Math.Sin(pitch * 0.5);
+            double cosYaw = Math.Cos(yaw * 0.5);
+            double sinYaw = Math.Sin(yaw * 0.5);
+
+            double w = cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw;
+            double x = sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw;
+            double y = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;
+            double z = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;
+
+            double norm = Math.Sqrt(x*x + y*y +z*z +w*w);
+            if(norm <= double.MinValue)
+            {
+                return new Quaternion(x, y, z, w);
+            }
+            return new Quaternion(x/norm, y/norm, z/norm, w/norm);
+        }
         /// <summary>
         /// A left-right angle in degrees.
         /// </summary>
@@ -470,6 +506,32 @@ namespace GeoPoseX
             this.z = z;
             this.w = w;
         }
+        public override Tuple<double, double, double> Rotate(Tuple<double, double, double> point)
+        {
+            // implementation using ypr angles
+            return notRotated;
+        }
+        public YPRAngles ToYPRAngles(Quaternion q)
+        {
+            YPRAngles yprAngles = new YPRAngles();
+
+            // roll (x-axis rotation)
+            double sinRollCosPitch = 2.0 * (q.w * q.x + q.y * q.z);
+            double cosRollCosPitch = 1.0 - 2.0 * (q.x * q.x + q.y * q.y);
+            yprAngles.roll = Math.Atan2(sinRollCosPitch, cosRollCosPitch) * (180.0 / Math.PI); // in degrees
+
+            // pitch (y-axis rotation)
+            double sinPitch = Math.Sqrt(1.0 + 2.0 * (q.w * q.y - q.x * q.z));
+            double cosPitch = Math.Sqrt(1.0 - 2.0 * (q.w * q.y - q.x * q.z));
+            yprAngles.pitch = (2.0 * Math.Atan2(sinPitch, cosPitch) - Math.PI / 2.0) * (180.0 / Math.PI); // in degrees
+
+            // yaw (z-axis rotation)
+            double sinYawCosPitch = 2.0 * (q.w * q.z + q.x * q.y);
+            double cosYawCosPitch = 1.0 - 2.0 * (q.y * q.y + q.z * q.z);
+            yprAngles.yaw = Math.Atan2(sinYawCosPitch, cosYawCosPitch) * (180.0 / Math.PI); // in degrees
+
+            return yprAngles;
+        }
         /// <summary>
         /// The x component.
         /// </summary>
@@ -494,7 +556,12 @@ namespace GeoPoseX
     /// </summary>
     public abstract class FrameTransform
     {
-
+        public virtual Tuple<double, double, double> Transform(Tuple<double, double, double> point)
+        {
+            // The defualt is to apply the identity transformation
+            Tuple<double, double, double> result = point;
+            return result;
+        }
     }
 
     /// <summary>
@@ -519,6 +586,50 @@ namespace GeoPoseX
             this.parameters = parameters;
         }
         /// <summary>
+        /// The core function of a transformation is the implement a specific frame transformation
+        /// i.e. the transformation of a triple of point coordinates in the outer frame to a triple of point coordinates in the inner frame.
+        /// When this is not possible due to lack of an appropriate tranformation procedure,
+        /// the triple (NaN, NaN, NaN) [three IEEE 574 not-a-number vales] is returned.
+        /// Note that an "authority" is not necessarily a standards organization but rather an entity that provides
+        /// a register of some kind for a category of frame- and/or frame transform specifications that is useful and stable enough
+        /// for someone to implement transformation functions.
+        /// An implementation need not implement all possbile transforms.
+        /// </summary>
+        /// <note>
+        /// This would be a good element to implement as a set of plugin.
+        /// </note>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public override Tuple<double, double, double> Transform(Tuple<double, double, double> point)
+        {
+            string uri = authority.ToLower().Replace("//www.", "");
+            if (uri == "https://proj.org" || uri == "https://osgeo.org")
+            {
+                return noTransform;
+            }
+            else if (uri == "https://epsg.org")
+            {
+                return noTransform;
+            }
+            else if (uri == "https://iers.org")
+            {
+                return noTransform;
+            }
+            else if (uri == "https://naif.jpl.nasa.gov")
+            {
+                return noTransform;
+            }
+            else if (uri == "https://sedris.org")
+            {
+                return noTransform;
+            }
+            else if (uri == "https://iau.org")
+            {
+                return noTransform;
+            }
+            return noTransform;
+        }
+        /// <summary>
         /// The name or identification of the definer of the category of frame specification.
         /// A Uri that usually but not always points to a valid web address.
         /// </summary>
@@ -533,6 +644,7 @@ namespace GeoPoseX
         /// The interpretation of the string is determined by the authority.
         /// </summary>
         public string parameters { get; set; } = "";
+        static Tuple<double, double, double> noTransform = new Tuple<double, double, double>(double.NaN, double.NaN, double.NaN);
     }
     /// <summary>
     /// A specialized specification of the WGS84 (EPSG 4326) geodetic frame to a local tangent plane East, North, Up frame.

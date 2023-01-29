@@ -453,7 +453,7 @@ namespace GeoPoseX
         public Quaternion ToQuaternion(double yaw, double pitch, double roll) 
         {
             // GeoPose uses angles in degrees for human readability
-            // Convert to radians.
+            // /Convert to radians.
             yaw   *= (Math.PI / 180.0);
             pitch *= (Math.PI / 180.0);
             roll  *= (Math.PI / 180.0);

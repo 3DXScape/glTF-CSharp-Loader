@@ -1,0 +1,15 @@
+{
+	"poseID": "https://carlsmyth.com",
+	"parentPoseID": "https://example.com/nodes/MarsExpress/1/Wagons/4",
+	"frameSpecification": {
+		"authority": "https://ogc.org",
+		"id": "PROJCRS[\"GeoPose Local\",+GEOGCS[\"None)\"]+CS[Cartesian,3],+AXIS[\"x\",,ORDER[1],LENGTHUNIT[\"metre\",1]],+AXIS[\"y\",,ORDER[2],LENGTHUNIT[\"metre\",1]],+AXIS[\"z\",,ORDER[3],LENGTHUNIT[\"metre\",1]]+USAGE[AREA[\"+/-1000 m\"],BBOX[-1000,-1000,1000,1000],ID[\"GeoPose\",Local]]",
+		"parameters": "{\"x\": 1234567890.9876,\"y\": 2345678901.8765, \"z\": 3456789012.7654}"
+	},
+	"quaternion": {
+		"x": 0.0174509,
+		"y": 0.0130876,
+		"z": -0.0002284,
+		"w": 0.9997621
+	}
+}

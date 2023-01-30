@@ -45,21 +45,30 @@ using System.Threading.Tasks;
 ///  the conceptual model of the standard exactly, rather than treating the Basic targets
 ///  as special cases.
 ///  
-///  **There is no practical difference in actual use of this version vs
-///  the "GeoPose" namespace version. It makes the derivation of the distinguished point "Position"
+///  There is no practical difference in actual use of this version vs
+///  the "GeoPose" namespace version.
+///  It makes the derivation of the distinguished point "Position"
 ///  as the origin of the coordinate system associated with the inner frame explicit.
-///  This structure also makes it easy to add new categories of FrameTransfom directly in the inheritance scheme.**
-///  </note>note>
+///  This structure also makes it easy to add new categories of FrameTransfom and Orientation
+///  directly in the inheritance scheme.
+///
+///
 ///  <note>
+///  
 ///  **WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**
+///  
 ///  The *Local* GeoPose is NOT defined in the OGC GeoPose 1.0 standard.
 ///  It *may* appear in a future version of the standard.
 ///  *Local* is shorthand for a local CRS with
 ///  a Cartesian 3- coordinate system.
 ///  Every Local GeoPose can be written as an Advanced GeoPose with a suitable
 ///  authority, id, parameters, and quaterion orientation.
+///  
 ///  **WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**
+///  
 /// </note>
+///
+/// 
 /// </summary>
 namespace GeoPoseX
 {
@@ -70,50 +79,68 @@ namespace GeoPoseX
     /// </summary>
     public abstract class GeoPose
     {
-        // Optional an non-standard but conforming added property:
+        // Optional and non-standard but conforming added property:
         //   an identifier unique within an application.
         public PoseID? poseID { get; set; } = null;
-        // Optional an non-standard but conforming added property:
+        // Optional and non-standard but conforming added property:
         //  a PoseID type identifier of another GeoPose in the direction of the root of a pose tree.
         public PoseID? parentPoseID { get; set; } = null;
-        // Optional an non-standard but conforming added property:
+        // Optional and non-standard but conforming added property:
         //   a poseID identifier in the direction of the root of a pose tree.
         public UnixTime? validTime { get; set; } = null;
-        public abstract FrameTransform? FrameTransform { get; set; }
-        public abstract Orientation? Orientation { get; set; }
+        public abstract FrameTransform FrameTransform { get; set; }
+        public abstract Orientation Orientation { get; set; }
         public abstract string ToJSON(string indent);
     }
-    /// <summary>
-    /// The abstract root of the Position hierarchy.
-    /// <note>
-    /// Because the various ways to express Position share no underlying structure,
-    /// the class definition is simply an empty shell.
-    /// </note>
-    /// </summary>
-    public class UnixTime
+    public class FloatTriple
     {
-        internal UnixTime()
+        internal FloatTriple()
         {
 
         }
-        // Constructor from long integer count of UNIX Time seconds x 1000
-        public UnixTime(long longTime)
+        public FloatTriple(double[] v)
         {
-            timeValue = longTime.ToString();
+            this.v[0] = (float)v[0];
+            this.v[1] = (float)v[1];
+            this.v[2] = (float)v[2];
         }
-        public string timeValue { get; set; } = string.Empty;
+        public FloatTriple(float[] v)
+        {
+            this.v[0] = v[0];
+            this.v[1] = v[1];
+            this.v[2] = v[2];
+        }
+        public float[] v { get; set; } = new float[3] { 0.0f, 0.0f, 0.0f };
+        public DoubleTriple ToDoubleTriple()
+        {
+            DoubleTriple vc3d = new DoubleTriple(this.v);
+            return vc3d;
+        }
     }
-    public class PoseID
+    public class DoubleTriple
     {
-        internal PoseID()
+        internal DoubleTriple()
         {
 
         }
-        public PoseID(string id)
+        public DoubleTriple(float[] v)
         {
-            this.id = id;
+            this.v[0] = (double)v[0];
+            this.v[1] = (double)v[1];
+            this.v[2] = (double)v[2];
         }
-        public string id { get; set; } = string.Empty;
+        public DoubleTriple(double[] v)
+        {
+            this.v = v;
+        }
+        public FloatTriple ToFloatTriple()
+        {
+            FloatTriple vc3f = new FloatTriple(this.v);
+            return vc3f;
+        }
+
+
+        public double[] v { get; set; } = new double[3] { 0.0, 0.0, 0.0 };
     }
     public abstract class Basic : GeoPose
     {
@@ -121,7 +148,10 @@ namespace GeoPoseX
         /// A Position specified in spherical coordinates with height above a reference surface -
         /// usually an ellipsoid of revolution or a gravitational equipotential surface.
         /// </summary>
-        public override FrameTransform FrameTransform { get; set; } = new WGS84ToLTP_ENU();
+        public override Position FrameTransform(Position point)
+        {
+            return LTP_ENUTransform((GeodeticPosition)point);
+        }
     }
 
     /// <summary>
@@ -352,26 +382,32 @@ namespace GeoPoseX
     }
 
     // *******************************************************************************
-
-    public abstract class Position
+    public class UnixTime
     {
-
-    }
-    /// <summary>
-    /// The abstract root of the Orientation hierarchy.
-    /// <note>
-    /// Because the various ways to express Orientation share no underlying structure,
-    /// the class definition is simply an empty shell.
-    /// </note>
-    /// </summary>
-    public abstract class Orientation
-    {
-        public virtual Tuple<double, double, double> Rotate(Tuple<double, double, double> point)
+        internal UnixTime()
         {
-            return notRotated;
+
         }
-        public readonly Tuple<double, double, double> notRotated = new( double.NaN, double.NaN, double.NaN);
+        // Constructor from long integer count of UNIX Time seconds x 1000
+        public UnixTime(long longTime)
+        {
+            timeValue = longTime.ToString();
+        }
+        public string timeValue { get; set; } = string.Empty;
     }
+    public class PoseID
+    {
+        internal PoseID()
+        {
+
+        }
+        public PoseID(string id)
+        {
+            this.id = id;
+        }
+        public string id { get; set; } = string.Empty;
+    }
+
     /// <summary>
     /// A specialization of Position for using two angles and a height for geodetic positions.
     /// </summary>
@@ -407,8 +443,15 @@ namespace GeoPoseX
     /// <summary>
     /// A specialization of Position for geocentric positions.
     /// </summary>
-    public class GeocentricPosition : Position
+    public class CartesianPosition : Position
     {
+        public CartesianPosition(double x, double y, double z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+    
         /// <summary>
         /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
         /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
@@ -427,6 +470,36 @@ namespace GeoPoseX
         public double z { get; set; } = double.NaN;
     }
     /// <summary>
+    /// The abstract root of the Position hierarchy.
+    /// <note>
+    /// Because the various ways to express Position share no underlying structure,
+    /// the class definition is simply an empty shell.
+    /// </note>
+    /// </summary>
+    public abstract class Position
+    {
+
+    }
+    /// <summary>
+    /// The abstract root of the Orientation hierarchy.
+    /// <note>
+    /// An Orientation is a generic container for information that defines rotation within a coordinate system associated with a reference frame.
+    /// An Orientation may have a specialized context with necessary ancillary information
+    /// that parameterizes the rotation.
+    /// Such context may include, for example, part of the information that may be conveyed in an ISO 19111 CRS specification
+    /// or a proprietary naming, numbering, or modelling scheme as used by EPSG, NASA Spice, or SEDRIS SRM.
+    /// Subclasses of Orientation exist precisely to hold this context in conjunction with code
+    /// implementing a Rotate function.
+    /// </note>
+    /// </summary>
+    public abstract class Orientation
+    {
+        public virtual Position Rotate(Position point)
+        {
+            return point;
+        }
+    }
+    /// <summary>
     /// A specialization of Orientation using Yaw, Pitch, and Roll angles in degrees.
     /// <remark>
     /// This style of Orientation is best for easy human interpretation.
@@ -435,6 +508,7 @@ namespace GeoPoseX
     /// </summary>
     public class YPRAngles : Orientation
     {
+        // Prevent public use of empty constructor.
         internal YPRAngles()
         {
 
@@ -445,12 +519,13 @@ namespace GeoPoseX
             this.pitch = pitch;
             this.roll = roll;
         }
-        public override Tuple<double, double, double> Rotate(Tuple<double, double, double> point)
+        public override Position Rotate(Position point)
         {
-            // implementation using ypr angles
-            return notRotated;
+            // convert to quaternion and use quaternion rotation
+            Quaternion q = YPRAngles.ToQuaternion(this.yaw, this.pitch, this.roll);
+            return Quaternion.Transform(point, q);
         }
-        public Quaternion ToQuaternion(double yaw, double pitch, double roll) 
+        public static Quaternion ToQuaternion(double yaw, double pitch, double roll) 
         {
             // GeoPose uses angles in degrees for human readability
             // /Convert to radians.
@@ -506,10 +581,9 @@ namespace GeoPoseX
             this.z = z;
             this.w = w;
         }
-        public override Tuple<double, double, double> Rotate(Tuple<double, double, double> point)
+        public override Position Rotate(Position point)
         {
-            // implementation using ypr angles
-            return notRotated;
+            return Quaternion.Transform(point, q);
         }
         public YPRAngles ToYPRAngles(Quaternion q)
         {
@@ -532,6 +606,32 @@ namespace GeoPoseX
 
             return yprAngles;
         }
+        public static Position Transform(Position inPoint, Quaternion rotation)
+        {
+            CartesianPosition point = (CartesianPosition)inPoint;
+            double x2 = rotation.x + rotation.x;
+            double y2 = rotation.y + rotation.y;
+            double z2 = rotation.z + rotation.z;
+
+            double wx2 = rotation.w * x2;
+            double wy2 = rotation.w * y2;
+            double wz2 = rotation.w * z2;
+            double xx2 = rotation.x * x2;
+            double xy2 = rotation.x * y2;
+            double xz2 = rotation.x * z2;
+            double yy2 = rotation.y * y2;
+            double yz2 = rotation.y * z2;
+            double zz2 = rotation.z * z2;
+
+            return new CartesianPosition(
+                point.x * (1.0f - yy2 - zz2) + point.y * (xy2 - wz2) + point.z * (xz2 + wy2),
+                point.x * (xy2 + wz2) + point.y * (1.0f - xx2 - zz2) + point.z * (yz2 - wx2),
+                point.x * (xz2 - wy2) + point.y * (yz2 + wx2) + point.z * (1.0f - xx2 - yy2));
+        }
+        public override Position Rotate(Position point)
+        {
+           return Quaternion.Transform(point, this);  
+        }
         /// <summary>
         /// The x component.
         /// </summary>
@@ -551,15 +651,21 @@ namespace GeoPoseX
     }
     /// <summary>
     /// A FrameTransform is a generic container for information that defines mapping between reference frames.
+    /// Most transformation have a context with necessary ancillary information
+    /// that parameterizes the transformation of a Position in one frame to a corresponding Position is another.
+    /// Such context may include, for example, some or all of the information that may be conveyed in an ISO 19111 CRS specification
+    /// or a proprietary naming, numbering, or modelling scheme as used by EPSG, NASA Spice, or SEDRIS SRM.
+    /// Subclasses of FrameTransform exist precisely to hold this context in conjunction with code
+    /// implementing a Transform function.
     /// <remark>
     /// </remark>
     /// </summary>
     public abstract class FrameTransform
     {
-        public virtual Tuple<double, double, double> Transform(Tuple<double, double, double> point)
+        public virtual Position Transform(Position point)
         {
             // The defualt is to apply the identity transformation
-            Tuple<double, double, double> result = point;
+            Position result = point;
             return result;
         }
     }
@@ -653,14 +759,18 @@ namespace GeoPoseX
     /// which is the *only* distinguished Position associated with the coodinate system associated with the inner frame (range).
     /// </remark>
     /// </summary>
-    public class WGS84ToLTP_ENU : FrameTransform
+ /*   public class WGS84ToLTP_ENU : FrameTransform
     {
         internal WGS84ToLTP_ENU()
         {
 
         }
-        public WGS84ToLTP_ENU(GeodeticPosition position)
+        public static Position Transform(Position point)
         {
+            CartesianPosition outPoint = new CartesianPosition();
+            GeodeticToEnu(((GeodeticPosition)point).lat, ((GeodeticPosition)point).lon, double h,
+                                            double lat0, double lon0, double h0,
+                                            out double xEast, out double yNorth, out double zUp)
             this.Position = position;
         }
 
@@ -668,7 +778,7 @@ namespace GeoPoseX
         /// A single geodetic position defines the tangent point for a transform to LTP-ENU.
         /// </summary>
         public GeodeticPosition Position { get; set; } = null;
-    }
+    }*/
     // A simple translation frame transform.
     public class Translation : FrameTransform
     {

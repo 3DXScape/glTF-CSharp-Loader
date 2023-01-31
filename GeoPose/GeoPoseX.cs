@@ -421,7 +421,22 @@ namespace GeoPoseX
         /// <summary>
         /// A Frame Specification defining a frame with associated coordinate system whose Position is the origin.
         /// </summary>
-        public override FrameTransform FrameTransform { get; set; } = new Extrinsic();
+        private Extrinsic _frameTransform = new Extrinsic();
+        public override FrameTransform FrameTransform
+        {
+            get
+            {
+                return _frameTransform;
+            }
+            set
+            {
+                if (value.GetType() == typeof(Extrinsic))
+                {
+                    _frameTransform = (Extrinsic)value;
+                }
+                // else throw expected extrinsic exception
+            }
+        }
         /// <summary>
         /// An Orientation specified as a unit quaternion.
         /// </summary>
@@ -642,7 +657,7 @@ namespace GeoPoseX
         public static Quaternion ToQuaternion(double yaw, double pitch, double roll) 
         {
             // GeoPose uses angles in degrees for human readability
-            // /Convert to radians.
+            // Convert degrees to radians.
             yaw   *= (Math.PI / 180.0);
             pitch *= (Math.PI / 180.0);
             roll  *= (Math.PI / 180.0);
@@ -883,7 +898,7 @@ namespace GeoPoseX
         {
             this.Origin = origin;
         }
-        public Position Transform(Position point)
+        public override Position Transform(Position point)
         {
             double east, north, up;
             LTP_ENU.LTP_ENU.GeodeticToEnu(((GeodeticPosition)point).lat, ((GeodeticPosition)point).lon, ((GeodeticPosition)point).h,
@@ -897,7 +912,10 @@ namespace GeoPoseX
         /// </summary>
         public GeodeticPosition Origin { get; set; } = null;
     }
+
     // A simple translation frame transform.
+    // The FrameTransform is created with an offset.
+    // The Transform adds the offset ot an input Cartesian Position and reurns a Cartesian Position
     public class Translation : FrameTransform
     {
         internal Translation()
@@ -908,6 +926,10 @@ namespace GeoPoseX
             this.xOffset = xOffset;
             this.yOffset = yOffset;
             this.zOffset = zOffset; 
+        }
+        public override Position Transform(Position point)
+        {
+            return new CartesianPosition(((CartesianPosition)point).x, ((CartesianPosition)point).y, ((CartesianPosition)point).z);
         }
         public double xOffset { get; set; } = 0.0;
         public double yOffset { get; set; } = 0.0;

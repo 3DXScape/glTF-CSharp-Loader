@@ -330,9 +330,24 @@ namespace GeoPoseX
         /// <summary>
         /// The xOffset, yOffset, zOffset from the origin of the rotated inner frame of a "parent" GeoPose.
         /// </summary>
-        public override FrameTransform FrameTransform { get; set; } = new Translation();
+        private Translation _frameTransform = new Translation();
+        public override FrameTransform FrameTransform
+        {
+            get
+            {
+                return _frameTransform;
+            }
+            set
+            {
+                if (value.GetType() == typeof(Translation))
+                {
+                    _frameTransform = (Translation)value;
+                }
+                // else throw expected translation exception
+            }
+        }
         /// <summary>
-        /// The yaw, pitch, roll orientation.
+        /// Local uses the yaw, pitch, roll orientation.
         /// </summary>
         private YPRAngles _orientation = new YPRAngles();
         /// <summary>
@@ -350,6 +365,7 @@ namespace GeoPoseX
                 {
                     _orientation = (YPRAngles)value;
                 }
+                // else throw expected YPRAngles exception
             }
         }
         /// <summary>

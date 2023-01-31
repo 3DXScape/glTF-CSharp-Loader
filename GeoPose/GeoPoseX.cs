@@ -12,7 +12,9 @@ using Datatypes;
 
 //-----------------------------------------------------------------------
 // <copyright>
+
 // Copyright (c) 2020-2023, The DaniElenga Foundation.
+
 //    Licensed under the MIT License (the "License");
 //    you may not use this file except in compliance with the License.
 //    You may obtain a copy of the License at
@@ -31,10 +33,10 @@ using Datatypes;
 /// This library is a C# implementation of the three OGC GeoPose 1.0 Basic and Advanced targets
 /// with Json serialization of each, conforming to the OGC GeoPose 1.0 standard.
 /// <version>
-/// Version 0.9.23 
+/// Version 0.9.27 
 /// </version>
 /// <date>
-/// 18 January 2023
+/// 28 January 2023
 /// </date>
 /// <note>
 /// This library was created as a part of the CitySharp encoding of OGC CityGML 3.0.
@@ -42,23 +44,9 @@ using Datatypes;
 /// </note>
 /// <note>
 /// This version targets the open source and platform-independent .NET 6 Core framework
-///  and is an alternative to the GeoPose implementation.
-/// This GeoPoseF2 design differs from the GeoPose design in that it directly follows the template from the standard,
-///  where every GeoPose consists of a frame transformation and an orientation.
-///  Every transform defines the relationship
-///  between an outer and an inner frame and expresses the origin of the inner frame as a
-///  distinguished Position. The conceptual advantage of this design is that it follows
-///  the conceptual model of the standard exactly, rather than treating the Basic targets
-///  as special cases.
+/// The design follows the conceptual model of the standard exactly,
+///  rather than treating the Basic targets as special cases.
 ///  
-///  There is no practical difference in actual use of this version vs
-///  the "GeoPose" namespace version.
-///  It makes the derivation of the distinguished point "Position"
-///  as the origin of the coordinate system associated with the inner frame explicit.
-///  This structure also makes it easy to add new categories of FrameTransfom and Orientation
-///  directly in the inheritance scheme.
-///
-///
 ///  <note>
 ///  
 ///  **WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**
@@ -79,6 +67,7 @@ using Datatypes;
 ///
 
 /* ===================================== GeoPoses =================================== */
+
 namespace GeoPoseX
 {
     // *******************************************************************************
@@ -91,9 +80,11 @@ namespace GeoPoseX
         // Optional and non-standard but conforming added property:
         //   an identifier unique within an application.
         public PoseID? poseID { get; set; } = null;
+
         // Optional and non-standard but conforming added property:
         //  a PoseID type identifier of another GeoPose in the direction of the root of a pose tree.
         public PoseID? parentPoseID { get; set; } = null;
+
         // Optional and non-standard but conforming added property:
         //   a poseID identifier in the direction of the root of a pose tree.
         public UnixTime? validTime { get; set; } = null;

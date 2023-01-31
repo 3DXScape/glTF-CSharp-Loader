@@ -30,7 +30,11 @@
         "frameworks": {
           "net6.0": {
             "targetAlias": "net6.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "D:\\Git\\glTF-CSharp-Loader\\LTPENE_WGS84\\LTPENUWGS84.csproj": {
+                "projectPath": "D:\\Git\\glTF-CSharp-Loader\\LTPENE_WGS84\\LTPENUWGS84.csproj"
+              }
+            }
           }
         },
         "warningProperties": {

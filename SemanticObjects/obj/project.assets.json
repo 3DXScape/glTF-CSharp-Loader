@@ -120,6 +120,9 @@
       "GeoPose/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "LTPENUWGS84": "1.0.0"
+        },
         "compile": {
           "bin/placeholder/GeoPose.dll": {}
         },

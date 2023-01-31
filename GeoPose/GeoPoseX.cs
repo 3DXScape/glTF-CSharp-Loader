@@ -148,9 +148,20 @@ namespace GeoPoseX
         /// A Position specified in spherical coordinates with height above a reference surface -
         /// usually an ellipsoid of revolution or a gravitational equipotential surface.
         /// </summary>
-        public override Position FrameTransform(Position point)
+        private WGS84ToLTP_ENU _frameTransform = new WGS84ToLTP_ENU();
+        public override FrameTransform FrameTransform
         {
-            return LTP_ENUTransform((GeodeticPosition)point);
+            get
+            {
+                return _frameTransform;
+            }
+            set
+            {
+                if (value.GetType() == typeof(WGS84ToLTP_ENU))
+                {
+                    _frameTransform = (WGS84ToLTP_ENU)value;
+                }
+            }
         }
     }
 
@@ -166,19 +177,33 @@ namespace GeoPoseX
         {
 
         }
-        public BasicYPR(string id, GeodeticPosition position, YPRAngles yprAngles )
+        public BasicYPR(string id, GeodeticPosition tangentPoint, YPRAngles yprAngles )
         {
 
             this.poseID = new PoseID(id);
-            this.FrameTransform = new WGS84ToLTP_ENU(position);
+            this.FrameTransform = new WGS84ToLTP_ENU(tangentPoint);
             this.Orientation = yprAngles;
         }
+        private YPRAngles _orientation = new YPRAngles();
         /// <summary>
         /// An Orientation specified as three rotations.
         /// </summary>
-        public override Orientation Orientation { get; set; } = new YPRAngles();
+        public override Orientation Orientation
+        {
+            get
+            {
+                return _orientation;
+            }
+            set
+            {
+                if (value.GetType() == typeof(YPRAngles))
+                {
+                    _orientation = (YPRAngles)value;
+                }
+            }
+        }
         /// <summary>
-        /// This function returns a Json encoding of a Basic-YPR GeoPose
+        /// Return a string containing Json encoding of a Basic-YPR GeoPose
         /// </summary>
         public override string ToJSON(string indent = "")
         {
@@ -198,9 +223,9 @@ namespace GeoPoseX
                 {
                     sb.Append("\"parentPoseID\": \"" + parentPoseID.id + "\",\r\n" + indent + "  ");
                 }
-                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + ((WGS84ToLTP_ENU)FrameTransform).Position.lat + ",\r\n\t\t\t" + indent +
-                    "\"lon\": " + ((WGS84ToLTP_ENU)FrameTransform).Position.lon + ",\r\n\t\t\t" + indent +
-                    "\"h\":   " + ((WGS84ToLTP_ENU)FrameTransform).Position.h);
+                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + ((WGS84ToLTP_ENU)FrameTransform).Origin.lat + ",\r\n\t\t\t" + indent +
+                    "\"lon\": " + ((WGS84ToLTP_ENU)FrameTransform).Origin.lon + ",\r\n\t\t\t" + indent +
+                    "\"h\":   " + ((WGS84ToLTP_ENU)FrameTransform).Origin.h);
                 sb.Append("\r\n\t\t" + indent + "},");
                 sb.Append("\r\n\t\t" + indent);
                 sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " +((YPRAngles)Orientation).yaw + ",\r\n\t\t\t" + indent +
@@ -221,17 +246,40 @@ namespace GeoPoseX
     /// </summary>
     public class BasicQuaternion : Basic
     {
+        internal BasicQuaternion()
+        {
+        }
+        public BasicQuaternion(string id, GeodeticPosition tangentPoint, Quaternion quaternion)
+        {
+            this.poseID = new PoseID(id);
+            this.FrameTransform = new WGS84ToLTP_ENU(tangentPoint);
+            this.Orientation = quaternion;
+        }
         /// <summary>
         /// An Orientation specified as a unit quaternion.
         /// </summary>
-        public override Orientation Orientation { get; set; } = new Quaternion(0,0,0,1);
+        private Quaternion _orientation = new Quaternion();
+        public override Orientation Orientation
+        {
+            get
+            {
+                return _orientation;
+            }
+            set
+            {
+                if (value.GetType() == typeof(Quaternion))
+                {
+                    _orientation = (Quaternion)value;
+                }
+            }
+        }
         /// <summary>
         /// This function returns a Json encoding of a Basic-Quaternion GeoPose
         /// </summary>
         public override string ToJSON(string indent = "")
         {
             StringBuilder sb = new StringBuilder();
-            if (((WGS84ToLTP_ENU)FrameTransform).Position != null && Orientation != null)
+            if (((WGS84ToLTP_ENU)FrameTransform).Origin != null && Orientation != null)
             {
                 sb.Append("{\r\n\t\t" + indent);
                 if (validTime != null && validTime.timeValue != String.Empty)
@@ -247,10 +295,10 @@ namespace GeoPoseX
                     sb.Append("\"parentPoseID\": \"" + parentPoseID.id + "\",\r\n" + indent + "  ");
                 }
                 sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " +
-                    ((WGS84ToLTP_ENU)FrameTransform).Position.lat + ",\r\n\t\t\t" + indent +
-                    "\"lon\": " + ((WGS84ToLTP_ENU)FrameTransform).Position.lon +
+                    ((WGS84ToLTP_ENU)FrameTransform).Origin.lat + ",\r\n\t\t\t" + indent +
+                    "\"lon\": " + ((WGS84ToLTP_ENU)FrameTransform).Origin.lon +
                     ",\r\n\t\t\t" + indent +
-                    "\"h\":   " + ((WGS84ToLTP_ENU)FrameTransform).Position.h);
+                    "\"h\":   " + ((WGS84ToLTP_ENU)FrameTransform).Origin.h);
                 sb.Append("\r\n\t\t" + indent + "},");
                 sb.Append("\r\n\t\t" + indent);
                 sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"x\":   " + ((Quaternion)Orientation).x + ",\r\n\t\t\t" + indent +
@@ -286,7 +334,24 @@ namespace GeoPoseX
         /// <summary>
         /// The yaw, pitch, roll orientation.
         /// </summary>
-        public override Orientation Orientation { get; set; } = new YPRAngles();
+        private YPRAngles _orientation = new YPRAngles();
+        /// <summary>
+        /// An Orientation specified as three rotations.
+        /// </summary>
+        public override Orientation Orientation
+        {
+            get
+            {
+                return _orientation;
+            }
+            set
+            {
+                if (value.GetType() == typeof(YPRAngles))
+                {
+                    _orientation = (YPRAngles)value;
+                }
+            }
+        }
         /// <summary>
         /// This function returns a Json encoding of a Basic-YPR GeoPose
         /// </summary>
@@ -344,7 +409,21 @@ namespace GeoPoseX
         /// <summary>
         /// An Orientation specified as a unit quaternion.
         /// </summary>
-        public override Orientation Orientation { get; set; } = new Quaternion(0,0,0,1);
+        private Quaternion _orientation = new Quaternion();
+        public override Orientation Orientation
+        {
+            get
+            {
+                return _orientation;
+            }
+            set
+            {
+                if (value.GetType() == typeof(Quaternion))
+                {
+                    _orientation = (Quaternion)value;
+                }
+            }
+        }
         /// <summary>
         /// Milliseconds of Unix time ticks (optional).
         /// </summary>
@@ -469,6 +548,25 @@ namespace GeoPoseX
         /// </summary>
         public double z { get; set; } = double.NaN;
     }
+    public class NoPosition : Position
+    {
+        /// <summary>
+        /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
+        /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
+        /// forming a right-hand coordinate system with the z-axis in the up direction.
+        /// </summary>
+        public double x { get; set; } = double.NaN;
+        /// <summary>
+        /// A coordinate value in meters, along an axis (y-axis) that typically has origin at
+        /// the center of mass, lies in the same plane as the x axis, and perpendicular to the x axis,
+        /// forming a right-hand coordinate system with the z-axis in the up direction.
+        /// </summary>
+        public double y { get; set; } = double.NaN;
+        /// <summary>
+        /// A coordinate value in meters, along the z-axis.
+        /// </summary>
+        public double z { get; set; } = double.NaN;
+    }
     /// <summary>
     /// The abstract root of the Position hierarchy.
     /// <note>
@@ -574,6 +672,10 @@ namespace GeoPoseX
     /// </remark>
     public class Quaternion : Orientation
     {
+        internal Quaternion()
+        {
+
+        }
         public Quaternion(double x, double y, double z, double w)
         {
             this.x = x;
@@ -583,7 +685,7 @@ namespace GeoPoseX
         }
         public override Position Rotate(Position point)
         {
-            return Quaternion.Transform(point, q);
+            return Quaternion.Transform(point, this);
         }
         public YPRAngles ToYPRAngles(Quaternion q)
         {
@@ -627,10 +729,6 @@ namespace GeoPoseX
                 point.x * (1.0f - yy2 - zz2) + point.y * (xy2 - wz2) + point.z * (xz2 + wy2),
                 point.x * (xy2 + wz2) + point.y * (1.0f - xx2 - zz2) + point.z * (yz2 - wx2),
                 point.x * (xz2 - wy2) + point.y * (yz2 + wx2) + point.z * (1.0f - xx2 - yy2));
-        }
-        public override Position Rotate(Position point)
-        {
-           return Quaternion.Transform(point, this);  
         }
         /// <summary>
         /// The x component.
@@ -706,7 +804,7 @@ namespace GeoPoseX
         /// </note>
         /// <param name="point"></param>
         /// <returns></returns>
-        public override Tuple<double, double, double> Transform(Tuple<double, double, double> point)
+        public override Position Transform(Position point)
         {
             string uri = authority.ToLower().Replace("//www.", "");
             if (uri == "https://proj.org" || uri == "https://osgeo.org")
@@ -750,7 +848,7 @@ namespace GeoPoseX
         /// The interpretation of the string is determined by the authority.
         /// </summary>
         public string parameters { get; set; } = "";
-        static Tuple<double, double, double> noTransform = new Tuple<double, double, double>(double.NaN, double.NaN, double.NaN);
+        static Position noTransform = new NoPosition();
     }
     /// <summary>
     /// A specialized specification of the WGS84 (EPSG 4326) geodetic frame to a local tangent plane East, North, Up frame.
@@ -759,26 +857,30 @@ namespace GeoPoseX
     /// which is the *only* distinguished Position associated with the coodinate system associated with the inner frame (range).
     /// </remark>
     /// </summary>
- /*   public class WGS84ToLTP_ENU : FrameTransform
+    public class WGS84ToLTP_ENU : FrameTransform
     {
         internal WGS84ToLTP_ENU()
         {
 
         }
-        public static Position Transform(Position point)
+        public WGS84ToLTP_ENU(GeodeticPosition origin)
         {
-            CartesianPosition outPoint = new CartesianPosition();
-            GeodeticToEnu(((GeodeticPosition)point).lat, ((GeodeticPosition)point).lon, double h,
-                                            double lat0, double lon0, double h0,
-                                            out double xEast, out double yNorth, out double zUp)
-            this.Position = position;
+            this.Origin = origin;
+        }
+        public Position Transform(Position point)
+        {
+            double east, north, up;
+            LTP_ENU.LTP_ENU.GeodeticToEnu(((GeodeticPosition)point).lat, ((GeodeticPosition)point).lon, ((GeodeticPosition)point).h,
+                Origin.lat, Origin.lon, Origin.h, out east, out north, out up);
+            CartesianPosition outPoint = new CartesianPosition(east, north, up);
+            return outPoint;
         }
 
         /// <summary>
         /// A single geodetic position defines the tangent point for a transform to LTP-ENU.
         /// </summary>
-        public GeodeticPosition Position { get; set; } = null;
-    }*/
+        public GeodeticPosition Origin { get; set; } = null;
+    }
     // A simple translation frame transform.
     public class Translation : FrameTransform
     {

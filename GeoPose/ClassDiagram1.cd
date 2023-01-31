@@ -24,21 +24,21 @@
   <Class Name="GeoPoseX.Basic">
     <Position X="22.25" Y="14.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAgAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GeoPoseX.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GeoPoseX.BasicYPR">
     <Position X="22.75" Y="17" Width="1.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAQAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAQAAIAAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GeoPoseX.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GeoPoseX.BasicQuaternion">
     <Position X="21.25" Y="17" Width="1.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAQAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAQAAIAAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GeoPoseX.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -116,6 +116,13 @@
     <Position X="29.75" Y="16.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseX.WGS84ToLTP_ENU">
+    <Position X="29.5" Y="14" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAgAAAA=</HashCode>
       <FileName>GeoPoseX.cs</FileName>
     </TypeIdentifier>
   </Class>

@@ -4,6 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using GeoPoseX;
+using FrameTransforms;
+using Orientations;
+using Positions;
+using Datatypes;
+
 //-----------------------------------------------------------------------
 // <copyright>
 // Copyright (c) 2020-2023, The DaniElenga Foundation.
@@ -70,6 +76,9 @@ using System.Threading.Tasks;
 ///
 /// 
 /// </summary>
+///
+
+/* ===================================== GeoPoses =================================== */
 namespace GeoPoseX
 {
     // *******************************************************************************
@@ -91,56 +100,6 @@ namespace GeoPoseX
         public abstract FrameTransform FrameTransform { get; set; }
         public abstract Orientation Orientation { get; set; }
         public abstract string ToJSON(string indent);
-    }
-    public class FloatTriple
-    {
-        internal FloatTriple()
-        {
-
-        }
-        public FloatTriple(double[] v)
-        {
-            this.v[0] = (float)v[0];
-            this.v[1] = (float)v[1];
-            this.v[2] = (float)v[2];
-        }
-        public FloatTriple(float[] v)
-        {
-            this.v[0] = v[0];
-            this.v[1] = v[1];
-            this.v[2] = v[2];
-        }
-        public float[] v { get; set; } = new float[3] { 0.0f, 0.0f, 0.0f };
-        public DoubleTriple ToDoubleTriple()
-        {
-            DoubleTriple vc3d = new DoubleTriple(this.v);
-            return vc3d;
-        }
-    }
-    public class DoubleTriple
-    {
-        internal DoubleTriple()
-        {
-
-        }
-        public DoubleTriple(float[] v)
-        {
-            this.v[0] = (double)v[0];
-            this.v[1] = (double)v[1];
-            this.v[2] = (double)v[2];
-        }
-        public DoubleTriple(double[] v)
-        {
-            this.v = v;
-        }
-        public FloatTriple ToFloatTriple()
-        {
-            FloatTriple vc3f = new FloatTriple(this.v);
-            return vc3f;
-        }
-
-
-        public double[] v { get; set; } = new double[3] { 0.0, 0.0, 0.0 };
     }
     public abstract class Basic : GeoPose
     {
@@ -177,7 +136,7 @@ namespace GeoPoseX
         {
 
         }
-        public BasicYPR(string id, GeodeticPosition tangentPoint, YPRAngles yprAngles )
+        public BasicYPR(string id, GeodeticPosition tangentPoint, YPRAngles yprAngles)
         {
 
             this.poseID = new PoseID(id);
@@ -228,7 +187,7 @@ namespace GeoPoseX
                     "\"h\":   " + ((WGS84ToLTP_ENU)FrameTransform).Origin.h);
                 sb.Append("\r\n\t\t" + indent + "},");
                 sb.Append("\r\n\t\t" + indent);
-                sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " +((YPRAngles)Orientation).yaw + ",\r\n\t\t\t" + indent +
+                sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + ((YPRAngles)Orientation).yaw + ",\r\n\t\t\t" + indent +
                     "\"pitch\": " + ((YPRAngles)Orientation).pitch + ",\r\n\t\t\t" + indent +
                     "\"roll\":  " + ((YPRAngles)Orientation).roll);
                 sb.Append("\r\n\t\t" + indent + "}");
@@ -392,15 +351,14 @@ namespace GeoPoseX
                 "\"z\":   " + ((Translation)FrameTransform).zOffset);
             sb.Append("\r\n  " + "},");
             sb.Append("\r\n  ");
-            sb.Append("\"angles\": \r\n  {\r\n    " + "\"yaw\":   " + ((YPRAngles)Orientation).yaw + ",\r\n    "  +
+            sb.Append("\"angles\": \r\n  {\r\n    " + "\"yaw\":   " + ((YPRAngles)Orientation).yaw + ",\r\n    " +
                 "\"pitch\": " + ((YPRAngles)Orientation).pitch + ",\r\n    " +
                 "\"roll\":  " + ((YPRAngles)Orientation).roll);
-            sb.Append("\r\n  "  + "}");
+            sb.Append("\r\n  " + "}");
             sb.Append("\r\n" + "}\r\n");
             return sb.ToString();
         }
     }
-
 
     /// <summary>
     /// Advanced GeoPose.
@@ -479,7 +437,7 @@ namespace GeoPoseX
                 sb.Append("\"parentPoseID\": \"" + parentPoseID.id + "\",\r\n" + indent + "  ");
             }
             sb.Append("\"frameSpecification\":\r\n" + indent + "  " + "{\r\n" + indent + "    \"authority\": \"" +
-                ((Extrinsic)FrameTransform).authority.Replace("\"","\\\"") + "\",\r\n" + indent + "    \"id\": \"" +
+                ((Extrinsic)FrameTransform).authority.Replace("\"", "\\\"") + "\",\r\n" + indent + "    \"id\": \"" +
                 ((Extrinsic)FrameTransform).id.Replace("\"", "\\\"") + "\",\r\n" + indent + "    \"parameters\": \"" +
                 ((Extrinsic)FrameTransform).parameters.Replace("\"", "\\\"") + "\"\r\n" + indent + "  },\r\n" + indent + "  ");
             sb.Append("\"quaternion\":\r\n" + indent + "  {\r\n" + indent + "    \"x\":" + ((Quaternion)Orientation).x + ",\"y\":" +
@@ -490,8 +448,10 @@ namespace GeoPoseX
             return sb.ToString();
         }
     }
-
-    // *******************************************************************************
+}
+namespace Datatypes
+{
+    /* ===================================== Data Types =================================== */
     public class UnixTime
     {
         internal UnixTime()
@@ -517,6 +477,59 @@ namespace GeoPoseX
         }
         public string id { get; set; } = string.Empty;
     }
+    public class FloatTriple
+    {
+        internal FloatTriple()
+        {
+
+        }
+        public FloatTriple(double[] v)
+        {
+            this.v[0] = (float)v[0];
+            this.v[1] = (float)v[1];
+            this.v[2] = (float)v[2];
+        }
+        public FloatTriple(float[] v)
+        {
+            this.v[0] = v[0];
+            this.v[1] = v[1];
+            this.v[2] = v[2];
+        }
+        public float[] v { get; set; } = new float[3] { 0.0f, 0.0f, 0.0f };
+        public DoubleTriple ToDoubleTriple()
+        {
+            DoubleTriple vc3d = new DoubleTriple(this.v);
+            return vc3d;
+        }
+    }
+    public class DoubleTriple
+    {
+        internal DoubleTriple()
+        {
+
+        }
+        public DoubleTriple(float[] v)
+        {
+            this.v[0] = (double)v[0];
+            this.v[1] = (double)v[1];
+            this.v[2] = (double)v[2];
+        }
+        public DoubleTriple(double[] v)
+        {
+            this.v = v;
+        }
+        public FloatTriple ToFloatTriple()
+        {
+            FloatTriple vc3f = new FloatTriple(this.v);
+            return vc3f;
+        }
+        public double[] v { get; set; } = new double[3] { 0.0, 0.0, 0.0 };
+    }
+
+}
+namespace Positions
+{
+    /* ===================================== Positions =================================== */
 
     /// <summary>
     /// A specialization of Position for using two angles and a height for geodetic positions.
@@ -561,7 +574,7 @@ namespace GeoPoseX
             this.y = y;
             this.z = z;
         }
-    
+
         /// <summary>
         /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
         /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
@@ -609,6 +622,10 @@ namespace GeoPoseX
     {
 
     }
+}
+/* ===================================== Orientations =================================== */
+namespace Orientations
+{
     /// <summary>
     /// The abstract root of the Orientation hierarchy.
     /// <note>
@@ -654,13 +671,13 @@ namespace GeoPoseX
             Quaternion q = YPRAngles.ToQuaternion(this.yaw, this.pitch, this.roll);
             return Quaternion.Transform(point, q);
         }
-        public static Quaternion ToQuaternion(double yaw, double pitch, double roll) 
+        public static Quaternion ToQuaternion(double yaw, double pitch, double roll)
         {
             // GeoPose uses angles in degrees for human readability
             // Convert degrees to radians.
-            yaw   *= (Math.PI / 180.0);
+            yaw *= (Math.PI / 180.0);
             pitch *= (Math.PI / 180.0);
-            roll  *= (Math.PI / 180.0);
+            roll *= (Math.PI / 180.0);
 
             double cosRoll = Math.Cos(roll * 0.5);
             double sinRoll = Math.Sin(roll * 0.5);
@@ -674,12 +691,12 @@ namespace GeoPoseX
             double y = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;
             double z = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;
 
-            double norm = Math.Sqrt(x*x + y*y +z*z +w*w);
-            if(norm <= double.MinValue)
+            double norm = Math.Sqrt(x * x + y * y + z * z + w * w);
+            if (norm <= double.MinValue)
             {
                 return new Quaternion(x, y, z, w);
             }
-            return new Quaternion(x/norm, y/norm, z/norm, w/norm);
+            return new Quaternion(x / norm, y / norm, z / norm, w / norm);
         }
         /// <summary>
         /// A left-right angle in degrees.
@@ -778,18 +795,22 @@ namespace GeoPoseX
         /// </summary>
         public double w { get; set; } = double.NaN;
     }
-    /// <summary>
-    /// A FrameTransform is a generic container for information that defines mapping between reference frames.
-    /// Most transformation have a context with necessary ancillary information
-    /// that parameterizes the transformation of a Position in one frame to a corresponding Position is another.
-    /// Such context may include, for example, some or all of the information that may be conveyed in an ISO 19111 CRS specification
-    /// or a proprietary naming, numbering, or modelling scheme as used by EPSG, NASA Spice, or SEDRIS SRM.
-    /// Subclasses of FrameTransform exist precisely to hold this context in conjunction with code
-    /// implementing a Transform function.
-    /// <remark>
-    /// </remark>
-    /// </summary>
-    public abstract class FrameTransform
+}
+/* ===================================== Frame Transforms =================================== */
+namespace FrameTransforms
+{ 
+/// <summary>
+/// A FrameTransform is a generic container for information that defines mapping between reference frames.
+/// Most transformation have a context with necessary ancillary information
+/// that parameterizes the transformation of a Position in one frame to a corresponding Position is another.
+/// Such context may include, for example, some or all of the information that may be conveyed in an ISO 19111 CRS specification
+/// or a proprietary naming, numbering, or modelling scheme as used by EPSG, NASA Spice, or SEDRIS SRM.
+/// Subclasses of FrameTransform exist precisely to hold this context in conjunction with code
+/// implementing a Transform function.
+/// <remark>
+/// </remark>
+/// </summary>
+public abstract class FrameTransform
     {
         public virtual Position Transform(Position point)
         {

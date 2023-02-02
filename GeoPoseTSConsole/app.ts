@@ -136,9 +136,11 @@ export class Advanced extends GeoPose
 /// implementing a Rotate function.
 /// </note>
 /// </summary>
+
 abstract class Orientation {
-    abstract function Position Rotate(point: Position);
+    abstract Rotate(point: CartesianPosition): Position;
 }
+
 /// <summary>
 /// A specialization of Orientation using Yaw, Pitch, and Roll angles in degrees.
 /// <remark>
@@ -146,21 +148,18 @@ abstract class Orientation {
 /// It suffers from some computational inefficiencies, awkward interpolation, and singularities.
 /// </remark>
 /// </summary>
-export class YPRAngles extends Orientation
-{
-        public YPRAngles(yaw: number, pitch: number, roll: number)
-    {
+export class YPRAngles extends Orientation {
+    public YPRAngles(yaw: number, pitch: number, roll: number) {
         this.yaw = yaw;
         this.pitch = pitch;
         this.roll = roll;
     }
-        public override Position Rotate(Position point)
-    {
-            // convert to quaternion and use quaternion rotation
-            Quaternion q = YPRAngles.ToQuaternion(this.yaw, this.pitch, this.roll);
+    public override Rotate(point: CartesianPosition): Position {
+        // convert to quaternion and use quaternion rotation
+        let q = YPRAngles.ToQuaternion(this.yaw, this.pitch, this.roll);
         return Quaternion.Transform(point, q);
     }
-    public static Quaternion ToQuaternion(yaw: number, pitch: number, roll: number) {
+    public static ToQuaternion(yaw: number, pitch: number, roll: number): Quaternion {
         // GeoPose uses angles in degrees for human readability
         // Convert degrees to radians.
         yaw *= (Math.PI / 180.0);
@@ -196,18 +195,18 @@ export class YPRAngles extends Orientation
         }
         return q;
     }
-        /// <summary>
-        /// A left-right angle in degrees.
-        /// </summary>
-        public yaw: number;
-        /// <summary>
-        /// An up-down angle in degrees.
-        /// </summary>
-        public pitch: number;
-        /// <summary>
-        /// A side-to-side angle in degrees.
-        /// </summary>
-        public roll: number;
+    /// <summary>
+    /// A left-right angle in degrees.
+    /// </summary>
+    public yaw: number;
+    /// <summary>
+    /// An up-down angle in degrees.
+    /// </summary>
+    public pitch: number;
+    /// <summary>
+    /// A side-to-side angle in degrees.
+    /// </summary>
+    public roll: number;
 }
 /// <summary>
 /// A specialization of Orientation using a unit quaternion.
@@ -223,10 +222,10 @@ export class Quaternion extends Orientation {
         this.z = z;
         this.w = w;
     }
-    public override function Position Rotate(point: Position) {
+    public override Rotate(point: CartesianPosition): Position  {
         return Quaternion.Transform(point, this);
     }
-    public YPRAngles ToYPRAngles(q: Quaternion) {
+    public ToYPRAngles(q: Quaternion): YPRAngles {
         let yprAngles = new YPRAngles();
 
         // roll (x-axis rotation)
@@ -246,7 +245,7 @@ export class Quaternion extends Orientation {
 
         return yprAngles;
     }
-    public static Transform(inPoint: CartesianPosition, rotation: Quaternion) {
+    public static Transform(inPoint: CartesianPosition, rotation: Quaternion): CartesianPosition {
         let point = new CartesianPosition();
         point = inPoint;
         let x2 = rotation.x + rotation.x;
@@ -266,7 +265,7 @@ export class Quaternion extends Orientation {
         let p = new CartesianPosition();
         p.x = point.x * (1.0 - yy2 - zz2) + point.y * (xy2 - wz2) + point.z * (xz2 + wy2),
             p.y = point.x * (xy2 + wz2) + point.y * (1.0 - xx2 - zz2) + point.z * (yz2 - wx2),
-                p.z = point.x * (xz2 - wy2) + point.y * (yz2 + wx2) + point.z * (1.0 - xx2 - yy2));
+                p.z = point.x * (xz2 - wy2) + point.y * (yz2 + wx2) + point.z * (1.0 - xx2 - yy2);
         return p;
     }
     /// <summary>
@@ -293,37 +292,35 @@ export class Quaternion extends Orientation {
 /// the class definition is simply an empty shell.
 /// </note>
 /// </summary>
-public abstract class Position {
+abstract class Position {
 
 }
 
 /// <summary>
 /// A specialization of Position for using two angles and a height for geodetic positions.
 /// </summary>
-export class GeodeticPosition extends Position
-{
-     public GeodeticPosition(lat: number, lon: number, h: number)
-    {
+export class GeodeticPosition extends Position {
+    public GeodeticPosition(lat: number, lon: number, h: number) {
         this.lat = lat;
         this.lon = lon;
         this.h = h;
     }
 
-        /// <summary>
-        /// A latitude in degrees, positive north of equator and negative south of equator.
-        /// The latitude is the angle between the plane of the equator and a plane tangent to the ellipsoid at the given point.
-        /// </summary>
+    /// <summary>
+    /// A latitude in degrees, positive north of equator and negative south of equator.
+    /// The latitude is the angle between the plane of the equator and a plane tangent to the ellipsoid at the given point.
+    /// </summary>
     public lat: number;
-        /// <summary>
-        /// A longitude in degrees, positive east of the prime meridian and negative west of prime meridian.
-        /// </summary>
+    /// <summary>
+    /// A longitude in degrees, positive east of the prime meridian and negative west of prime meridian.
+    /// </summary>
     public lon: number;
-        /// <summary>
-        /// A distance in meters, measured with respect to an implied (Basic) or specified (Advanced) reference surface,
-        /// postive opposite the direction of the force of gravity,
-        /// and negative in the direction of the force of gravity.
-        /// </summary>
-        public h: number
+    /// <summary>
+    /// A distance in meters, measured with respect to an implied (Basic) or specified (Advanced) reference surface,
+    /// postive opposite the direction of the force of gravity,
+    /// and negative in the direction of the force of gravity.
+    /// </summary>
+    public h: number
 }
 /// <summary>
 /// A specialization of Position for geocentric positions.
@@ -352,7 +349,7 @@ export class CartesianPosition extends Position {
     /// </summary>
     public z: number;
 }
-public class NoPosition extends Position {
+export class NoPosition extends Position {
     /// <summary>
     /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
     /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,

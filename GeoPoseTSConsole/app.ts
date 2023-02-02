@@ -1,4 +1,23 @@
+import  * as proj4 from 'proj4';
 import { stdin as input, stdout as output } from 'node:process';
+
+var source = proj4.Proj('EPSG:4326');    //source coordinates will be in Longitude/Latitude, WGS84
+var dest = proj4.Proj('EPSG:3785');     //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/
+
+
+// transforming point coordinates
+var p = proj4.Point(-76.0, 45.0, 11.0);   //any object will do as long as it has 'x' and 'y' properties
+
+
+
+    //var p = new proj4.Point($("#lng").val(), $("#lat").val());
+let q = proj4.transform(source, dest, p);
+let r = proj4.transform(dest, source, q);
+console.log("X : " + p.x + " \nY : " + p.y + " \nZ : " + p.z);
+console.log("X : " + q.x + " \nY : " + q.y + " \nZ : " + q.z);
+console.log("X : " + r.x + " \nY : " + r.y + " \nZ : " + r.z);
+input.read();
+
 
 
 abstract class GeoPose {
@@ -386,13 +405,10 @@ export class PoseID {
 /// <remark>
 /// </remark>
 /// </summary>
-public abstract class FrameTransform {
-    public virtual Position Transform(Position point) {
-            // The defualt is to apply the identity transformation
-            Position result = point;
-        return result;
-    }
+abstract class FrameTransform {
+    public abstract Transform(point: Position): Position;
 }
+
 
 /// <summary>
 /// A FrameSpecification is a generic container for information that defines a reference frame.
@@ -403,13 +419,9 @@ public abstract class FrameTransform {
 /// The origin, is in fact the *only* distinguished Position associated with the coodinate system.
 /// </remark>
 /// </summary>
-public class Extrinsic : FrameTransform
+export class Extrinsic extends FrameTransform
 {
-        internal Extrinsic()
-    {
-
-    }
-        public Extrinsic(string authority, string id, string parameters)
+    public Extrinsic(authority: string, id: string, parameters: string)
     {
         this.authority = authority;
         this.id = id;
@@ -430,73 +442,55 @@ public class Extrinsic : FrameTransform
         /// </note>
         /// <param name="point"></param>
         /// <returns></returns>
-        public override Position Transform(Position point)
+    public override Transform(point: Position): Position 
     {
-            string uri = authority.ToLower().Replace("//www.", "");
+            let uri = this.authority.toLowerCase().replace("//www.", "");
         if (uri == "https://proj.org" || uri == "https://osgeo.org") {
-                CoordinateTransformationFactory ctfac = new CoordinateTransformationFactory();
-                string WKT = "PROJCRS[\"GeoPose LTP-ENU\", GEOGCS[\"WGS 84 (G873)\", DATUM[\"World_Geodetic_System_1984_G873\", " +
-                "SPHEROID[\"WGS 84\",6378137,298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], AUTHORITY[\"EPSG\",\"1153\"]], " +
-                "PRIMEM[\"Greenwich\",0, AUTHORITY[\"EPSG\",\"8901\"]], UNIT[\"degree\",0.0174532925199433, AUTHORITY[\"EPSG\",\"9122\"]], " +
-                "AUTHORITY[\"EPSG\",\"9054\"]] CONVERSION[\"Topocentric LTP-ENU\", " +
-                "METHOD[\"Geographic/topocentric conversions\", ID[\"EPSG\",9837]], " +
-                "PARAMETER[\"Latitude of topocentric origin\",55, ANGLEUNIT[\"degree\",0.0174532925199433], ID[\"EPSG\",8834]], " +
-                "PARAMETER[\"Longitude of topocentric origin\",5, ANGLEUNIT[\"degree\",0.0174532925199433], ID[\"EPSG\",8835]], " +
-                "PARAMETER[\"Ellipsoidal height of topocentric origin\",0, LENGTHUNIT[\"metre\",1], ID[\"EPSG\",8836]], " +
-                "ID[\"EPSG\",15594]] CS[Cartesian,3], " +
-                "AXIS[\"topocentric East (U)\",east, ORDER[1], LENGTHUNIT[\"metre\",1]], " +
-                "AXIS[\"topocentric North (V)\",north, ORDER[2], LENGTHUNIT[\"metre\",1]], " +
-                "AXIS[\"topocentric height (W)\",up, ORDER[3], LENGTHUNIT[\"metre\",1]] " +
-                "USAGE[ AREA[\"Planet Earth\"], BBOX[-90,-180,90,180]], ID[\"GeoPose\",LTP-ENU]]";
-
-            var from = GeographicCoordinateSystem.WGS84;
-            var to = ProjNet.CoordinateSystems.ProjectedCoordinateSystem.WGS84_UTM(30, true);
-
+            var outer = proj4.Proj('EPSG:4326');    //source coordinates will be in Longitude/Latitude, WGS84
+            var inner = proj4.Proj('EPSG:3785');     //destination coordinates in meters, global spherical mercato
+            var cp = point as CartesianPosition;
+            let p = proj4.Point(cp.x, cp.y, cp.z);
+            proj4.transform(outer, inner, p);
             // convert points from one coordinate system to another
-            ProjNet.CoordinateSystems.Transformations.ICoordinateTransformation trans = ctfac.CreateFromCoordinateSystems(from, to);
-
-            ProjNet.Geometries.XY businessCoordinate = new ProjNet.Geometries.XY(-0.127758, 51.507351);
-            ProjNet.Geometries.XY searchLocationCoordinate = new ProjNet.Geometries.XY(-0.142500, 51.539188);
-
-                MathTransform mathTransform = trans.MathTransform;
-            var businessLocation = mathTransform.Transform(businessCoordinate.X, businessCoordinate.Y);
-            var searchLocation = mathTransform.Transform(searchLocationCoordinate.X, searchLocationCoordinate.Y);
-
-            return noTransform;
+            let outP = new CartesianPosition();
+            outP.x = p.x;
+            outP.y = p.y;
+            outP.z = p.z;
+            return outP;
         }
         else if (uri == "https://epsg.org") {
-            return noTransform;
+            return NoPosition;
         }
         else if (uri == "https://iers.org") {
-            return noTransform;
+            return NoPosition;
         }
         else if (uri == "https://naif.jpl.nasa.gov") {
-            return noTransform;
+            return NoPosition;
         }
         else if (uri == "https://sedris.org") {
-            return noTransform;
+            return NoPosition;
         }
         else if (uri == "https://iau.org") {
-            return noTransform;
+            return NoPosition;
         }
-        return noTransform;
+        return NoPosition;
     }
         /// <summary>
         /// The name or identification of the definer of the category of frame specification.
         /// A Uri that usually but not always points to a valid web address.
         /// </summary>
-        public string authority { get; set; } = "";
+    public authority: string;
         /// <summary>
         /// A string that uniquely identifies a frame type.
         /// The interpretation of the string is determined by the authority.
         /// </summary>
-        public string id { get; set; } = "";
+    public id: string;
         /// <summary>
         /// A string that holds any parameters required by the authority to define a frame of the given type as specified by the id.
         /// The interpretation of the string is determined by the authority.
         /// </summary>
-        public string parameters { get; set; } = "";
-        static Position noTransform = new NoPosition();
+    public parameters: string;
+        public static noTransform: Position = new NoPosition();
 }
 /// <summary>
 /// A specialized specification of the WGS84 (EPSG 4326) geodetic frame to a local tangent plane East, North, Up frame.
@@ -505,7 +499,7 @@ public class Extrinsic : FrameTransform
 /// which is the *only* distinguished Position associated with the coodinate system associated with the inner frame (range).
 /// </remark>
 /// </summary>
-public class WGS84ToLTP_ENU extends FrameTransform {
+export class WGS84ToLTP_ENU extends FrameTransform {
     public WGS84ToLTP_ENU(origin: GeodeticPosition) {
         this.Origin = origin;
     }
@@ -554,9 +548,12 @@ export class Translation extends FrameTransform {
 
 
 
-class WGS84ToLTPENU {
+class WGS84ToLTPENU extends FrameTransform {
     public WGS84ToLTPENU(tangentPoint: GeodeticPosition) {
         this.origin = tangentPoint;
+    }
+    public override Transform(point: Position): Position {
+        return NoPosition;
     }
     public origin: GeodeticPosition;
 }

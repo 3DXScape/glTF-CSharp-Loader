@@ -1,2 +1,151 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ClassDiagram /> 
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="GeoPoseX.GeoPose">
+    <Position X="11" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAADAAAAAAiAAAAAAAAACAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseX.Basic">
+    <Position X="11" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseX.BasicYPR">
+    <Position X="10" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAIAAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseX.BasicQuaternion">
+    <Position X="12" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAIAAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseX.Local">
+    <Position X="13.75" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAQAAICAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeoPoseX.Advanced">
+    <Position X="8.25" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAQAAICAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Datatypes.UnixTime" Collapsed="true">
+    <Position X="22" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Datatypes.PoseID" Collapsed="true">
+    <Position X="20.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Datatypes.FloatTriple" Collapsed="true">
+    <Position X="22" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQBAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Datatypes.DoubleTriple" Collapsed="true">
+    <Position X="20.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Positions.GeodeticPosition" Collapsed="true">
+    <Position X="24" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAAAAACAAAAAAAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Positions.CartesianPosition" Collapsed="true">
+    <Position X="26.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAQAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Positions.NoPosition" Collapsed="true">
+    <Position X="28.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAQAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Positions.Position" Collapsed="true">
+    <Position X="26.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Orientations.Orientation">
+    <Position X="23.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Orientations.YPRAngles">
+    <Position X="22.25" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAQAAAAgEAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Orientations.Quaternion">
+    <Position X="24.25" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAEAAAAAAAAAhgBQAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FrameTransforms.FrameTransform">
+    <Position X="18" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FrameTransforms.Extrinsic">
+    <Position X="18" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAAAAAAAEAQAAAAAAAAAAAAAAACAAgA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FrameTransforms.WGS84ToLTP_ENU">
+    <Position X="20" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAgAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FrameTransforms.Translation">
+    <Position X="16" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAAAAAAAAQAAAAAAAAAAAAwAAAAAAA=</HashCode>
+      <FileName>GeoPoseX.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ProjNet.CoordinateSystems;
+using ProjNet.CoordinateSystems.Transformations;
+using GeoAPI.CoordinateSystems.Transformations;
+
 using GeoPoseX;
 using FrameTransforms;
 using Orientations;
@@ -55,7 +59,7 @@ using Datatypes;
 ///  It *may* appear in a future version of the standard.
 ///  *Local* is shorthand for a local CRS with
 ///  a Cartesian 3- coordinate system.
-///  Every Local GeoPose can be written as an Advanced GeoPose with a suitable
+///  A Local GeoPose can be written as an Advanced GeoPose with a suitable
 ///  authority, id, parameters, and quaterion orientation.
 ///  
 ///  **WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**WARNING**
@@ -70,7 +74,6 @@ using Datatypes;
 
 namespace GeoPoseX
 {
-    // *******************************************************************************
 
     /// <summary>
     /// The abstract root of the GeoPose Basic and Advanced classes.
@@ -129,7 +132,6 @@ namespace GeoPoseX
         }
         public BasicYPR(string id, GeodeticPosition tangentPoint, YPRAngles yprAngles)
         {
-
             this.poseID = new PoseID(id);
             this.FrameTransform = new WGS84ToLTP_ENU(tangentPoint);
             this.Orientation = yprAngles;
@@ -205,6 +207,7 @@ namespace GeoPoseX
             this.FrameTransform = new WGS84ToLTP_ENU(tangentPoint);
             this.Orientation = quaternion;
         }
+
         /// <summary>
         /// An Orientation specified as a unit quaternion.
         /// </summary>
@@ -223,6 +226,7 @@ namespace GeoPoseX
                 }
             }
         }
+
         /// <summary>
         /// This function returns a Json encoding of a Basic-Quaternion GeoPose
         /// </summary>
@@ -261,6 +265,7 @@ namespace GeoPoseX
             return sb.ToString();
         }
     }
+
     /// <summary>
     /// A derived pose within an engineering CRS with a Cartesian coordinate system.
     /// This form is the closest to the classical computer graphics pose concept.
@@ -440,6 +445,7 @@ namespace GeoPoseX
         }
     }
 }
+
 namespace Datatypes
 {
     /* ===================================== Data Types =================================== */
@@ -516,8 +522,8 @@ namespace Datatypes
         }
         public double[] v { get; set; } = new double[3] { 0.0, 0.0, 0.0 };
     }
-
 }
+
 namespace Positions
 {
     /* ===================================== Positions =================================== */
@@ -614,7 +620,9 @@ namespace Positions
 
     }
 }
+
 /* ===================================== Orientations =================================== */
+
 namespace Orientations
 {
     /// <summary>
@@ -787,7 +795,9 @@ namespace Orientations
         public double w { get; set; } = double.NaN;
     }
 }
+
 /* ===================================== Frame Transforms =================================== */
+
 namespace FrameTransforms
 { 
 /// <summary>
@@ -852,6 +862,34 @@ public abstract class FrameTransform
             string uri = authority.ToLower().Replace("//www.", "");
             if (uri == "https://proj.org" || uri == "https://osgeo.org")
             {
+                CoordinateTransformationFactory ctfac = new CoordinateTransformationFactory();
+                string WKT = "PROJCRS[\"GeoPose LTP-ENU\", GEOGCS[\"WGS 84 (G873)\", DATUM[\"World_Geodetic_System_1984_G873\", " +
+                    "SPHEROID[\"WGS 84\",6378137,298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], AUTHORITY[\"EPSG\",\"1153\"]], " +
+                    "PRIMEM[\"Greenwich\",0, AUTHORITY[\"EPSG\",\"8901\"]], UNIT[\"degree\",0.0174532925199433, AUTHORITY[\"EPSG\",\"9122\"]], " +
+                    "AUTHORITY[\"EPSG\",\"9054\"]] CONVERSION[\"Topocentric LTP-ENU\", " +
+                    "METHOD[\"Geographic/topocentric conversions\", ID[\"EPSG\",9837]], " +
+                    "PARAMETER[\"Latitude of topocentric origin\",55, ANGLEUNIT[\"degree\",0.0174532925199433], ID[\"EPSG\",8834]], " +
+                    "PARAMETER[\"Longitude of topocentric origin\",5, ANGLEUNIT[\"degree\",0.0174532925199433], ID[\"EPSG\",8835]], " +
+                    "PARAMETER[\"Ellipsoidal height of topocentric origin\",0, LENGTHUNIT[\"metre\",1], ID[\"EPSG\",8836]], " +
+                    "ID[\"EPSG\",15594]] CS[Cartesian,3], " +
+                    "AXIS[\"topocentric East (U)\",east, ORDER[1], LENGTHUNIT[\"metre\",1]], " +
+                    "AXIS[\"topocentric North (V)\",north, ORDER[2], LENGTHUNIT[\"metre\",1]], " +
+                    "AXIS[\"topocentric height (W)\",up, ORDER[3], LENGTHUNIT[\"metre\",1]] " +
+                    "USAGE[ AREA[\"Planet Earth\"], BBOX[-90,-180,90,180]], ID[\"GeoPose\",LTP-ENU]]";
+
+                var from = GeographicCoordinateSystem.WGS84;
+                var to = ProjNet.CoordinateSystems.ProjectedCoordinateSystem.WGS84_UTM(30, true);
+
+                // convert points from one coordinate system to another
+                ProjNet.CoordinateSystems.Transformations.ICoordinateTransformation trans = ctfac.CreateFromCoordinateSystems(from, to);
+
+                ProjNet.Geometries.XY businessCoordinate = new ProjNet.Geometries.XY(-0.127758, 51.507351);
+                ProjNet.Geometries.XY searchLocationCoordinate = new ProjNet.Geometries.XY(-0.142500, 51.539188);
+
+                MathTransform mathTransform = trans.MathTransform;
+                var businessLocation = mathTransform.Transform(businessCoordinate.X, businessCoordinate.Y);
+                var searchLocation = mathTransform.Transform(searchLocationCoordinate.X, searchLocationCoordinate.Y);
+
                 return noTransform;
             }
             else if (uri == "https://epsg.org")

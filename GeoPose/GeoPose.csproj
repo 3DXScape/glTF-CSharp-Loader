@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ProjNet" Version="2.0.0" />
+    <PackageReference Include="ProjNET4GeoAPI" Version="1.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\LTPENE_WGS84\LTPENUWGS84.csproj" />
   </ItemGroup>
 

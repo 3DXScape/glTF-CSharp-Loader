@@ -46,7 +46,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Util3857", "Util3857\Util38
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerrainComponents", "TerrainComponents\TerrainComponents.csproj", "{0ED69B25-4DB6-4A30-BF25-ACB39AAD34CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JeromesExample", "JeromesExample\JeromesExample.csproj", "{E958AF4C-A5B8-4D0F-B0B0-A2663821A8F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JeromesExample", "JeromesExample\JeromesExample.csproj", "{E958AF4C-A5B8-4D0F-B0B0-A2663821A8F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjNetConsole", "ProjNetConsole\ProjNetConsole.csproj", "{F6CEF236-77C9-4BB8-85E8-1E6FE4F12EDB}"
+EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "GeoPoseTSConsole", "GeoPoseTSConsole\GeoPoseTSConsole.njsproj", "{34766CA5-28AD-441C-B19D-178896247242}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -138,6 +142,14 @@ Global
 		{E958AF4C-A5B8-4D0F-B0B0-A2663821A8F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E958AF4C-A5B8-4D0F-B0B0-A2663821A8F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E958AF4C-A5B8-4D0F-B0B0-A2663821A8F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6CEF236-77C9-4BB8-85E8-1E6FE4F12EDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6CEF236-77C9-4BB8-85E8-1E6FE4F12EDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6CEF236-77C9-4BB8-85E8-1E6FE4F12EDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6CEF236-77C9-4BB8-85E8-1E6FE4F12EDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34766CA5-28AD-441C-B19D-178896247242}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34766CA5-28AD-441C-B19D-178896247242}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34766CA5-28AD-441C-B19D-178896247242}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34766CA5-28AD-441C-B19D-178896247242}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

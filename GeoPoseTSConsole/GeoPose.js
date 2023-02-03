@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GeoPose = void 0;
+// Implemention order: 5 - follows Orientation.
+// This is the root of the GeoPose inheritance hierarchy.
 /// <summary>
 /// A GeoPose has a position and an orientation.
 /// The position is abstracted as a transformation between one reference frame (outer frame)

@@ -3,6 +3,10 @@ import * as FrameTransform from './FrameTransform';
 import * as Orientation from './Orientation';
 import * as GeoPose from './GeoPose';
 
+// WARNING: Serialization of this form of GeoPose produces JSON data in a form not part of the OGC GeoPose 1.0 standard.
+// Implemention order: 8 -a useful GeoPose for working within a local Cartesian (i.e. engineering) frame.
+// Local can be expressed as an Advanced form, but the Advanced form is more complex and this implementation is a shortcut.
+
 /// <summary>
 /// Local GeoPose is a derived pose within an engineering CRS with a Cartesian coordinate system.
 /// This form is the closest to the classical computer graphics pose concept.

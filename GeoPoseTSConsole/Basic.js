@@ -4,6 +4,8 @@ exports.BasicQuaternion = exports.BasicYPR = exports.Basic = void 0;
 const Extras = require("./Extras");
 const FrameTransform = require("./FrameTransform");
 const GeoPose = require("./GeoPose");
+// Implemention order: 6 - follows GeoPose.
+// This is the simplest family of GeoPoses - the 80% part of a 80/20 solution.
 /// <summary>
 /// The Basic GeoPoses share the use of a local tangent plane, east-north-up frame transform.
 /// The types of Basic GeoPose are distinguished by the method used to specify orientation of the inner frame.

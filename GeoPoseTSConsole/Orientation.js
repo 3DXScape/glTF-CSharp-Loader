@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Quaternion = exports.YPRAngles = exports.Orientation = void 0;
 const Position = require("./Position");
+// Implemention order: 4 - follows FrameTransform.
+// These classes define rotations of a 3D frame transforming a Position to a rotated Position.
 /// <summary>
 /// The abstract root of the Orientation hierarchy.
 /// <note>

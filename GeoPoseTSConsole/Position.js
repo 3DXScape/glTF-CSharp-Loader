@@ -1,10 +1,12 @@
 "use strict";
+// Implemention order: 2 - follows Extras.
+// These classes define positions in a 3D frame using different conventions.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NoPosition = exports.CartesianPosition = exports.GeodeticPosition = exports.Position = void 0;
 /// <summary>
 /// The abstract root of the Position hierarchy.
 /// <note>
-/// Because the various ways to express Position share no underlying structure,
+/// Because these various ways to express Position share no underlying structure,
 /// the abstract root class definition is simply an empty shell.
 /// </note>
 /// </summary>

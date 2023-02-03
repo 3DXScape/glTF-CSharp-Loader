@@ -2,6 +2,9 @@ import * as Extras from './Extras';
 import * as FrameTransform from './FrameTransform';
 import * as Orientation from './Orientation';
 
+// Implemention order: 5 - follows Orientation.
+// This is the root of the GeoPose inheritance hierarchy.
+
 /// <summary>
 /// A GeoPose has a position and an orientation.
 /// The position is abstracted as a transformation between one reference frame (outer frame)

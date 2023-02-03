@@ -1,4 +1,9 @@
 import * as Position from './Position';
+
+// Implemention order: 4 - follows FrameTransform.
+// These classes define rotations of a 3D frame transforming a Position to a rotated Position.
+
+
 /// <summary>
 /// The abstract root of the Orientation hierarchy.
 /// <note>

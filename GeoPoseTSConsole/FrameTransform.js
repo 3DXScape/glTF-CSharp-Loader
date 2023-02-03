@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Translation = exports.GeodeticToEnu = exports.WGS84ToLTPENU = exports.Extrinsic = exports.FrameTransform = void 0;
 const proj4 = require("proj4");
 const Position = require("./Position");
+// Implemention order: 3 - follows Position.
+// These classes define transformations of a Position in one 3D frame to a Position in another 3D frame.
 /// <summary>
 /// A FrameTransform is a generic container for information that defines mapping between reference frames.
 /// Most transformation have a context with necessary ancillary information

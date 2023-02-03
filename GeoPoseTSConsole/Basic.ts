@@ -4,6 +4,9 @@ import * as FrameTransform from './FrameTransform';
 import * as Orientation from './Orientation';
 import * as GeoPose from './GeoPose';
 
+// Implemention order: 6 - follows GeoPose.
+// This is the simplest family of GeoPoses - the 80% part of a 80/20 solution.
+
 /// <summary>
 /// The Basic GeoPoses share the use of a local tangent plane, east-north-up frame transform.
 /// The types of Basic GeoPose are distinguished by the method used to specify orientation of the inner frame.

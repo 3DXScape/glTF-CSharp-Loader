@@ -1,6 +1,9 @@
 import * as proj4 from 'proj4';
 import * as Position from './Position';
 
+// Implemention order: 3 - follows Position.
+// These classes define transformations of a Position in one 3D frame to a Position in another 3D frame.
+
 /// <summary>
 /// A FrameTransform is a generic container for information that defines mapping between reference frames.
 /// Most transformation have a context with necessary ancillary information

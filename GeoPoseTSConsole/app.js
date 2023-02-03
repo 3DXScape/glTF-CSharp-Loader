@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Translation = exports.GeodeticToEnu = exports.WGS84ToLTPENU = exports.Extrinsic = exports.PoseID = exports.Quaternion = exports.YPRAngles = exports.Advanced = exports.Local = exports.BasicQuaternion = exports.BasicYPR = void 0;
 const node_process_1 = require("node:process");
 const proj4 = require("proj4");
+const Position = require("./Position");
 const LTPENU = require("./WGS84ToLTPENU");
 var source = proj4.Proj('EPSG:4326'); //source coordinates will be in Longitude/Latitude, WGS84
 var dest = proj4.Proj('EPSG:3785'); //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/
@@ -15,9 +16,9 @@ console.log("X : " + p.x + " \nY : " + p.y + " \nZ : " + p.z);
 console.log("X : " + q.x + " \nY : " + q.y + " \nZ : " + q.z);
 console.log("X : " + r.x + " \nY : " + r.y + " \nZ : " + r.z);
 let d = new LTPENU.LTP_ENU();
-let from = new LTPENU.GeodeticPosition(-1.0, 52.0, 15.0);
-let origin = new LTPENU.GeodeticPosition(-1.00005, 52.0, 15.3);
-let to = new LTPENU.CartesianPosition(0, 0, 0);
+let from = new Position.GeodeticPosition(-1.0, 52.0, 15.0);
+let origin = new Position.GeodeticPosition(-1.00005, 52.0, 15.3);
+let to = new Position.CartesianPosition(0, 0, 0);
 d.GeodeticToEnu(from, origin, to);
 node_process_1.stdin.read();
 /// <summary>
@@ -201,7 +202,7 @@ class Quaternion extends Orientation {
         return yprAngles;
     }
     static Transform(inPoint, rotation) {
-        let point = new LTPENU.CartesianPosition(inPoint.x, inPoint.y, inPoint.z);
+        let point = new Position.CartesianPosition(inPoint.x, inPoint.y, inPoint.z);
         let x2 = rotation.x + rotation.x;
         let y2 = rotation.y + rotation.y;
         let z2 = rotation.z + rotation.z;
@@ -214,20 +215,11 @@ class Quaternion extends Orientation {
         let yy2 = rotation.y * y2;
         let yz2 = rotation.y * z2;
         let zz2 = rotation.z * z2;
-        let p = new LTPENU.CartesianPosition(point.x * (1.0 - yy2 - zz2) + point.y * (xy2 - wz2) + point.z * (xz2 + wy2), point.x * (xy2 + wz2) + point.y * (1.0 - xx2 - zz2) + point.z * (yz2 - wx2), point.x * (xz2 - wy2) + point.y * (yz2 + wx2) + point.z * (1.0 - xx2 - yy2));
+        let p = new Position.CartesianPosition(point.x * (1.0 - yy2 - zz2) + point.y * (xy2 - wz2) + point.z * (xz2 + wy2), point.x * (xy2 + wz2) + point.y * (1.0 - xx2 - zz2) + point.z * (yz2 - wx2), point.x * (xz2 - wy2) + point.y * (yz2 + wx2) + point.z * (1.0 - xx2 - yy2));
         return p;
     }
 }
 exports.Quaternion = Quaternion;
-/// <summary>
-/// The abstract root of the Position hierarchy.
-/// <note>
-/// Because the various ways to express Position share no underlying structure,
-/// the abstract root class definition is simply an empty shell.
-/// </note>
-/// </summary>
-class Position {
-}
 class PoseID {
     constructor(id) {
         this.id = id;
@@ -287,29 +279,29 @@ class Extrinsic extends FrameTransform {
             let p = proj4.Point(cp.x, cp.y, cp.z);
             proj4.transform(outer, inner, p);
             // convert points from one coordinate system to another
-            let outP = new LTPENU.CartesianPosition(p.x, p.y, p.z);
+            let outP = new Position.CartesianPosition(p.x, p.y, p.z);
             return outP;
         }
         else if (uri == "https://epsg.org") {
-            return LTPENU.NoPosition;
+            return Position.NoPosition;
         }
         else if (uri == "https://iers.org") {
-            return LTPENU.NoPosition;
+            return Position.NoPosition;
         }
         else if (uri == "https://naif.jpl.nasa.gov") {
-            return LTPENU.NoPosition;
+            return Position.NoPosition;
         }
         else if (uri == "https://sedris.org") {
-            return LTPENU.NoPosition;
+            return Position.NoPosition;
         }
         else if (uri == "https://iau.org") {
-            return LTPENU.NoPosition;
+            return Position.NoPosition;
         }
-        return LTPENU.NoPosition;
+        return Position.NoPosition;
     }
 }
 exports.Extrinsic = Extrinsic;
-Extrinsic.noTransform = new LTPENU.NoPosition();
+Extrinsic.noTransform = new Position.NoPosition();
 /// <summary>
 /// A specialized specification of the WGS84 (EPSG 4326) geodetic frame to a local tangent plane East, North, Up frame.
 /// <remark>
@@ -331,7 +323,7 @@ class WGS84ToLTPENU extends FrameTransform {
 }
 exports.WGS84ToLTPENU = WGS84ToLTPENU;
 function GeodeticToEnu(origin, geoPoint, enuPoint) {
-    let out = new LTPENU.CartesianPosition(0, 0, 0);
+    let out = new Position.CartesianPosition(0, 0, 0);
     return out;
 }
 exports.GeodeticToEnu = GeodeticToEnu;
@@ -347,11 +339,11 @@ class Translation extends FrameTransform {
     }
     Transform(point) {
         let cp = point;
-        let p = new LTPENU.CartesianPosition(cp.x + this.xOffset, cp.y + this.yOffset, cp.z + this.zOffset);
+        let p = new Position.CartesianPosition(cp.x + this.xOffset, cp.y + this.yOffset, cp.z + this.zOffset);
         return p;
     }
 }
 exports.Translation = Translation;
-let myLocal = new BasicYPR("OS_GB", new LTPENU.GeodeticPosition(51.5, -1.5, 0.0), new YPRAngles(0, 0, 0));
+let myLocal = new BasicYPR("OS_GB", new Position.GeodeticPosition(51.5, -1.5, 0.0), new YPRAngles(0, 0, 0));
 node_process_1.stdin.read();
 //# sourceMappingURL=app.js.map

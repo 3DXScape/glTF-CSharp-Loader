@@ -1,93 +1,4 @@
-// This is an implementation of EPSG method 9837 using sections 4.1.1 and 4.1.2 of https://www.iogp.org/wp-content/uploads/2019/09/373-07-02.pdf.
-
-    /// <summary>
-    /// The abstract root of the Position hierarchy.
-    /// <note>
-    /// Because the various ways to express Position share no underlying structure,
-    /// the abstract root class definition is simply an empty shell.
-    /// </note>
-    /// </summary>
-    abstract class Position {
-    }
-
-    /// <summary>
-    /// GeodeticPosition is a specialization of Position for using two angles and a height for geodetic reference systems.
-    /// </summary>
-    export class GeodeticPosition extends Position {
-        public constructor(lat: number, lon: number, h: number) {
-            super();
-            this.lat = lat;
-            this.lon = lon;
-            this.h = h;
-        }
-
-        /// <summary>
-        /// A latitude in degrees, positive north of equator and negative south of equator.
-        /// The latitude is the angle between the plane of the equator and a plane tangent to the ellipsoid at the given point.
-        /// </summary>
-        public lat: number;
-        /// <summary>
-        /// A longitude in degrees, positive east of the prime meridian and negative west of prime meridian.
-        /// </summary>
-        public lon: number;
-        /// <summary>
-        /// A distance in meters, measured with respect to an implied (Basic) or specified (Advanced) reference surface,
-        /// postive opposite the direction of the force of gravity,
-        /// and negative in the direction of the force of gravity.
-        /// </summary>
-        public h: number
-    }
-    /// <summary>
-    /// CartesianPosition is a specialization of Position for geocentric, topocentric, and engineering reference systems.
-    /// </summary>
-    export class CartesianPosition extends Position {
-        public constructor(x: number, y: number, z: number) {
-            super();
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        /// <summary>
-        /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
-        /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
-        /// forming a right-hand coordinate system with the z-axis in the up direction.
-        /// </summary>
-        public x: number;
-        /// <summary>
-        /// A coordinate value in meters, along an axis (y-axis) that typically has origin at
-        /// the center of mass, lies in the same plane as the x axis, and perpendicular to the x axis,
-        /// forming a right-hand coordinate system with the z-axis in the up direction.
-        /// </summary>
-        public y: number;
-        /// <summary>
-        /// A coordinate value in meters, along the z-axis.
-        /// </summary>
-        public z: number;
-    }
-
-    export class NoPosition extends Position {
-        public constructor() {
-            super();
-            this.x = this.y = this.z = NaN;
-        }
-        /// <summary>
-        /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
-        /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
-        /// forming a right-hand coordinate system with the z-axis in the up direction.
-        /// </summary>
-        public x: number;
-        /// <summary>
-        /// A coordinate value in meters, along an axis (y-axis) that typically has origin at
-        /// the center of mass, lies in the same plane as the x axis, and perpendicular to the x axis,
-        /// forming a right-hand coordinate system with the z-axis in the up direction.
-        /// </summary>
-        public y: number;
-        /// <summary>
-        /// A coordinate value in meters, along the z-axis.
-        /// </summary>
-        public z: number;
-    }
+import * as Position from './Position';
 
 export class LTP_ENU {
     // WGS-84 geodetic constants
@@ -103,7 +14,7 @@ export class LTP_ENU {
 
     // Convert WGS-84 Geodetic point (lat, lon, h) to the 
     // Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z).
-    public GeodeticToEcef(from: GeodeticPosition, to: CartesianPosition): void {
+    public GeodeticToEcef(from: Position.GeodeticPosition, to: Position.CartesianPosition): void {
         // Convert to radians in notation consistent with the paper:
         var lambda = from.lat * this.toRadians;
         var phi = from.lon * this.toDegrees;
@@ -122,7 +33,7 @@ export class LTP_ENU {
 
     // Convert the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z) to 
     // (WGS-84) Geodetic point (lat, lon, h).
-    public EcefToGeodetic(from: CartesianPosition, to: GeodeticPosition): void {
+    public EcefToGeodetic(from: Position.CartesianPosition, to: Position.GeodeticPosition): void {
         var eps = this.e_sq / (1.0 - this.e_sq);
         var p = Math.sqrt(from.x * from.x + from.y * from.y);
         var q = Math.atan2((from.z * this.a), (p * this.b));
@@ -142,7 +53,7 @@ export class LTP_ENU {
     // Converts the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z) to 
     // East-North-Up coordinates in a Local Tangent Plane that is centered at the 
     // (WGS-84) Geodetic point (lat0, lon0, h0).
-    public EcefToEnu(from: CartesianPosition, origin: GeodeticPosition, to: CartesianPosition):
+    public EcefToEnu(from: Position.CartesianPosition, origin: Position.GeodeticPosition, to: Position.CartesianPosition):
         //double x, double y, double z,
         //double lat0, double lon0, double h0,
         //out double xEast, out double yNorth, out double zUp):
@@ -175,7 +86,7 @@ export class LTP_ENU {
     // Inverse of EcefToEnu. Converts East-North-Up coordinates (xEast, yNorth, zUp) in a
     // Local Tangent Plane that is centered at the (WGS-84) Geodetic point (lat0, lon0, h0)
     // to the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z).
-    public EnuToEcef(from: CartesianPosition, origin: GeodeticPosition, to: CartesianPosition): void {
+    public EnuToEcef(from: Position.CartesianPosition, origin: Position.GeodeticPosition, to: Position.CartesianPosition): void {
         // Convert to radians in notation consistent with the paper:
         var lambda = origin.lat * this.toRadians;
         var phi = origin.lon * this.toRadians;
@@ -203,20 +114,20 @@ export class LTP_ENU {
     // Converts the geodetic WGS-84 coordinated (lat, lon, h) to 
     // East-North-Up coordinates in a Local Tangent Plane that is centered at the 
     // (WGS-84) Geodetic point (lat0, lon0, h0).
-    public GeodeticToEnu(from: GeodeticPosition, origin: GeodeticPosition, to: CartesianPosition): void
+    public GeodeticToEnu(from: Position.GeodeticPosition, origin: Position.GeodeticPosition, to: Position.CartesianPosition): void
     //double lat0, double lon0, double h0,
     //out double xEast, out double yNorth, out double zUp)
     {
-        let ecef = new CartesianPosition(0, 0, 0);
+        let ecef = new Position.CartesianPosition(0, 0, 0);
         this.GeodeticToEcef(from, ecef);
         this.EcefToEnu(ecef, origin, to);
     }
-    public EnuToGeodetic(from: CartesianPosition, origin: GeodeticPosition, to: GeodeticPosition): void
+    public EnuToGeodetic(from: Position.CartesianPosition, origin: Position.GeodeticPosition, to: Position.GeodeticPosition): void
     //double xEast, double yNorth, double zUp,
     //double lat0, double lon0, double h0,
     //out double lat, out double lon, out double h
     {
-        let ecef = new CartesianPosition(0, 0, 0);
+        let ecef = new Position.CartesianPosition(0, 0, 0);
         this.EnuToEcef(from, origin, ecef);
         this.EcefToGeodetic(ecef, to);
     }

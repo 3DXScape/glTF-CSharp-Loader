@@ -1,5 +1,6 @@
 import { stdin as input } from 'node:process';
 import * as proj4 from 'proj4';
+import * as Position from './Position';
 import * as LTPENU from './WGS84ToLTPENU';
 
 
@@ -19,9 +20,9 @@ console.log("X : " + q.x + " \nY : " + q.y + " \nZ : " + q.z);
 console.log("X : " + r.x + " \nY : " + r.y + " \nZ : " + r.z);
 
 let d = new LTPENU.LTP_ENU();
-let from = new LTPENU.GeodeticPosition(-1.0, 52.0, 15.0);
-let origin = new LTPENU.GeodeticPosition(-1.00005, 52.0, 15.3);
-let to = new LTPENU.CartesianPosition(0, 0, 0);
+let from = new Position.GeodeticPosition(-1.0, 52.0, 15.0);
+let origin = new Position.GeodeticPosition(-1.00005, 52.0, 15.3);
+let to = new Position.CartesianPosition(0, 0, 0);
 d.GeodeticToEnu(from, origin, to);
 
 input.read();
@@ -74,7 +75,7 @@ abstract class Basic extends GeoPose {
 /// A Basic-YPR GeoPose uses yaw, pitch, and roll angles measured in degrees to define the orientation of the inner frame..
 /// </summary>
 export class BasicYPR extends Basic {
-    public constructor(id: string, tangentPoint: LTPENU.GeodeticPosition, yprAngles: YPRAngles) {
+    public constructor(id: string, tangentPoint: Position.GeodeticPosition, yprAngles: YPRAngles) {
         super();
         this.poseID = new PoseID(id);
         this.FrameTransform = new WGS84ToLTPENU(tangentPoint);
@@ -93,7 +94,7 @@ export class BasicYPR extends Basic {
 /// </remark>
 /// </summary>
 export class BasicQuaternion extends Basic {
-    public constructor(id: string, tangentPoint: LTPENU.GeodeticPosition, quaternion: Quaternion) {
+    public constructor(id: string, tangentPoint: Position.GeodeticPosition, quaternion: Quaternion) {
         super();
         this.poseID = new PoseID(id);
         this.FrameTransform = new WGS84ToLTPENU(tangentPoint);
@@ -169,7 +170,7 @@ export class Advanced extends GeoPose {
 /// </note>
 /// </summary>
 abstract class Orientation {
-    abstract Rotate(point: LTPENU.CartesianPosition): Position;
+    abstract Rotate(point: Position.CartesianPosition): Position.Position;
 }
 
 /// <summary>
@@ -190,7 +191,7 @@ export class YPRAngles extends Orientation {
     /// <summary>
     /// The function is to apply a YPR transformation
     /// </summary>
-    public override Rotate(point: LTPENU.CartesianPosition): Position {
+    public override Rotate(point: Position.CartesianPosition): Position.Position {
         // convert to quaternion and use quaternion rotation
         let q = YPRAngles.ToQuaternion(this.yaw, this.pitch, this.roll);
         return Quaternion.Transform(point, q);
@@ -252,7 +253,7 @@ export class Quaternion extends Orientation {
         this.z = z;
         this.w = w;
     }
-    public override Rotate(point: LTPENU.CartesianPosition): Position {
+    public override Rotate(point: Position.CartesianPosition): Position.Position {
         return Quaternion.Transform(point, this);
     }
     public ToYPRAngles(q: Quaternion): YPRAngles {
@@ -274,8 +275,8 @@ export class Quaternion extends Orientation {
         let yprAngles = new YPRAngles(yaw, pitch, roll);
         return yprAngles;
     }
-    public static Transform(inPoint: LTPENU.CartesianPosition, rotation: Quaternion): LTPENU.CartesianPosition {
-        let point = new LTPENU.CartesianPosition(inPoint.x, inPoint.y, inPoint.z);
+    public static Transform(inPoint: Position.CartesianPosition, rotation: Quaternion): Position.CartesianPosition {
+        let point = new Position.CartesianPosition(inPoint.x, inPoint.y, inPoint.z);
         let x2 = rotation.x + rotation.x;
         let y2 = rotation.y + rotation.y;
         let z2 = rotation.z + rotation.z;
@@ -290,7 +291,7 @@ export class Quaternion extends Orientation {
         let yz2 = rotation.y * z2;
         let zz2 = rotation.z * z2;
 
-        let p = new LTPENU.CartesianPosition(
+        let p = new Position.CartesianPosition(
             point.x * (1.0 - yy2 - zz2) + point.y * (xy2 - wz2) + point.z * (xz2 + wy2),
             point.x * (xy2 + wz2) + point.y * (1.0 - xx2 - zz2) + point.z * (yz2 - wx2),
             point.x * (xz2 - wy2) + point.y * (yz2 + wx2) + point.z * (1.0 - xx2 - yy2));
@@ -313,15 +314,7 @@ export class Quaternion extends Orientation {
     /// </summary>
     public w: number;
 }
-/// <summary>
-/// The abstract root of the Position hierarchy.
-/// <note>
-/// Because the various ways to express Position share no underlying structure,
-/// the abstract root class definition is simply an empty shell.
-/// </note>
-/// </summary>
-abstract class Position {
-}
+
 
 export class PoseID {
     public constructor(id: string) {
@@ -342,7 +335,7 @@ export class PoseID {
 /// </remark>
 /// </summary>
 abstract class FrameTransform {
-    public abstract Transform(point: Position): Position;
+    public abstract Transform(point: Position.Position): Position.Position;
 }
 
 /// <summary>
@@ -376,34 +369,34 @@ export class Extrinsic extends FrameTransform {
     /// </note>
     /// <param name="point"></param>
     /// <returns></returns>
-    public override Transform(point: Position): Position {
+    public override Transform(point: Position.Position): Position.Position {
         let uri = this.authority.toLowerCase().replace("//www.", "");
         if (uri == "https://proj.org" || uri == "https://osgeo.org") {
             var outer = proj4.Proj('EPSG:4326');    //source coordinates will be in Longitude/Latitude, WGS84
             var inner = proj4.Proj('EPSG:3785');     //destination coordinates in meters, global spherical mercato
-            var cp = point as LTPENU.CartesianPosition;
+            var cp = point as Position.CartesianPosition;
             let p = proj4.Point(cp.x, cp.y, cp.z);
             proj4.transform(outer, inner, p);
             // convert points from one coordinate system to another
-            let outP = new LTPENU.CartesianPosition(p.x, p.y, p.z);
+            let outP = new Position.CartesianPosition(p.x, p.y, p.z);
             return outP;
         }
         else if (uri == "https://epsg.org") {
-            return LTPENU.NoPosition;
+            return Position.NoPosition;
         }
         else if (uri == "https://iers.org") {
-            return LTPENU.NoPosition;
+            return Position.NoPosition;
         }
         else if (uri == "https://naif.jpl.nasa.gov") {
-            return LTPENU.NoPosition;
+            return Position.NoPosition;
         }
         else if (uri == "https://sedris.org") {
-            return LTPENU.NoPosition;
+            return Position.NoPosition;
         }
         else if (uri == "https://iau.org") {
-            return LTPENU.NoPosition;
+            return Position.NoPosition;
         }
-        return LTPENU.NoPosition;
+        return Position.NoPosition;
     }
     /// <summary>
     /// The name or identification of the definer of the category of frame specification.
@@ -420,7 +413,7 @@ export class Extrinsic extends FrameTransform {
     /// The interpretation of the string is determined by the authority.
     /// </summary>
     public parameters: string;
-    public static noTransform: Position = new LTPENU.NoPosition();
+    public static noTransform: Position.Position = new Position.NoPosition();
 }
 /// <summary>
 /// A specialized specification of the WGS84 (EPSG 4326) geodetic frame to a local tangent plane East, North, Up frame.
@@ -430,13 +423,13 @@ export class Extrinsic extends FrameTransform {
 /// </remark>
 /// </summary>
 export class WGS84ToLTPENU extends FrameTransform {
-    public constructor(origin: LTPENU.GeodeticPosition) {
+    public constructor(origin: Position.GeodeticPosition) {
         super();
         this.Origin = origin;
     }
-    public override Transform(point: Position): Position {
-        let geoPoint = point as LTPENU.GeodeticPosition;
-        let outPoint: LTPENU.CartesianPosition;
+    public override Transform(point: Position.Position): Position.Position {
+        let geoPoint = point as Position.GeodeticPosition;
+        let outPoint: Position.CartesianPosition;
         GeodeticToEnu(this.Origin, geoPoint, outPoint);
         return outPoint;
     }
@@ -444,11 +437,11 @@ export class WGS84ToLTPENU extends FrameTransform {
     /// <summary>
     /// A single geodetic position defines the tangent point for a transform to LTP-ENU.
     /// </summary>
-    public Origin: LTPENU.GeodeticPosition;
+    public Origin: Position.GeodeticPosition;
 }
 
-export function GeodeticToEnu(origin: LTPENU.GeodeticPosition, geoPoint: LTPENU.GeodeticPosition, enuPoint: LTPENU.CartesianPosition) {
-    let out = new LTPENU.CartesianPosition(0, 0, 0);
+export function GeodeticToEnu(origin: Position.GeodeticPosition, geoPoint: Position.GeodeticPosition, enuPoint: Position.CartesianPosition) {
+    let out = new Position.CartesianPosition(0, 0, 0);
     return out;
 }
 
@@ -462,9 +455,9 @@ export class Translation extends FrameTransform {
         this.yOffset = yOffset;
         this.zOffset = zOffset;
     }
-    public override Transform(point: Position): Position {
-        let cp = point as LTPENU.CartesianPosition;
-        let p = new LTPENU.CartesianPosition(cp.x + this.xOffset, cp.y + this.yOffset, cp.z + this.zOffset);
+    public override Transform(point: Position.Position): Position.Position {
+        let cp = point as Position.CartesianPosition;
+        let p = new Position.CartesianPosition(cp.x + this.xOffset, cp.y + this.yOffset, cp.z + this.zOffset);
         return p;
     }
     public xOffset: number;
@@ -473,5 +466,5 @@ export class Translation extends FrameTransform {
 }
 
 
-let myLocal = new BasicYPR("OS_GB", new LTPENU.GeodeticPosition(51.5, -1.5, 0.0), new YPRAngles(0, 0, 0));
+let myLocal = new BasicYPR("OS_GB", new Position.GeodeticPosition(51.5, -1.5, 0.0), new YPRAngles(0, 0, 0));
 input.read();

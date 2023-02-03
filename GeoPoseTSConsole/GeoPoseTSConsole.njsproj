@@ -35,6 +35,9 @@
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="Position.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="WGS84ToLTPENU.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

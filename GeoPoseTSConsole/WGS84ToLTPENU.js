@@ -1,47 +1,7 @@
 "use strict";
-// This is an implementation of EPSG method 9837 using sections 4.1.1 and 4.1.2 of https://www.iogp.org/wp-content/uploads/2019/09/373-07-02.pdf.
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LTP_ENU = exports.NoPosition = exports.CartesianPosition = exports.GeodeticPosition = void 0;
-/// <summary>
-/// The abstract root of the Position hierarchy.
-/// <note>
-/// Because the various ways to express Position share no underlying structure,
-/// the abstract root class definition is simply an empty shell.
-/// </note>
-/// </summary>
-class Position {
-}
-/// <summary>
-/// GeodeticPosition is a specialization of Position for using two angles and a height for geodetic reference systems.
-/// </summary>
-class GeodeticPosition extends Position {
-    constructor(lat, lon, h) {
-        super();
-        this.lat = lat;
-        this.lon = lon;
-        this.h = h;
-    }
-}
-exports.GeodeticPosition = GeodeticPosition;
-/// <summary>
-/// CartesianPosition is a specialization of Position for geocentric, topocentric, and engineering reference systems.
-/// </summary>
-class CartesianPosition extends Position {
-    constructor(x, y, z) {
-        super();
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-}
-exports.CartesianPosition = CartesianPosition;
-class NoPosition extends Position {
-    constructor() {
-        super();
-        this.x = this.y = this.z = NaN;
-    }
-}
-exports.NoPosition = NoPosition;
+exports.LTP_ENU = void 0;
+const Position = require("./Position");
 class LTP_ENU {
     constructor() {
         // WGS-84 geodetic constants
@@ -139,12 +99,12 @@ class LTP_ENU {
     // East-North-Up coordinates in a Local Tangent Plane that is centered at the 
     // (WGS-84) Geodetic point (lat0, lon0, h0).
     GeodeticToEnu(from, origin, to) {
-        let ecef = new CartesianPosition(0, 0, 0);
+        let ecef = new Position.CartesianPosition(0, 0, 0);
         this.GeodeticToEcef(from, ecef);
         this.EcefToEnu(ecef, origin, to);
     }
     EnuToGeodetic(from, origin, to) {
-        let ecef = new CartesianPosition(0, 0, 0);
+        let ecef = new Position.CartesianPosition(0, 0, 0);
         this.EnuToEcef(from, origin, ecef);
         this.EcefToGeodetic(ecef, to);
     }

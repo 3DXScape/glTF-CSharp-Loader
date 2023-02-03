@@ -1,6 +1,7 @@
 import { stdin as input } from 'node:process';
 import * as proj4 from 'proj4';
-import * as WGS84ToLTPENU from 'WGS84ToLTPENU';
+import * as LTPENU from './WGS84ToLTPENU';
+
 
 var source = proj4.Proj('EPSG:4326');    //source coordinates will be in Longitude/Latitude, WGS84
 var dest = proj4.Proj('EPSG:3785');     //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/
@@ -16,9 +17,13 @@ let r = proj4.transform(dest, source, q);
 console.log("X : " + p.x + " \nY : " + p.y + " \nZ : " + p.z);
 console.log("X : " + q.x + " \nY : " + q.y + " \nZ : " + q.z);
 console.log("X : " + r.x + " \nY : " + r.y + " \nZ : " + r.z);
+
+let d = new LTPENU.LTP_ENU();
+let from = new LTPENU.GeodeticPosition(-1.0, 52.0, 15.0);
+let origin = new LTPENU.GeodeticPosition(-1.00005, 52.0, 15.3);
+let to = new LTPENU.CartesianPosition(0, 0, 0);
+d.GeodeticToEnu(from, origin, to);
 input.read();
-
-
 
 abstract class GeoPose {
     // Optional and non-standard but conforming added property:

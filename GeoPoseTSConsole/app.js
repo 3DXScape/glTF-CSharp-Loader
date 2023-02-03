@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Translation = exports.GeodeticToEnu = exports.WGS84ToLTPENU = exports.Extrinsic = exports.PoseID = exports.NoPosition = exports.CartesianPosition = exports.GeodeticPosition = exports.Quaternion = exports.YPRAngles = exports.Advanced = exports.Local = exports.BasicQuaternion = exports.BasicYPR = void 0;
-const proj4 = require("proj4");
 const node_process_1 = require("node:process");
+const proj4 = require("proj4");
+const LTPENU = require("./WGS84ToLTPENU");
 var source = proj4.Proj('EPSG:4326'); //source coordinates will be in Longitude/Latitude, WGS84
 var dest = proj4.Proj('EPSG:3785'); //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/
 // transforming point coordinates
@@ -13,6 +14,11 @@ let r = proj4.transform(dest, source, q);
 console.log("X : " + p.x + " \nY : " + p.y + " \nZ : " + p.z);
 console.log("X : " + q.x + " \nY : " + q.y + " \nZ : " + q.z);
 console.log("X : " + r.x + " \nY : " + r.y + " \nZ : " + r.z);
+let d = new LTPENU.LTP_ENU();
+let from = new LTPENU.GeodeticPosition(-1.0, 52.0, 15.0);
+let origin = new LTPENU.GeodeticPosition(-1.00005, 52.0, 15.3);
+let to = new LTPENU.CartesianPosition(0, 0, 0);
+d.GeodeticToEnu(from, origin, to);
 node_process_1.stdin.read();
 class GeoPose {
 }
@@ -227,9 +233,28 @@ class CartesianPosition extends Position {
     }
 }
 exports.CartesianPosition = CartesianPosition;
+/// <summary>
+/// NoPosition is a specialization of Position for a Position that can be easily identified as non-existent.
+/// </summary>
 class NoPosition extends Position {
     constructor() {
         super();
+        /// <summary>
+        /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
+        /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
+        /// forming a right-hand coordinate system with the z-axis in the up direction.
+        /// </summary>
+        this.x = NaN;
+        /// <summary>
+        /// A coordinate value in meters, along an axis (y-axis) that typically has origin at
+        /// the center of mass, lies in the same plane as the x axis, and perpendicular to the x axis,
+        /// forming a right-hand coordinate system with the z-axis in the up direction.
+        /// </summary>
+        this.y = NaN;
+        /// <summary>
+        /// A coordinate value in meters, along the z-axis.
+        /// </summary>
+        this.z = NaN;
         this.x = this.y = this.z = NaN;
     }
 }

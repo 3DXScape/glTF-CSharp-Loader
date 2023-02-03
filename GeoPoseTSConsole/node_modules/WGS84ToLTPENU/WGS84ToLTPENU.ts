@@ -1,5 +1,5 @@
 // This is an implementation of EPSG method 9837 using sections 4.1.1 and 4.1.2 of https://www.iogp.org/wp-content/uploads/2019/09/373-07-02.pdf.
-module LTPENU {
+export module WGS84ToLTPENU {
     /// <summary>
     /// The abstract root of the Position hierarchy.
     /// <note>

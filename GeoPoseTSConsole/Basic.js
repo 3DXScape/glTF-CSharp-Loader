@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BasicQuaternion = exports.BasicYPR = exports.Basic = void 0;
 const Extras = require("./Extras");
 const FrameTransform = require("./FrameTransform");
+const Orientation = require("./Orientation");
 const GeoPose = require("./GeoPose");
 // Implemention order: 6 - follows GeoPose.
 // This is the simplest family of GeoPoses - the 80% part of a 80/20 solution.
@@ -22,6 +23,36 @@ class BasicYPR extends Basic {
         this.poseID = new Extras.PoseID(id);
         this.FrameTransform = new FrameTransform.WGS84ToLTPENU(tangentPoint);
         this.Orientation = yprAngles;
+    }
+    /// <summary>
+    /// This function returns a Json encoding of a Basic-YPR GeoPose
+    /// </summary>
+    toJSON() {
+        let indent = "";
+        let sb = [''];
+        if (FrameTransform != null && Orientation != null) {
+            sb.push("{\r\n\t\t" + indent);
+            if (this.validTime != null) {
+                sb.push("\"validTime\": " + this.validTime.toString() + ",\r\n" + indent + "  ");
+            }
+            if (this.poseID != null && this.poseID.id != "") {
+                sb.push("\"poseID\": \"" + this.poseID.id + "\",\r\n" + indent + "  ");
+            }
+            if (this.parentPoseID != null && this.parentPoseID.id != "") {
+                sb.push("\"parentPoseID\": \"" + this.parentPoseID.id + "\",\r\n" + indent + "  ");
+            }
+            sb.push("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + this.FrameTransform.Origin.lat + ",\r\n\t\t\t" + indent +
+                "\"lon\": " + this.FrameTransform.Origin.lon + ",\r\n\t\t\t" + indent +
+                "\"h\":   " + this.FrameTransform.Origin.h);
+            sb.push("\r\n\t\t" + indent + "},");
+            sb.push("\r\n\t\t" + indent);
+            sb.push("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + this.Orientation.yaw + ",\r\n\t\t\t" + indent +
+                "\"pitch\": " + this.Orientation.pitch + ",\r\n\t\t\t" + indent +
+                "\"roll\":  " + this.Orientation.roll);
+            sb.push("\r\n\t\t" + indent + "}");
+            sb.push("\r\n\t" + indent + "}");
+        }
+        return sb.join('');
     }
 }
 exports.BasicYPR = BasicYPR;

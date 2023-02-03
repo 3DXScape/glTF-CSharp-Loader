@@ -27,11 +27,12 @@ let origin = new Position.GeodeticPosition(-1.00005, 52.0, 15.3);
 let to = new Position.CartesianPosition(0, 0, 0);
 d.GeodeticToEnu(from, origin, to);
 
-input.read();
+
 
 
 
 
 
 let myLocal = new Basic.BasicYPR("OS_GB", new Position.GeodeticPosition(51.5, -1.5, 0.0), new Orientation.YPRAngles(0, 0, 0));
+let json = myLocal.toJSON();
 input.read();

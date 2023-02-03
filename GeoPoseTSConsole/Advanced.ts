@@ -28,4 +28,34 @@ export class Advanced extends GeoPose.GeoPose {
     /// An Orientation specified as a unit quaternion.
     /// </summary>
     public override Orientation: Orientation.Quaternion;
+
+    /// <summary>
+    /// This function returns a Json encoding of an Advanced GeoPose
+    /// </summary>
+    public toJSON(): string {
+        let indent: string = "";
+        let sb: string[] = [''];
+        {
+            sb.push("{\r\n" + indent + "  ");
+            if (this.validTime != null) {
+                sb.push("\"validTime\": " + this.validTime.toString() + ",\r\n" + indent + "  ");
+            }
+            if (this.poseID != null && this.poseID.id != "") {
+                sb.push("\"poseID\": \"" + this.poseID.id + "\",\r\n" + indent + "  ");
+            }
+            if (this.parentPoseID != null && this.parentPoseID.id != "") {
+                sb.push("\"parentPoseID\": \"" + this.parentPoseID.id + "\",\r\n" + indent + "  ");
+            }
+            sb.push("\"frameSpecification\":\r\n" + indent + "  " + "{\r\n" + indent + "    \"authority\": \"" +
+                (this.FrameTransform as FrameTransform.Extrinsic).authority.replace("\"", "\\\"") + "\",\r\n" + indent + "    \"id\": \"" +
+                (this.FrameTransform as FrameTransform.Extrinsic).id.replace("\"", "\\\"") + "\",\r\n" + indent + "    \"parameters\": \"" +
+                (this.FrameTransform as FrameTransform.Extrinsic).parameters.replace("\"", "\\\"") + "\"\r\n" + indent + "  },\r\n" + indent + "  ");
+            sb.push("\"quaternion\":\r\n" + indent + "  {\r\n" + indent + "    \"x\":" + (this.Orientation as Orientation.Quaternion).x + ",\"y\":" +
+                (this.Orientation as Orientation.Quaternion).y + ",\"z\":" +
+                (this.Orientation as Orientation.Quaternion).z + ",\"w\":" +
+                (this.Orientation as Orientation.Quaternion).w);
+            sb.push("\r\n" + indent + "  }\r\n" + indent + "}\r\n");
+            return sb.join('');
+        }
+    }
 }

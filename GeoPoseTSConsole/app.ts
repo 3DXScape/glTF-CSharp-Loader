@@ -4,6 +4,9 @@ import * as Position from './Position';
 import * as Orientation from './Orientation';
 import * as LTPENU from './WGS84ToLTPENU';
 import * as Basic from './Basic';
+import * as Advanced from './Advanced';
+import * as FrameTransform from './FrameTransform';
+import * as Extras from './Extras';
 
 
 var source = proj4.Proj('EPSG:4326');    //source coordinates will be in Longitude/Latitude, WGS84
@@ -29,14 +32,13 @@ d.GeodeticToEnu(from, origin, to);
 
 
 
-
-
-
-
-let myYPRLocal = new Basic.BasicYPR("OS_GB", new Position.GeodeticPosition(51.5, -1.5, 0.0), new Orientation.YPRAngles(0, 0, 0));
+let myYPRLocal = new Basic.BasicYPR("OS_GB: BasicYPR", new Position.GeodeticPosition(51.5, -1.5, 12.3), new Orientation.YPRAngles(1, 2, 3));
 let json = myYPRLocal.toJSON();
 console.log(json);
-let myQLocal = new Basic.BasicQuaternion("OS_GB", new Position.GeodeticPosition(51.5, -1.5, 0.0), new Orientation.Quaternion(0.1, 0.2, 0.3, 1.0));
+let myQLocal = new Basic.BasicQuaternion("OS_GB: BasicQ", new Position.GeodeticPosition(51.5, -1.5, 23.4), new Orientation.Quaternion(0.1, 0.2, 0.3, 1.0));
 json = myQLocal.toJSON();
+console.log(json);
+let myALocal = new Advanced.Advanced(new Extras.PoseID("OS_GB: Advanced"), new FrameTransform.Extrinsic("epsg", "5819", "[1.5, -1.5, 23.4]"), new Orientation.Quaternion(0.1, 0.2, 0.3, 1.0));
+json = myALocal.toJSON();
 console.log(json);
 input.read();

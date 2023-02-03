@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Translation = exports.GeodeticToEnu = exports.WGS84ToLTP_ENU = exports.Extrinsic = exports.PoseID = exports.NoPosition = exports.CartesianPosition = exports.GeodeticPosition = exports.Quaternion = exports.YPRAngles = exports.Advanced = exports.Local = exports.BasicQuaternion = exports.BasicYPR = void 0;
+exports.Translation = exports.GeodeticToEnu = exports.WGS84ToLTPENU = exports.Extrinsic = exports.PoseID = exports.NoPosition = exports.CartesianPosition = exports.GeodeticPosition = exports.Quaternion = exports.YPRAngles = exports.Advanced = exports.Local = exports.BasicQuaternion = exports.BasicYPR = void 0;
 const proj4 = require("proj4");
 const node_process_1 = require("node:process");
 var source = proj4.Proj('EPSG:4326'); //source coordinates will be in Longitude/Latitude, WGS84
@@ -25,11 +25,10 @@ class Basic extends GeoPose {
 /// </remark>
 /// </summary>
 class BasicYPR extends Basic {
-    BasicYPR(id, tangentPoint, yprAngles) {
-        this.poseID = new PoseID();
-        this.poseID.id = id;
-        this.FrameTransform = new WGS84ToLTPENU();
-        this.FrameTransform.origin = tangentPoint;
+    constructor(id, tangentPoint, yprAngles) {
+        super();
+        this.poseID = new PoseID(id);
+        this.FrameTransform = new WGS84ToLTPENU(tangentPoint);
         this.Orientation = yprAngles;
     }
 }
@@ -41,11 +40,10 @@ exports.BasicYPR = BasicYPR;
 /// </remark>
 /// </summary>
 class BasicQuaternion extends Basic {
-    BasicQuaternion(id, tangentPoint, quaternion) {
-        this.poseID = new PoseID();
-        this.poseID.id = id;
-        this.FrameTransform = new WGS84ToLTPENU();
-        this.FrameTransform.origin = tangentPoint;
+    constructor(id, tangentPoint, quaternion) {
+        super();
+        this.poseID = new PoseID(id);
+        this.FrameTransform = new WGS84ToLTPENU(tangentPoint);
         this.Orientation = quaternion;
     }
 }
@@ -59,9 +57,9 @@ exports.BasicQuaternion = BasicQuaternion;
 /// </remark>
 /// </summary>
 class Local extends GeoPose {
-    Local(id, frameTransform, orientation) {
-        this.poseID = new PoseID();
-        this.poseID.id = id;
+    constructor(id, frameTransform, orientation) {
+        super();
+        this.poseID = new PoseID(id);
         this.FrameTransform = frameTransform;
         this.Orientation = orientation;
     }
@@ -71,7 +69,8 @@ exports.Local = Local;
 /// Advanced GeoPose.
 /// </summary>
 class Advanced extends GeoPose {
-    Advanced(poseID, frameTransform, orientation) {
+    constructor(poseID, frameTransform, orientation) {
+        super();
         this.poseID = poseID;
         this.FrameTransform = frameTransform;
         this.Orientation = orientation;
@@ -93,25 +92,29 @@ exports.Advanced = Advanced;
 class Orientation {
 }
 /// <summary>
-/// A specialization of Orientation using Yaw, Pitch, and Roll angles in degrees.
+/// A specialization of Orientation using Yaw, Pitch, and Roll angles measured in degrees.
 /// <remark>
 /// This style of Orientation is best for easy human interpretation.
 /// It suffers from some computational inefficiencies, awkward interpolation, and singularities.
 /// </remark>
 /// </summary>
 class YPRAngles extends Orientation {
-    YPRAngles(yaw, pitch, roll) {
+    constructor(yaw, pitch, roll) {
+        super();
         this.yaw = yaw;
         this.pitch = pitch;
         this.roll = roll;
     }
+    /// <summary>
+    /// The function is to apply a YPR transformation
+    /// </summary>
     Rotate(point) {
         // convert to quaternion and use quaternion rotation
         let q = YPRAngles.ToQuaternion(this.yaw, this.pitch, this.roll);
         return Quaternion.Transform(point, q);
     }
     static ToQuaternion(yaw, pitch, roll) {
-        // GeoPose uses angles in degrees for human readability
+        // GeoPose angles are measured in degrees for human readability
         // Convert degrees to radians.
         yaw *= (Math.PI / 180.0);
         pitch *= (Math.PI / 180.0);
@@ -127,32 +130,27 @@ class YPRAngles extends Orientation {
         let y = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;
         let z = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;
         let norm = Math.sqrt(x * x + y * y + z * z + w * w);
-        let q = new Quaternion();
-        if (norm <= 0.0) {
-            q.x = x;
-            q.y = y;
-            q.z = z;
-            q.w = w;
-        }
-        else {
-            q.x = x / norm;
-            q.y = y / norm;
-            q.z = z / norm;
-            q.w = w / norm;
+        let q = new Quaternion(x, y, z, w);
+        if (norm > 0.0) {
+            q.x = q.x / norm;
+            q.y = q.y / norm;
+            q.z = q.z / norm;
+            q.w = q.w / norm;
         }
         return q;
     }
 }
 exports.YPRAngles = YPRAngles;
 /// <summary>
-/// A specialization of Orientation using a unit quaternion.
+/// Quaternion is a specialization of Orientation using a unit quaternion.
 /// </summary>
 /// <remark>
 /// This style of Orientation is best for computation.
 /// It is not easily interpreted or visualized by humans.
 /// </remark>
 class Quaternion extends Orientation {
-    Quaternion(x, y, z, w) {
+    constructor(x, y, z, w) {
+        super();
         this.x = x;
         this.y = y;
         this.z = z;
@@ -162,24 +160,23 @@ class Quaternion extends Orientation {
         return Quaternion.Transform(point, this);
     }
     ToYPRAngles(q) {
-        let yprAngles = new YPRAngles();
         // roll (x-axis rotation)
         let sinRollCosPitch = 2.0 * (q.w * q.x + q.y * q.z);
         let cosRollCosPitch = 1.0 - 2.0 * (q.x * q.x + q.y * q.y);
-        yprAngles.roll = Math.atan2(sinRollCosPitch, cosRollCosPitch) * (180.0 / Math.PI); // in degrees
+        let roll = Math.atan2(sinRollCosPitch, cosRollCosPitch) * (180.0 / Math.PI); // in degrees
         // pitch (y-axis rotation)
         let sinPitch = Math.sqrt(1.0 + 2.0 * (q.w * q.y - q.x * q.z));
         let cosPitch = Math.sqrt(1.0 - 2.0 * (q.w * q.y - q.x * q.z));
-        yprAngles.pitch = (2.0 * Math.atan2(sinPitch, cosPitch) - Math.PI / 2.0) * (180.0 / Math.PI); // in degrees
+        let pitch = (2.0 * Math.atan2(sinPitch, cosPitch) - Math.PI / 2.0) * (180.0 / Math.PI); // in degrees
         // yaw (z-axis rotation)
         let sinYawCosPitch = 2.0 * (q.w * q.z + q.x * q.y);
         let cosYawCosPitch = 1.0 - 2.0 * (q.y * q.y + q.z * q.z);
-        yprAngles.yaw = Math.atan2(sinYawCosPitch, cosYawCosPitch) * (180.0 / Math.PI); // in degrees
+        let yaw = Math.atan2(sinYawCosPitch, cosYawCosPitch) * (180.0 / Math.PI); // in degrees
+        let yprAngles = new YPRAngles(yaw, pitch, roll);
         return yprAngles;
     }
     static Transform(inPoint, rotation) {
-        let point = new CartesianPosition();
-        point = inPoint;
+        let point = new CartesianPosition(inPoint.x, inPoint.y, inPoint.z);
         let x2 = rotation.x + rotation.x;
         let y2 = rotation.y + rotation.y;
         let z2 = rotation.z + rotation.z;
@@ -192,10 +189,7 @@ class Quaternion extends Orientation {
         let yy2 = rotation.y * y2;
         let yz2 = rotation.y * z2;
         let zz2 = rotation.z * z2;
-        let p = new CartesianPosition();
-        p.x = point.x * (1.0 - yy2 - zz2) + point.y * (xy2 - wz2) + point.z * (xz2 + wy2),
-            p.y = point.x * (xy2 + wz2) + point.y * (1.0 - xx2 - zz2) + point.z * (yz2 - wx2),
-            p.z = point.x * (xz2 - wy2) + point.y * (yz2 + wx2) + point.z * (1.0 - xx2 - yy2);
+        let p = new CartesianPosition(point.x * (1.0 - yy2 - zz2) + point.y * (xy2 - wz2) + point.z * (xz2 + wy2), point.x * (xy2 + wz2) + point.y * (1.0 - xx2 - zz2) + point.z * (yz2 - wx2), point.x * (xz2 - wy2) + point.y * (yz2 + wx2) + point.z * (1.0 - xx2 - yy2));
         return p;
     }
 }
@@ -204,16 +198,17 @@ exports.Quaternion = Quaternion;
 /// The abstract root of the Position hierarchy.
 /// <note>
 /// Because the various ways to express Position share no underlying structure,
-/// the class definition is simply an empty shell.
+/// the abstract root class definition is simply an empty shell.
 /// </note>
 /// </summary>
 class Position {
 }
 /// <summary>
-/// A specialization of Position for using two angles and a height for geodetic positions.
+/// GeodeticPosition is a specialization of Position for using two angles and a height for geodetic reference systems.
 /// </summary>
 class GeodeticPosition extends Position {
-    GeodeticPosition(lat, lon, h) {
+    constructor(lat, lon, h) {
+        super();
         this.lat = lat;
         this.lon = lon;
         this.h = h;
@@ -221,10 +216,11 @@ class GeodeticPosition extends Position {
 }
 exports.GeodeticPosition = GeodeticPosition;
 /// <summary>
-/// A specialization of Position for geocentric positions.
+/// CartesianPosition is a specialization of Position for geocentric, topocentric, and engineering reference systems.
 /// </summary>
 class CartesianPosition extends Position {
-    CartesianPosition(x, y, z) {
+    constructor(x, y, z) {
+        super();
         this.x = x;
         this.y = y;
         this.z = z;
@@ -232,10 +228,14 @@ class CartesianPosition extends Position {
 }
 exports.CartesianPosition = CartesianPosition;
 class NoPosition extends Position {
+    constructor() {
+        super();
+        this.x = this.y = this.z = NaN;
+    }
 }
 exports.NoPosition = NoPosition;
 class PoseID {
-    PoseID(id) {
+    constructor(id) {
         this.id = id;
     }
 }
@@ -263,13 +263,14 @@ class FrameTransform {
 /// </remark>
 /// </summary>
 class Extrinsic extends FrameTransform {
-    Extrinsic(authority, id, parameters) {
+    constructor(authority, id, parameters) {
+        super();
         this.authority = authority;
         this.id = id;
         this.parameters = parameters;
     }
     /// <summary>
-    /// The core function of a transformation is the implement a specific frame transformation
+    /// The core function of a transformation is to implement a specific frame transformation
     /// i.e. the transformation of a triple of point coordinates in the outer frame to a triple of point coordinates in the inner frame.
     /// When this is not possible due to lack of an appropriate tranformation procedure,
     /// the triple (NaN, NaN, NaN) [three IEEE 574 not-a-number vales] is returned.
@@ -292,10 +293,7 @@ class Extrinsic extends FrameTransform {
             let p = proj4.Point(cp.x, cp.y, cp.z);
             proj4.transform(outer, inner, p);
             // convert points from one coordinate system to another
-            let outP = new CartesianPosition();
-            outP.x = p.x;
-            outP.y = p.y;
-            outP.z = p.z;
+            let outP = new CartesianPosition(p.x, p.y, p.z);
             return outP;
         }
         else if (uri == "https://epsg.org") {
@@ -325,23 +323,21 @@ Extrinsic.noTransform = new NoPosition();
 /// which is the *only* distinguished Position associated with the coodinate system associated with the inner frame (range).
 /// </remark>
 /// </summary>
-class WGS84ToLTP_ENU extends FrameTransform {
-    WGS84ToLTP_ENU(origin) {
+class WGS84ToLTPENU extends FrameTransform {
+    constructor(origin) {
+        super();
         this.Origin = origin;
     }
     Transform(point) {
-        let east;
-        let north;
-        let up = 0;
         let geoPoint = point;
         let outPoint;
         GeodeticToEnu(this.Origin, geoPoint, outPoint);
         return outPoint;
     }
 }
-exports.WGS84ToLTP_ENU = WGS84ToLTP_ENU;
+exports.WGS84ToLTPENU = WGS84ToLTPENU;
 function GeodeticToEnu(origin, geoPoint, enuPoint) {
-    let out = new CartesianPosition();
+    let out = new CartesianPosition(0, 0, 0);
     return out;
 }
 exports.GeodeticToEnu = GeodeticToEnu;
@@ -349,27 +345,17 @@ exports.GeodeticToEnu = GeodeticToEnu;
 // The FrameTransform is created with an offset.
 // The Transform adds the offset ot an input Cartesian Position and reurns a Cartesian Position
 class Translation extends FrameTransform {
-    Translation(xOffset, yOffset, zOffset) {
+    constructor(xOffset, yOffset, zOffset) {
+        super();
         this.xOffset = xOffset;
         this.yOffset = yOffset;
         this.zOffset = zOffset;
     }
     Transform(point) {
-        let p = new CartesianPosition();
         let cp = point;
-        p.x = cp.x + this.xOffset;
-        p.y = cp.y + this.yOffset;
-        p.z = cp.z + this.zOffset;
+        let p = new CartesianPosition(cp.x + this.xOffset, cp.y + this.yOffset, cp.z + this.zOffset);
         return p;
     }
 }
 exports.Translation = Translation;
-class WGS84ToLTPENU extends FrameTransform {
-    WGS84ToLTPENU(tangentPoint) {
-        this.origin = tangentPoint;
-    }
-    Transform(point) {
-        return NoPosition;
-    }
-}
 //# sourceMappingURL=app.js.map

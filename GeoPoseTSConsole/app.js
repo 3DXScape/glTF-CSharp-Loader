@@ -7,7 +7,7 @@ const LTPENU = require("./WGS84ToLTPENU");
 var source = proj4.Proj('EPSG:4326'); //source coordinates will be in Longitude/Latitude, WGS84
 var dest = proj4.Proj('EPSG:3785'); //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/
 // transforming point coordinates
-var p = proj4.Point(-76.0, 45.0, 11.0); //any object will do as long as it has 'x' and 'y' properties
+var p = proj4.toPoint([-76.0, 45.0, 11.0]); //any object will do as long as it has 'x' and 'y' properties
 //var p = new proj4.Point($("#lng").val(), $("#lat").val());
 let q = proj4.transform(source, dest, p);
 let r = proj4.transform(dest, source, q);
@@ -352,4 +352,6 @@ class Translation extends FrameTransform {
     }
 }
 exports.Translation = Translation;
+let myLocal = new BasicYPR("OS_GB", new LTPENU.GeodeticPosition(51.5, -1.5, 0.0), new YPRAngles(0, 0, 0));
+node_process_1.stdin.read();
 //# sourceMappingURL=app.js.map

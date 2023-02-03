@@ -7,7 +7,7 @@ var source = proj4.Proj('EPSG:4326');    //source coordinates will be in Longitu
 var dest = proj4.Proj('EPSG:3785');     //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/
 
 // transforming point coordinates
-var p = proj4.Point(-76.0, 45.0, 11.0);   //any object will do as long as it has 'x' and 'y' properties
+var p = proj4.toPoint([-76.0, 45.0, 11.0]);   //any object will do as long as it has 'x' and 'y' properties
 
 
 
@@ -23,6 +23,7 @@ let from = new LTPENU.GeodeticPosition(-1.0, 52.0, 15.0);
 let origin = new LTPENU.GeodeticPosition(-1.00005, 52.0, 15.3);
 let to = new LTPENU.CartesianPosition(0, 0, 0);
 d.GeodeticToEnu(from, origin, to);
+
 input.read();
 
 /// <summary>
@@ -472,3 +473,5 @@ export class Translation extends FrameTransform {
 }
 
 
+let myLocal = new BasicYPR("OS_GB", new LTPENU.GeodeticPosition(51.5, -1.5, 0.0), new YPRAngles(0, 0, 0));
+input.read();

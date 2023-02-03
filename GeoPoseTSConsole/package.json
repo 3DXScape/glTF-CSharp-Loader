@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@types/proj4": "^2.5.2",
-    "proj4": "^2.8.1"
+    "proj4": "^2.8.1",
+	"WGS84ToLTPENU": "^1.0.0"
   }
 }

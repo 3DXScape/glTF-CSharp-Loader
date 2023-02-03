@@ -1,6 +1,6 @@
+import { stdin as input } from 'node:process';
 import * as proj4 from 'proj4';
-import * as LTP_ENU from 'WGS84ToLTPENU';
-import { stdin as input, stdout as output } from 'node:process';
+import * as WGS84ToLTPENU from 'WGS84ToLTPENU';
 
 var source = proj4.Proj('EPSG:4326');    //source coordinates will be in Longitude/Latitude, WGS84
 var dest = proj4.Proj('EPSG:3785');     //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/

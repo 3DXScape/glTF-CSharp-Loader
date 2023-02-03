@@ -3,15 +3,7 @@ using System.Diagnostics;
 
 namespace LTP_ENU
 {
-
-
-    // Some helpers for converting GPS readings from the WGS84 geodetic system to a local North-East-Up cartesian axis.
-
-    // The implementation here is according to the paper:
-    // "Conversion of Geodetic coordinates to the Local Tangent Plane" Version 2.01.
-    // "The basic reference for this paper is J.Farrell & M.Barth 'The Global Positioning System & Inertial Navigation'"
-    // Also helpful is Wikipedia: http://en.wikipedia.org/wiki/Geodetic_datum
-    // Also helpful are the guidance notes here: http://www.epsg.org/Guidancenotes.aspx
+    // This is an implementation of EPSG method 9837 using sections 4.1.1 and 4.1.2 of https://www.iogp.org/wp-content/uploads/2019/09/373-07-02.pdf.
     public class LTP_ENU
     {
         // WGS-84 geodetic constants

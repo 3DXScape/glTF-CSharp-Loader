@@ -1,9 +1,9 @@
 import * as proj4 from 'proj4';
+import * as LTP_ENU from 'WGS84ToLTPENU';
 import { stdin as input, stdout as output } from 'node:process';
 
 var source = proj4.Proj('EPSG:4326');    //source coordinates will be in Longitude/Latitude, WGS84
 var dest = proj4.Proj('EPSG:3785');     //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/
-proj4.
 
 // transforming point coordinates
 var p = proj4.Point(-76.0, 45.0, 11.0);   //any object will do as long as it has 'x' and 'y' properties
@@ -29,7 +29,7 @@ abstract class GeoPose {
     //  a PoseID type identifier of another GeoPose in the direction of the root of a pose tree.
     public parentPoseID: PoseID;
 
-    // Optional and non-standard but conforming added property:
+    // Optional and non-standard (except in Advanced) but conforming added property:
     //   a validTime with milliseconds of Unix time.
     public validTime: number;
     abstract FrameTransform: FrameTransform;
@@ -358,6 +358,9 @@ export class CartesianPosition extends Position {
     public z: number;
 }
 
+/// <summary>
+/// NoPosition is a specialization of Position for a Position that can be easily identified as non-existent.
+/// </summary>
 export class NoPosition extends Position {
     public constructor(){
         super();
@@ -368,17 +371,17 @@ export class NoPosition extends Position {
     /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
     /// forming a right-hand coordinate system with the z-axis in the up direction.
     /// </summary>
-    public x: number;
+    public readonly x: number = NaN;
     /// <summary>
     /// A coordinate value in meters, along an axis (y-axis) that typically has origin at
     /// the center of mass, lies in the same plane as the x axis, and perpendicular to the x axis,
     /// forming a right-hand coordinate system with the z-axis in the up direction.
     /// </summary>
-    public y: number;
+    public readonly y: number = NaN;
     /// <summary>
     /// A coordinate value in meters, along the z-axis.
     /// </summary>
-    public z: number;
+    public readonly z: number = NaN;
 }
 
 export class PoseID {

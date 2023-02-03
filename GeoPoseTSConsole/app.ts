@@ -25,59 +25,74 @@ let to = new LTPENU.CartesianPosition(0, 0, 0);
 d.GeodeticToEnu(from, origin, to);
 input.read();
 
+/// <summary>
+/// A GeoPose has a position and an orientation.
+/// The position is abstracted as a transformation between one reference frame (outer frame)
+/// and another (inner frame).
+/// The position is the origin of the coordinate system of the inner frame.
+/// The orientation is applied to the coordinate system of the inner frame.
+/// <remark>
+/// See the OGS GeoPose 1.0 standard for a full description.
+/// </remark>
+/// <remark>
+/// This implementation includes some optional properties not define in the 1.0 standard
+/// but allowed by JSON serializations of all but the Basic-Quaternion(Strict) standardization target.
+/// The optional properties are identifiers and time values that are useful in practice.
+/// They may be part of a future version of the standard but, as of February 2023, they are optianl add-ons.
+/// </remark>
+/// </summary>
 abstract class GeoPose {
     // Optional and non-standard but conforming added property:
-    //   an identifier unique within an application.
+    // an identifier unique within an application.
     public poseID: PoseID;
 
     // Optional and non-standard but conforming added property:
-    //  a PoseID type identifier of another GeoPose in the direction of the root of a pose tree.
+    // a PoseID type identifier of another GeoPose in the direction of the root of a pose tree.
     public parentPoseID: PoseID;
 
     // Optional and non-standard (except in Advanced) but conforming added property:
-    //   a validTime with milliseconds of Unix time.
+    // a validTime with milliseconds of Unix time.
     public validTime: number;
     abstract FrameTransform: FrameTransform;
     abstract Orientation: Orientation;
 }
-abstract class Basic extends GeoPose
-{
-        /// <summary>
-        /// A Position specified in geographic coordinates with height above a reference surface -
-        /// usually an ellipsoid of revolution or a gravitational equipotential surface.
-        /// </summary>
+/// <summary>
+/// The Basic GeoPoses share the use of a local tangent plane, east-north-up frame transform.
+/// The types of Basic GeoPose are distinguished by the method used to specify orientation of the inner frame.
+/// </summary>
+abstract class Basic extends GeoPose {
+    /// <summary>
+    /// A Position specified in geographic coordinates with height above a reference surface -
+    /// usually an ellipsoid of revolution or a gravitational equipotential surface is
+    /// transformed to a local Cartesian frame, suitable for use over an extent of a few km.
+    /// </summary>
     public override FrameTransform: WGS84ToLTPENU;
 }
 
 /// <summary>
-/// A Basic-YPR GeoPose.
-/// <remark>
-/// See the OGS GeoPose 1.0 standard for a full description.
-/// </remark>
+/// A Basic-YPR GeoPose uses yaw, pitch, and roll angles measured in degrees to define the orientation of the inner frame..
 /// </summary>
-export class BasicYPR extends Basic
-{
-    public constructor(id: string, tangentPoint: GeodeticPosition, yprAngles: YPRAngles)
-    {
+export class BasicYPR extends Basic {
+    public constructor(id: string, tangentPoint: LTPENU.GeodeticPosition, yprAngles: YPRAngles) {
         super();
         this.poseID = new PoseID(id);
         this.FrameTransform = new WGS84ToLTPENU(tangentPoint);
         this.Orientation = yprAngles;
     }
-        /// <summary>
-        /// An Orientation specified as three rotations.
-        /// </summary>
+    /// <summary>
+    /// An Orientation specified as three successive rotations about the local Z, Y, and X axes, in that order..
+    /// </summary>
     public override Orientation: YPRAngles;
 }
 
 /// <summary>
-/// A Basic-Quaternion GeoPose.
+/// A Basic-Quaternion GeoPose uses a unit quaternions to define the orientation of the inner frame..
 /// <remark>
 /// See the OGS GeoPose 1.0 standard for a full description.
 /// </remark>
 /// </summary>
 export class BasicQuaternion extends Basic {
-    public constructor(id: string, tangentPoint: GeodeticPosition, quaternion: Quaternion) {
+    public constructor(id: string, tangentPoint: LTPENU.GeodeticPosition, quaternion: Quaternion) {
         super();
         this.poseID = new PoseID(id);
         this.FrameTransform = new WGS84ToLTPENU(tangentPoint);
@@ -91,11 +106,13 @@ export class BasicQuaternion extends Basic {
 }
 
 /// <summary>
-/// A derived pose within an engineering CRS with a Cartesian coordinate system.
+/// Local GeoPose is a derived pose within an engineering CRS with a Cartesian coordinate system.
 /// This form is the closest to the classical computer graphics pose concept.
 /// <remark>
-/// Not (yet) part of the OGC GeoPose standard and not backwards-compatible.
+/// WARNING: Local is not (yet) part of the OGC GeoPose standard and not backwards-compatible.
 /// Useful when operating within a local Cartesian frame defined by a Basic (or other) GeoPose.
+/// It is possible to define Local via the Advanced GeoPose with
+///   "authority": "steve@opensiteplan.org-experimental", "id": "translation", "parameters": {<dx>, <dy>, <dz> }
 /// </remark>
 /// </summary>
 export class Local extends GeoPose {
@@ -150,9 +167,8 @@ export class Advanced extends GeoPose {
 /// implementing a Rotate function.
 /// </note>
 /// </summary>
-
 abstract class Orientation {
-    abstract Rotate(point: CartesianPosition): Position;
+    abstract Rotate(point: LTPENU.CartesianPosition): Position;
 }
 
 /// <summary>
@@ -173,7 +189,7 @@ export class YPRAngles extends Orientation {
     /// <summary>
     /// The function is to apply a YPR transformation
     /// </summary>
-    public override Rotate(point: CartesianPosition): Position {
+    public override Rotate(point: LTPENU.CartesianPosition): Position {
         // convert to quaternion and use quaternion rotation
         let q = YPRAngles.ToQuaternion(this.yaw, this.pitch, this.roll);
         return Quaternion.Transform(point, q);
@@ -200,7 +216,6 @@ export class YPRAngles extends Orientation {
         let norm = Math.sqrt(x * x + y * y + z * z + w * w);
         let q = new Quaternion(x, y, z, w);
         if (norm > 0.0) {
-
             q.x = q.x / norm;
             q.y = q.y / norm;
             q.z = q.z / norm;
@@ -236,7 +251,7 @@ export class Quaternion extends Orientation {
         this.z = z;
         this.w = w;
     }
-    public override Rotate(point: CartesianPosition): Position  {
+    public override Rotate(point: LTPENU.CartesianPosition): Position {
         return Quaternion.Transform(point, this);
     }
     public ToYPRAngles(q: Quaternion): YPRAngles {
@@ -258,8 +273,8 @@ export class Quaternion extends Orientation {
         let yprAngles = new YPRAngles(yaw, pitch, roll);
         return yprAngles;
     }
-    public static Transform(inPoint: CartesianPosition, rotation: Quaternion): CartesianPosition {
-        let point = new CartesianPosition(inPoint.x, inPoint.y, inPoint.z);
+    public static Transform(inPoint: LTPENU.CartesianPosition, rotation: Quaternion): LTPENU.CartesianPosition {
+        let point = new LTPENU.CartesianPosition(inPoint.x, inPoint.y, inPoint.z);
         let x2 = rotation.x + rotation.x;
         let y2 = rotation.y + rotation.y;
         let z2 = rotation.z + rotation.z;
@@ -274,7 +289,7 @@ export class Quaternion extends Orientation {
         let yz2 = rotation.y * z2;
         let zz2 = rotation.z * z2;
 
-        let p = new CartesianPosition(
+        let p = new LTPENU.CartesianPosition(
             point.x * (1.0 - yy2 - zz2) + point.y * (xy2 - wz2) + point.z * (xz2 + wy2),
             point.x * (xy2 + wz2) + point.y * (1.0 - xx2 - zz2) + point.z * (yz2 - wx2),
             point.x * (xz2 - wy2) + point.y * (yz2 + wx2) + point.z * (1.0 - xx2 - yy2));
@@ -307,88 +322,6 @@ export class Quaternion extends Orientation {
 abstract class Position {
 }
 
-/// <summary>
-/// GeodeticPosition is a specialization of Position for using two angles and a height for geodetic reference systems.
-/// </summary>
-export class GeodeticPosition extends Position {
-    public constructor(lat: number, lon: number, h: number) {
-        super();
-        this.lat = lat;
-        this.lon = lon;
-        this.h = h;
-    }
-
-    /// <summary>
-    /// A latitude in degrees, positive north of equator and negative south of equator.
-    /// The latitude is the angle between the plane of the equator and a plane tangent to the ellipsoid at the given point.
-    /// </summary>
-    public lat: number;
-    /// <summary>
-    /// A longitude in degrees, positive east of the prime meridian and negative west of prime meridian.
-    /// </summary>
-    public lon: number;
-    /// <summary>
-    /// A distance in meters, measured with respect to an implied (Basic) or specified (Advanced) reference surface,
-    /// postive opposite the direction of the force of gravity,
-    /// and negative in the direction of the force of gravity.
-    /// </summary>
-    public h: number
-}
-/// <summary>
-/// CartesianPosition is a specialization of Position for geocentric, topocentric, and engineering reference systems.
-/// </summary>
-export class CartesianPosition extends Position {
-    public constructor(x: number, y: number, z: number) {
-        super();
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-
-    /// <summary>
-    /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
-    /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
-    /// forming a right-hand coordinate system with the z-axis in the up direction.
-    /// </summary>
-    public x: number;
-    /// <summary>
-    /// A coordinate value in meters, along an axis (y-axis) that typically has origin at
-    /// the center of mass, lies in the same plane as the x axis, and perpendicular to the x axis,
-    /// forming a right-hand coordinate system with the z-axis in the up direction.
-    /// </summary>
-    public y: number;
-    /// <summary>
-    /// A coordinate value in meters, along the z-axis.
-    /// </summary>
-    public z: number;
-}
-
-/// <summary>
-/// NoPosition is a specialization of Position for a Position that can be easily identified as non-existent.
-/// </summary>
-export class NoPosition extends Position {
-    public constructor(){
-        super();
-        this.x = this.y = this.z = NaN;
-    }
-    /// <summary>
-    /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
-    /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
-    /// forming a right-hand coordinate system with the z-axis in the up direction.
-    /// </summary>
-    public readonly x: number = NaN;
-    /// <summary>
-    /// A coordinate value in meters, along an axis (y-axis) that typically has origin at
-    /// the center of mass, lies in the same plane as the x axis, and perpendicular to the x axis,
-    /// forming a right-hand coordinate system with the z-axis in the up direction.
-    /// </summary>
-    public readonly y: number = NaN;
-    /// <summary>
-    /// A coordinate value in meters, along the z-axis.
-    /// </summary>
-    public readonly z: number = NaN;
-}
-
 export class PoseID {
     public constructor(id: string) {
         this.id = id;
@@ -410,7 +343,6 @@ export class PoseID {
 abstract class FrameTransform {
     public abstract Transform(point: Position): Position;
 }
-
 
 /// <summary>
 /// A FrameSpecification is a generic container for information that defines a reference frame.
@@ -448,29 +380,29 @@ export class Extrinsic extends FrameTransform {
         if (uri == "https://proj.org" || uri == "https://osgeo.org") {
             var outer = proj4.Proj('EPSG:4326');    //source coordinates will be in Longitude/Latitude, WGS84
             var inner = proj4.Proj('EPSG:3785');     //destination coordinates in meters, global spherical mercato
-            var cp = point as CartesianPosition;
+            var cp = point as LTPENU.CartesianPosition;
             let p = proj4.Point(cp.x, cp.y, cp.z);
             proj4.transform(outer, inner, p);
             // convert points from one coordinate system to another
-            let outP = new CartesianPosition(p.x, p.y, p.z);
+            let outP = new LTPENU.CartesianPosition(p.x, p.y, p.z);
             return outP;
         }
         else if (uri == "https://epsg.org") {
-            return NoPosition;
+            return LTPENU.NoPosition;
         }
         else if (uri == "https://iers.org") {
-            return NoPosition;
+            return LTPENU.NoPosition;
         }
         else if (uri == "https://naif.jpl.nasa.gov") {
-            return NoPosition;
+            return LTPENU.NoPosition;
         }
         else if (uri == "https://sedris.org") {
-            return NoPosition;
+            return LTPENU.NoPosition;
         }
         else if (uri == "https://iau.org") {
-            return NoPosition;
+            return LTPENU.NoPosition;
         }
-        return NoPosition;
+        return LTPENU.NoPosition;
     }
     /// <summary>
     /// The name or identification of the definer of the category of frame specification.
@@ -487,7 +419,7 @@ export class Extrinsic extends FrameTransform {
     /// The interpretation of the string is determined by the authority.
     /// </summary>
     public parameters: string;
-    public static noTransform: Position = new NoPosition();
+    public static noTransform: Position = new LTPENU.NoPosition();
 }
 /// <summary>
 /// A specialized specification of the WGS84 (EPSG 4326) geodetic frame to a local tangent plane East, North, Up frame.
@@ -497,13 +429,13 @@ export class Extrinsic extends FrameTransform {
 /// </remark>
 /// </summary>
 export class WGS84ToLTPENU extends FrameTransform {
-    public constructor(origin: GeodeticPosition) {
+    public constructor(origin: LTPENU.GeodeticPosition) {
         super();
         this.Origin = origin;
     }
     public override Transform(point: Position): Position {
-        let geoPoint = point as GeodeticPosition;
-        let outPoint: CartesianPosition;
+        let geoPoint = point as LTPENU.GeodeticPosition;
+        let outPoint: LTPENU.CartesianPosition;
         GeodeticToEnu(this.Origin, geoPoint, outPoint);
         return outPoint;
     }
@@ -511,11 +443,11 @@ export class WGS84ToLTPENU extends FrameTransform {
     /// <summary>
     /// A single geodetic position defines the tangent point for a transform to LTP-ENU.
     /// </summary>
-    public Origin: GeodeticPosition;
+    public Origin: LTPENU.GeodeticPosition;
 }
 
-export function GeodeticToEnu(origin: GeodeticPosition, geoPoint: GeodeticPosition, enuPoint: CartesianPosition) {
-    let out = new CartesianPosition(0, 0, 0);
+export function GeodeticToEnu(origin: LTPENU.GeodeticPosition, geoPoint: LTPENU.GeodeticPosition, enuPoint: LTPENU.CartesianPosition) {
+    let out = new LTPENU.CartesianPosition(0, 0, 0);
     return out;
 }
 
@@ -530,8 +462,8 @@ export class Translation extends FrameTransform {
         this.zOffset = zOffset;
     }
     public override Transform(point: Position): Position {
-        let cp = point as CartesianPosition;
-        let p = new CartesianPosition(cp.x + this.xOffset, cp.y + this.yOffset, cp.z + this.zOffset);
+        let cp = point as LTPENU.CartesianPosition;
+        let p = new LTPENU.CartesianPosition(cp.x + this.xOffset, cp.y + this.yOffset, cp.z + this.zOffset);
         return p;
     }
     public xOffset: number;

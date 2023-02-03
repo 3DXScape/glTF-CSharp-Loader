@@ -3,7 +3,7 @@ import { stdin as input, stdout as output } from 'node:process';
 
 var source = proj4.Proj('EPSG:4326');    //source coordinates will be in Longitude/Latitude, WGS84
 var dest = proj4.Proj('EPSG:3785');     //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/
-
+proj4.
 
 // transforming point coordinates
 var p = proj4.Point(-76.0, 45.0, 11.0);   //any object will do as long as it has 'x' and 'y' properties
@@ -30,7 +30,7 @@ abstract class GeoPose {
     public parentPoseID: PoseID;
 
     // Optional and non-standard but conforming added property:
-    //   a poseID identifier in the direction of the root of a pose tree.
+    //   a validTime with milliseconds of Unix time.
     public validTime: number;
     abstract FrameTransform: FrameTransform;
     abstract Orientation: Orientation;
@@ -41,7 +41,6 @@ abstract class Basic extends GeoPose
         /// A Position specified in geographic coordinates with height above a reference surface -
         /// usually an ellipsoid of revolution or a gravitational equipotential surface.
         /// </summary>
-    //private WGS84ToLTP_ENU _frameTransform = new WGS84ToLTP_ENU();
     public override FrameTransform: WGS84ToLTPENU;
 }
 

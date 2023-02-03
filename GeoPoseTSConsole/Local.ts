@@ -18,7 +18,7 @@ import * as GeoPose from './GeoPose';
 /// </remark>
 /// </summary>
 export class Local extends GeoPose.GeoPose {
-    public constructor(id: string, frameTransform: FrameTransform.Translation, orientation: Orientation.Quaternion) {
+    public constructor(id: string, frameTransform: FrameTransform.Translation, orientation: Orientation.YPRAngles) {
         super();
         this.poseID = new Extras.PoseID(id);
         this.FrameTransform = frameTransform;
@@ -32,5 +32,38 @@ export class Local extends GeoPose.GeoPose {
     /// <summary>
     /// An Orientation specified as three rotations.
     /// </summary>
-    public override Orientation: Orientation.Quaternion;
+    public override Orientation: Orientation.YPRAngles;
+
+
+    /// <summary>
+    /// This function returns a Json encoding of an Advanced GeoPose
+    /// </summary>
+    public toJSON(): string {
+        let indent: string = "";
+        let sb: string[] = [''];
+        {
+            sb.push("{\r\n  ");
+            if (this.validTime != null) {
+                sb.push("\"validTime\": " + this.validTime.toString() + ",\r\n" + indent + "  ");
+            }
+            if (this.poseID != null && this.poseID.id != "") {
+                sb.push("\"poseID\": \"" + this.poseID.id + "\",\r\n" + indent + "  ");
+            }
+            if (this.parentPoseID != null && this.parentPoseID.id != "") {
+                sb.push("\"parentPoseID\": \"" + this.parentPoseID.id + "\",\r\n" + indent + "  ");
+            }
+            sb.push("\"position\": \r\n  {\r\n    " + "\"x\": " + (this.FrameTransform as FrameTransform.Translation).xOffset + ",\r\n    " +
+                "\"y\": " + (this.FrameTransform as FrameTransform.Translation).yOffset + ",\r\n    " +
+                "\"z\":   " + (this.FrameTransform as FrameTransform.Translation).zOffset);
+            sb.push("\r\n  " + "},");
+            sb.push("\r\n  ");
+            sb.push("\"angles\": \r\n  {\r\n    " + "\"yaw\":   " + (this.Orientation as Orientation.YPRAngles).yaw + ",\r\n    " +
+                "\"pitch\": " + (this.Orientation as Orientation.YPRAngles).pitch + ",\r\n    " +
+                "\"roll\":  " + (this.Orientation as Orientation.YPRAngles).roll);
+            sb.push("\r\n  " + "}");
+            sb.push("\r\n" + "}\r\n");
+
+            return sb.join('');
+        }
+    }
 }

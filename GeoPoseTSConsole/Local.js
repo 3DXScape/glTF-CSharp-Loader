@@ -23,6 +23,36 @@ class Local extends GeoPose.GeoPose {
         this.FrameTransform = frameTransform;
         this.Orientation = orientation;
     }
+    /// <summary>
+    /// This function returns a Json encoding of an Advanced GeoPose
+    /// </summary>
+    toJSON() {
+        let indent = "";
+        let sb = [''];
+        {
+            sb.push("{\r\n  ");
+            if (this.validTime != null) {
+                sb.push("\"validTime\": " + this.validTime.toString() + ",\r\n" + indent + "  ");
+            }
+            if (this.poseID != null && this.poseID.id != "") {
+                sb.push("\"poseID\": \"" + this.poseID.id + "\",\r\n" + indent + "  ");
+            }
+            if (this.parentPoseID != null && this.parentPoseID.id != "") {
+                sb.push("\"parentPoseID\": \"" + this.parentPoseID.id + "\",\r\n" + indent + "  ");
+            }
+            sb.push("\"position\": \r\n  {\r\n    " + "\"x\": " + this.FrameTransform.xOffset + ",\r\n    " +
+                "\"y\": " + this.FrameTransform.yOffset + ",\r\n    " +
+                "\"z\":   " + this.FrameTransform.zOffset);
+            sb.push("\r\n  " + "},");
+            sb.push("\r\n  ");
+            sb.push("\"angles\": \r\n  {\r\n    " + "\"yaw\":   " + this.Orientation.yaw + ",\r\n    " +
+                "\"pitch\": " + this.Orientation.pitch + ",\r\n    " +
+                "\"roll\":  " + this.Orientation.roll);
+            sb.push("\r\n  " + "}");
+            sb.push("\r\n" + "}\r\n");
+            return sb.join('');
+        }
+    }
 }
 exports.Local = Local;
 //# sourceMappingURL=Local.js.map

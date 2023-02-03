@@ -5,6 +5,7 @@ import * as Orientation from './Orientation';
 import * as LTPENU from './WGS84ToLTPENU';
 import * as Basic from './Basic';
 import * as Advanced from './Advanced';
+import * as Local from './Local';
 import * as FrameTransform from './FrameTransform';
 import * as Extras from './Extras';
 
@@ -40,5 +41,8 @@ json = myQLocal.toJSON();
 console.log(json);
 let myALocal = new Advanced.Advanced(new Extras.PoseID("OS_GB: Advanced"), new FrameTransform.Extrinsic("epsg", "5819", "[1.5, -1.5, 23.4]"), new Orientation.Quaternion(0.1, 0.2, 0.3, 1.0));
 json = myALocal.toJSON();
+console.log(json);
+let myLLocal = new Local.Local("OS_GB: Local", new FrameTransform.Translation(9.0, 8.7, 7.6), new Orientation.YPRAngles(1, 2, 3));
+json = myLLocal.toJSON();
 console.log(json);
 input.read();

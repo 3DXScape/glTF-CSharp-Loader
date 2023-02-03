@@ -69,6 +69,39 @@ class BasicQuaternion extends Basic {
         this.FrameTransform = new FrameTransform.WGS84ToLTPENU(tangentPoint);
         this.Orientation = quaternion;
     }
+    /// <summary>
+    /// This function returns a Json encoding of a Basic-Quaternion GeoPose
+    /// </summary>
+    toJSON() {
+        let indent = "";
+        let sb = [''];
+        if (this.FrameTransform.Origin != null && this.Orientation != null) {
+            sb.push("{\r\n\t\t" + indent);
+            if (this.validTime != null) {
+                sb.push("\"validTime\": " + this.validTime.toString() + ",\r\n" + indent + "  ");
+            }
+            if (this.poseID != null && this.poseID.id != "") {
+                sb.push("\"poseID\": \"" + this.poseID.id + "\",\r\n" + indent + "  ");
+            }
+            if (this.parentPoseID != null && this.parentPoseID.id != "") {
+                sb.push("\"parentPoseID\": \"" + this.parentPoseID.id + "\",\r\n" + indent + "  ");
+            }
+            sb.push("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " +
+                this.FrameTransform.Origin.lat + ",\r\n\t\t\t" + indent +
+                "\"lon\": " + this.FrameTransform.Origin.lon +
+                ",\r\n\t\t\t" + indent +
+                "\"h\":   " + this.FrameTransform.Origin.h);
+            sb.push("\r\n\t\t" + indent + "},");
+            sb.push("\r\n\t\t" + indent);
+            sb.push("\"angles\": {\r\n\t\t\t" + indent + "\"x\":   " + this.Orientation.x + ",\r\n\t\t\t" + indent +
+                "\"y\": " + this.Orientation.y + ",\r\n\t\t\t" + indent +
+                "\"z\": " + this.Orientation.z + ",\r\n\t\t\t" + indent +
+                "\"w\":  " + this.Orientation.w);
+            sb.push("\r\n\t\t" + indent + "}");
+            sb.push("\r\n\t" + indent + "}");
+            return sb.join('');
+        }
+    }
 }
 exports.BasicQuaternion = BasicQuaternion;
 //# sourceMappingURL=Basic.js.map

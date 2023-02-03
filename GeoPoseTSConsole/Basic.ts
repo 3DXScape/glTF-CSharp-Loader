@@ -86,4 +86,38 @@ export class BasicQuaternion extends Basic {
     /// An Orientation specified as a unit quaternion.
     /// </summary>
     public override Orientation: Orientation.Quaternion;
+
+    /// <summary>
+    /// This function returns a Json encoding of a Basic-Quaternion GeoPose
+    /// </summary>
+    public toJSON(): string {
+        let indent: string = "";
+        let sb: string[] = [''];
+        if ((this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin != null && (this.Orientation as Orientation.Quaternion) != null) {
+            sb.push("{\r\n\t\t" + indent);
+            if (this.validTime != null) {
+                sb.push("\"validTime\": " + this.validTime.toString() + ",\r\n" + indent + "  ");
+            }
+            if (this.poseID != null && this.poseID.id != "") {
+                sb.push("\"poseID\": \"" + this.poseID.id + "\",\r\n" + indent + "  ");
+            }
+            if (this.parentPoseID != null && this.parentPoseID.id != "") {
+                sb.push("\"parentPoseID\": \"" + this.parentPoseID.id + "\",\r\n" + indent + "  ");
+            }
+            sb.push("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " +
+                (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lat + ",\r\n\t\t\t" + indent +
+                "\"lon\": " + (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lon +
+                ",\r\n\t\t\t" + indent +
+                "\"h\":   " + (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.h);
+            sb.push("\r\n\t\t" + indent + "},");
+            sb.push("\r\n\t\t" + indent);
+            sb.push("\"angles\": {\r\n\t\t\t" + indent + "\"x\":   " + (this.Orientation as Orientation.Quaternion).x + ",\r\n\t\t\t" + indent +
+                "\"y\": " + (this.Orientation as Orientation.Quaternion).y + ",\r\n\t\t\t" + indent +
+                "\"z\": " + (this.Orientation as Orientation.Quaternion).z + ",\r\n\t\t\t" + indent +
+                "\"w\":  " + (this.Orientation as Orientation.Quaternion).w);
+            sb.push("\r\n\t\t" + indent + "}");
+            sb.push("\r\n\t" + indent + "}");
+            return sb.join('');
+        }
+    }
 }

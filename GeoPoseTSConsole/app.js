@@ -21,7 +21,11 @@ let from = new Position.GeodeticPosition(-1.0, 52.0, 15.0);
 let origin = new Position.GeodeticPosition(-1.00005, 52.0, 15.3);
 let to = new Position.CartesianPosition(0, 0, 0);
 d.GeodeticToEnu(from, origin, to);
-let myLocal = new Basic.BasicYPR("OS_GB", new Position.GeodeticPosition(51.5, -1.5, 0.0), new Orientation.YPRAngles(0, 0, 0));
-let json = myLocal.toJSON();
+let myYPRLocal = new Basic.BasicYPR("OS_GB", new Position.GeodeticPosition(51.5, -1.5, 0.0), new Orientation.YPRAngles(0, 0, 0));
+let json = myYPRLocal.toJSON();
+console.log(json);
+let myQLocal = new Basic.BasicQuaternion("OS_GB", new Position.GeodeticPosition(51.5, -1.5, 0.0), new Orientation.Quaternion(0.1, 0.2, 0.3, 1.0));
+json = myQLocal.toJSON();
+console.log(json);
 node_process_1.stdin.read();
 //# sourceMappingURL=app.js.map

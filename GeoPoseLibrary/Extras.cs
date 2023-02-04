@@ -15,5 +15,18 @@ namespace Extras
         }
         public string id { get; set; } = string.Empty;
     }
+    public class UnixTime
+    {
+        internal UnixTime()
+        {
+
+        }
+        // Constructor from long integer count of UNIX Time seconds x 1000
+        public UnixTime(long longTime)
+        {
+            timeValue = longTime.ToString();
+        }
+        public string timeValue { get; set; } = string.Empty;
+    }
 
 }

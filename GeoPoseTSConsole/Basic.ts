@@ -42,7 +42,7 @@ export class BasicYPR extends Basic {
         let indent: string = "";
         let sb:string[] = [''];
         if (FrameTransform != null && Orientation != null) {
-            sb.push("{\r\n\t\t" + indent);
+            sb.push("{\r\n  " + indent);
             if (this.validTime != null ) {
                 sb.push("\"validTime\": " + this.validTime.toString() + ",\r\n" + indent + "  ");
             }
@@ -52,16 +52,18 @@ export class BasicYPR extends Basic {
             if (this.parentPoseID != null && this.parentPoseID.id != "") {
                 sb.push("\"parentPoseID\": \"" + this.parentPoseID.id + "\",\r\n" + indent + "  ");
             }
-            sb.push("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lat + ",\r\n\t\t\t" + indent +
-                "\"lon\": " + (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lon + ",\r\n\t\t\t" + indent +
+            sb.push("\"position\": \r\n  {\r\n    " + indent + "\"lat\": " +
+                (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lat + ",\r\n    " + indent +
+                "\"lon\": " + (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lon + ",\r\n    " + indent +
                 "\"h\":   " + (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.h);
-            sb.push("\r\n\t\t" + indent + "},");
-            sb.push("\r\n\t\t" + indent);
-            sb.push("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + (this.Orientation as Orientation.YPRAngles).yaw + ",\r\n\t\t\t" + indent +
-                "\"pitch\": " + (this.Orientation as Orientation.YPRAngles).pitch + ",\r\n\t\t\t" + indent +
+            sb.push("\r\n  " + indent + "},");
+            sb.push("\r\n  " + indent);
+            sb.push("\"angles\": \r\n  {\r\n    " + indent + "\"yaw\":   " +
+                (this.Orientation as Orientation.YPRAngles).yaw + ",\r\n    " + indent +
+                "\"pitch\": " + (this.Orientation as Orientation.YPRAngles).pitch + ",\r\n    " + indent +
                 "\"roll\":  " + (this.Orientation as Orientation.YPRAngles).roll);
-            sb.push("\r\n\t\t" + indent + "}");
-            sb.push("\r\n\t" + indent + "}");
+            sb.push("\r\n  " + indent + "}");
+            sb.push("\r\n" + indent + "}");
         }
         return sb.join('');
     }
@@ -94,7 +96,7 @@ export class BasicQuaternion extends Basic {
         let indent: string = "";
         let sb: string[] = [''];
         if ((this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin != null && (this.Orientation as Orientation.Quaternion) != null) {
-            sb.push("{\r\n\t\t" + indent);
+            sb.push("{\r\n  " + indent);
             if (this.validTime != null) {
                 sb.push("\"validTime\": " + this.validTime.toString() + ",\r\n" + indent + "  ");
             }
@@ -104,19 +106,20 @@ export class BasicQuaternion extends Basic {
             if (this.parentPoseID != null && this.parentPoseID.id != "") {
                 sb.push("\"parentPoseID\": \"" + this.parentPoseID.id + "\",\r\n" + indent + "  ");
             }
-            sb.push("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " +
-                (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lat + ",\r\n\t\t\t" + indent +
+            sb.push("\"position\": \r\n  {\r\n    " + indent + "\"lat\": " +
+                (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lat + ",\r\n    " + indent +
                 "\"lon\": " + (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lon +
-                ",\r\n\t\t\t" + indent +
+                ",\r\n    " + indent +
                 "\"h\":   " + (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.h);
-            sb.push("\r\n\t\t" + indent + "},");
-            sb.push("\r\n\t\t" + indent);
-            sb.push("\"angles\": {\r\n\t\t\t" + indent + "\"x\":   " + (this.Orientation as Orientation.Quaternion).x + ",\r\n\t\t\t" + indent +
-                "\"y\": " + (this.Orientation as Orientation.Quaternion).y + ",\r\n\t\t\t" + indent +
-                "\"z\": " + (this.Orientation as Orientation.Quaternion).z + ",\r\n\t\t\t" + indent +
+            sb.push("\r\n  " + indent + "},");
+            sb.push("\r\n  " + indent);
+            sb.push("\"quaternion\": \r\n  {\r\n    " + indent + "\"x\":   " +
+                (this.Orientation as Orientation.Quaternion).x + ",\r\n      " + indent +
+                "\"y\": " + (this.Orientation as Orientation.Quaternion).y + ",\r\n      " + indent +
+                "\"z\": " + (this.Orientation as Orientation.Quaternion).z + ",\r\n      " + indent +
                 "\"w\":  " + (this.Orientation as Orientation.Quaternion).w);
-            sb.push("\r\n\t\t" + indent + "}");
-            sb.push("\r\n\t" + indent + "}");
+            sb.push("\r\n  " + indent + "}");
+            sb.push("\r\n" + indent + "}");
             return sb.join('');
         }
     }

@@ -31,7 +31,7 @@ class BasicYPR extends Basic {
         let indent = "";
         let sb = [''];
         if (FrameTransform != null && Orientation != null) {
-            sb.push("{\r\n\t\t" + indent);
+            sb.push("{\r\n  " + indent);
             if (this.validTime != null) {
                 sb.push("\"validTime\": " + this.validTime.toString() + ",\r\n" + indent + "  ");
             }
@@ -41,16 +41,18 @@ class BasicYPR extends Basic {
             if (this.parentPoseID != null && this.parentPoseID.id != "") {
                 sb.push("\"parentPoseID\": \"" + this.parentPoseID.id + "\",\r\n" + indent + "  ");
             }
-            sb.push("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + this.FrameTransform.Origin.lat + ",\r\n\t\t\t" + indent +
-                "\"lon\": " + this.FrameTransform.Origin.lon + ",\r\n\t\t\t" + indent +
+            sb.push("\"position\": \r\n  {\r\n    " + indent + "\"lat\": " +
+                this.FrameTransform.Origin.lat + ",\r\n    " + indent +
+                "\"lon\": " + this.FrameTransform.Origin.lon + ",\r\n    " + indent +
                 "\"h\":   " + this.FrameTransform.Origin.h);
-            sb.push("\r\n\t\t" + indent + "},");
-            sb.push("\r\n\t\t" + indent);
-            sb.push("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + this.Orientation.yaw + ",\r\n\t\t\t" + indent +
-                "\"pitch\": " + this.Orientation.pitch + ",\r\n\t\t\t" + indent +
+            sb.push("\r\n  " + indent + "},");
+            sb.push("\r\n  " + indent);
+            sb.push("\"angles\": \r\n  {\r\n    " + indent + "\"yaw\":   " +
+                this.Orientation.yaw + ",\r\n    " + indent +
+                "\"pitch\": " + this.Orientation.pitch + ",\r\n    " + indent +
                 "\"roll\":  " + this.Orientation.roll);
-            sb.push("\r\n\t\t" + indent + "}");
-            sb.push("\r\n\t" + indent + "}");
+            sb.push("\r\n  " + indent + "}");
+            sb.push("\r\n" + indent + "}");
         }
         return sb.join('');
     }
@@ -76,7 +78,7 @@ class BasicQuaternion extends Basic {
         let indent = "";
         let sb = [''];
         if (this.FrameTransform.Origin != null && this.Orientation != null) {
-            sb.push("{\r\n\t\t" + indent);
+            sb.push("{\r\n  " + indent);
             if (this.validTime != null) {
                 sb.push("\"validTime\": " + this.validTime.toString() + ",\r\n" + indent + "  ");
             }
@@ -86,19 +88,20 @@ class BasicQuaternion extends Basic {
             if (this.parentPoseID != null && this.parentPoseID.id != "") {
                 sb.push("\"parentPoseID\": \"" + this.parentPoseID.id + "\",\r\n" + indent + "  ");
             }
-            sb.push("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " +
-                this.FrameTransform.Origin.lat + ",\r\n\t\t\t" + indent +
+            sb.push("\"position\": \r\n  {\r\n    " + indent + "\"lat\": " +
+                this.FrameTransform.Origin.lat + ",\r\n    " + indent +
                 "\"lon\": " + this.FrameTransform.Origin.lon +
-                ",\r\n\t\t\t" + indent +
+                ",\r\n    " + indent +
                 "\"h\":   " + this.FrameTransform.Origin.h);
-            sb.push("\r\n\t\t" + indent + "},");
-            sb.push("\r\n\t\t" + indent);
-            sb.push("\"angles\": {\r\n\t\t\t" + indent + "\"x\":   " + this.Orientation.x + ",\r\n\t\t\t" + indent +
-                "\"y\": " + this.Orientation.y + ",\r\n\t\t\t" + indent +
-                "\"z\": " + this.Orientation.z + ",\r\n\t\t\t" + indent +
+            sb.push("\r\n  " + indent + "},");
+            sb.push("\r\n  " + indent);
+            sb.push("\"quaternion\": \r\n  {\r\n    " + indent + "\"x\":   " +
+                this.Orientation.x + ",\r\n      " + indent +
+                "\"y\": " + this.Orientation.y + ",\r\n      " + indent +
+                "\"z\": " + this.Orientation.z + ",\r\n      " + indent +
                 "\"w\":  " + this.Orientation.w);
-            sb.push("\r\n\t\t" + indent + "}");
-            sb.push("\r\n\t" + indent + "}");
+            sb.push("\r\n  " + indent + "}");
+            sb.push("\r\n" + indent + "}");
             return sb.join('');
         }
     }

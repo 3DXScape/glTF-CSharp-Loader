@@ -9,7 +9,6 @@ const Basic = require("./Basic");
 const Advanced = require("./Advanced");
 const Local = require("./Local");
 const FrameTransform = require("./FrameTransform");
-const Extras = require("./Extras");
 var source = proj4.Proj('EPSG:4326'); //source coordinates will be in Longitude/Latitude, WGS84
 var dest = proj4.Proj('EPSG:3785'); //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/
 // transforming point coordinates
@@ -31,7 +30,7 @@ console.log(json);
 let myQLocal = new Basic.BasicQuaternion("OS_GB: BasicQ", new Position.GeodeticPosition(51.5, -1.5, 23.4), new Orientation.Quaternion(0.1, 0.2, 0.3, 1.0));
 json = myQLocal.toJSON();
 console.log(json);
-let myALocal = new Advanced.Advanced(new Extras.PoseID("OS_GB: Advanced"), new FrameTransform.Extrinsic("epsg", "5819", "[1.5, -1.5, 23.4]"), new Orientation.Quaternion(0.1, 0.2, 0.3, 1.0));
+let myALocal = new Advanced.Advanced("OS_GB: Advanced", new FrameTransform.Extrinsic("epsg", "5819", "[1.5, -1.5, 23.4]"), new Orientation.Quaternion(0.1, 0.2, 0.3, 1.0));
 json = myALocal.toJSON();
 console.log(json);
 let myLLocal = new Local.Local("OS_GB: Local", new FrameTransform.Translation(9.0, 8.7, 7.6), new Orientation.YPRAngles(1, 2, 3));

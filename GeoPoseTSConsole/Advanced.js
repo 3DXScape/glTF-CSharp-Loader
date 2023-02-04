@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Advanced = void 0;
+const Extras = require("./Extras");
 const GeoPose = require("./GeoPose");
 // Implemention order: 7 - follows Basic GeoPose.
 // This is the most general GeoPose - the largest part of the 20% part of a 80/20 solution.
@@ -10,9 +11,9 @@ const GeoPose = require("./GeoPose");
 /// Advanced GeoPose.
 /// </summary>
 class Advanced extends GeoPose.GeoPose {
-    constructor(poseID, frameTransform, orientation) {
+    constructor(id, frameTransform, orientation) {
         super();
-        this.poseID = poseID;
+        this.poseID = new Extras.PoseID(id);
         this.FrameTransform = frameTransform;
         this.Orientation = orientation;
     }

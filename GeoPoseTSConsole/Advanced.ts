@@ -12,9 +12,9 @@ import * as GeoPose from './GeoPose';
 /// Advanced GeoPose.
 /// </summary>
 export class Advanced extends GeoPose.GeoPose {
-    public constructor(poseID: Extras.PoseID, frameTransform: FrameTransform.Extrinsic, orientation: Orientation.Quaternion) {
+    public constructor(id: string, frameTransform: FrameTransform.Extrinsic, orientation: Orientation.Quaternion) {
         super();
-        this.poseID = poseID;
+        this.poseID = new Extras.PoseID(id);
         this.FrameTransform = frameTransform;
         this.Orientation = orientation;
     }

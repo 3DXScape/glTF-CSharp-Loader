@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace LTP_ENU
+namespace Support
 {
     // This is an implementation of EPSG method 9837 using sections 4.1.1 and 4.1.2 of https://www.iogp.org/wp-content/uploads/2019/09/373-07-02.pdf.
     public class LTP_ENU
@@ -189,7 +189,6 @@ namespace LTP_ENU
             Debug.Assert(AreClose(0.00000000, xEast));
             Debug.Assert(AreClose(0.82903757, yNorth));
             Debug.Assert(AreClose(0.55919291, zUp));
-
         }
 
         public static void Test2()
@@ -217,7 +216,6 @@ namespace LTP_ENU
             Debug.Assert(AreClose(latLA, latTest));
             Debug.Assert(AreClose(lonLA, lonTest));
             Debug.Assert(AreClose(hTest, hLA));
-
         }
 
         static bool AreClose(double x0, double x1)

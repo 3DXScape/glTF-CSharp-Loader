@@ -9,6 +9,7 @@ using ProjNet.CoordinateSystems.Transformations;
 using GeoAPI.CoordinateSystems.Transformations;
 
 using Positions;
+using Support;
 
 /* ===================================== Frame Transforms =================================== */
 
@@ -165,7 +166,7 @@ namespace FrameTransforms
         public override Position Transform(Position point)
         {
             double east, north, up;
-            LTP_ENU.LTP_ENU.GeodeticToEnu(((GeodeticPosition)point).lat, ((GeodeticPosition)point).lon, ((GeodeticPosition)point).h,
+            Support.LTP_ENU.GeodeticToEnu(((GeodeticPosition)point).lat, ((GeodeticPosition)point).lon, ((GeodeticPosition)point).h,
                 Origin.lat, Origin.lon, Origin.h, out east, out north, out up);
             CartesianPosition outPoint = new CartesianPosition(east, north, up);
             return outPoint;

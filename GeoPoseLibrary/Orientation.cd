@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Orientations.Orientation">
+    <Position X="7.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orientation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Orientations.YPRAngles">
+    <Position X="8.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAQAAAAgEAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orientation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Orientations.Quaternion">
+    <Position X="6.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAEAAAAAAAAAhgBQAAAAA=</HashCode>
+      <FileName>Orientation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

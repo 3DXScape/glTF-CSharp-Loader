@@ -1,3 +1,6 @@
+// Implemention order: 3 - follows Position.
+// These classes define transformations of a Position in one 3D frame to a Position in another 3D frame.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +13,6 @@ using GeoAPI.CoordinateSystems.Transformations;
 
 using Positions;
 using Support;
-
-/* ===================================== Frame Transforms =================================== */
 
 namespace FrameTransforms
 {

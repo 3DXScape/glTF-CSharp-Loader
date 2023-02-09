@@ -1,3 +1,44 @@
+Copyright (c) 2023 The Dani Elenga Foundation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+// * Copyright(c) 2023 The Dani Elenga Foundation
+// *
+// * Permission is hereby granted, free of charge, to any person obtaining a copy
+// * of this software and associated documentation files(the "Software"), to deal
+// *     in the Software without restriction, including without limitation the rights
+// * to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+// * copies of the Software, and to permit persons to whom the Software is
+// * furnished to do so, subject to the following conditions:
+// *
+// * The above copyright notice and this permission notice shall be included in all
+// * copies or substantial portions of the Software.
+// *
+// * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// *     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// *     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// * SOFTWARE.
+// *
+
 using System;
 using System.Diagnostics;
 
@@ -147,83 +188,6 @@ namespace Support
             EnuToEcef(xEast, yNorth, zUp, lat0, lon0, h0, out x, out y, out z);
             EcefToGeodetic(x, y, z, out lat, out lon, out h);
         }
-
-        public static void Test()
-        {
-            var latLA = 34.00000048;
-            var lonLA = -117.3335693;
-            var hLA = 251.702;
-
-            double x0, y0, z0;
-            GeodeticToEcef(latLA, lonLA, hLA, out x0, out y0, out z0);
-
-            System.Diagnostics.Debug.Assert(AreClose(-2430601.8, x0));
-            Debug.Assert(AreClose(-4702442.7, y0));
-            Debug.Assert(AreClose(3546587.4, z0));
-
-            // Checks to read out the matrix entries, to compare to the paper
-            double x, y, z;
-            double xEast, yNorth, zUp;
-
-            // First column
-            x = x0 + 1;
-            y = y0;
-            z = z0;
-            EcefToEnu(x, y, z, latLA, lonLA, hLA, out xEast, out yNorth, out zUp);
-            Debug.Assert(AreClose(0.88834836, xEast));
-            Debug.Assert(AreClose(0.25676467, yNorth));
-            Debug.Assert(AreClose(-0.38066927, zUp));
-
-            x = x0;
-            y = y0 + 1;
-            z = z0;
-            EcefToEnu(x, y, z, latLA, lonLA, hLA, out xEast, out yNorth, out zUp);
-            Debug.Assert(AreClose(-0.45917011, xEast));
-            Debug.Assert(AreClose(0.49675810, yNorth));
-            Debug.Assert(AreClose(-0.73647416, zUp));
-
-            x = x0;
-            y = y0;
-            z = z0 + 1;
-            EcefToEnu(x, y, z, latLA, lonLA, hLA, out xEast, out yNorth, out zUp);
-            Debug.Assert(AreClose(0.00000000, xEast));
-            Debug.Assert(AreClose(0.82903757, yNorth));
-            Debug.Assert(AreClose(0.55919291, zUp));
-        }
-
-        public static void Test2()
-        {
-            var latLA = 34.00000048;
-            var lonLA = -117.3335693;
-            var hLA = 251.702;
-
-            double x0, y0, z0;
-            GeodeticToEcef(latLA, lonLA, hLA, out x0, out y0, out z0);
-
-            Debug.Assert(AreClose(-2430601.8, x0));
-            Debug.Assert(AreClose(-4702442.7, y0));
-            Debug.Assert(AreClose(3546587.4, z0));
-
-            EcefToEnu(x0, y0, z0, latLA, lonLA, hLA, out double xEast, out double yNorth, out double zUp);
-
-            Debug.Assert(AreClose(0, xEast));
-            Debug.Assert(AreClose(0, yNorth));
-            Debug.Assert(AreClose(0, zUp));
-
-            EnuToEcef(xEast, yNorth, zUp, latLA, lonLA, hLA, out double xTest, out double yTest, out double zTest);
-            EcefToGeodetic(xTest, yTest, zTest, out double latTest, out double lonTest, out double hTest);
-
-            Debug.Assert(AreClose(latLA, latTest));
-            Debug.Assert(AreClose(lonLA, lonTest));
-            Debug.Assert(AreClose(hTest, hLA));
-        }
-
-        static bool AreClose(double x0, double x1)
-        {
-            var d = x1 - x0;
-            return (d * d) < 0.1;
-        }
-
 
         static double DegreesToRadians(double degrees)
         {

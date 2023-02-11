@@ -80,7 +80,7 @@ namespace ProjNetConsole
 "        AREA[\"To be specified\"]," +
 "        BBOX[-90,-180,90,180]]," +
 "    ID[\"EPSG\",5819]]";
-            pcs = fac.CreateFromWkt(WKT) as ProjectedCoordinateSystem;
+            //pcs = fac.CreateFromWkt(WKT) as ProjectedCoordinateSystem;
 
             var from = ProjNet.CoordinateSystems.GeographicCoordinateSystem.WGS84;
             var to = ProjNet.CoordinateSystems.ProjectedCoordinateSystem.WGS84_UTM(30, true);
@@ -95,6 +95,172 @@ namespace ProjNetConsole
             MathTransform mathTransform = trans.MathTransform;
             var businessLocation = mathTransform.Transform(businessCoordinate.X, businessCoordinate.Y, businessCoordinate.Z);
             var searchLocation = mathTransform.Transform(searchLocationCoordinate.X, searchLocationCoordinate.Y, searchLocationCoordinate.Z);
+
+            double[] xyz = new double[3] { -1.471256, 50.937951, 10.0 };
+            //double[] xyz = new double[3] { 51.50735, -0.127758, 10.0 };
+            var cf = new CoordinateSystemFactory();
+            var f = new CoordinateTransformationFactory();
+
+            string utm30N = "PROJCS[\"WGS 84 / UTM zone 30N\"," +
+                " GEOGCS[\"WGS 84\"," +
+                " DATUM[\"WGS_1984\"," +
+                " SPHEROID[\"WGS 84\",6378137,298.257223563," +
+                " AUTHORITY[\"EPSG\",\"7030\"]]," +
+                " AUTHORITY[\"EPSG\",\"6326\"]]," +
+                " PRIMEM[\"Greenwich\",0," +
+                " AUTHORITY[\"EPSG\",\"8901\"]]," +
+                " UNIT[\"degree\",0.0174532925199433," +
+                " AUTHORITY[\"EPSG\",\"9122\"]]," +
+                " AUTHORITY[\"EPSG\",\"4326\"]]," +
+                " PROJECTION[\"Transverse_Mercator\"]," +
+                " PARAMETER[\"latitude_of_origin\",0]," +
+                " PARAMETER[\"central_meridian\",-3]," +
+                " PARAMETER[\"scale_factor\",0.9996]," +
+                " PARAMETER[\"false_easting\",500000]," +
+                " PARAMETER[\"false_northing\",0]," +
+                " UNIT[\"metre\",1," +
+                " AUTHORITY[\"EPSG\",\"9001\"]]," +
+                " AXIS[\"Easting\",EAST]," +
+                " AXIS[\"Northing\",NORTH]," +
+                " AUTHORITY[\"EPSG\",\"32630\"]]";
+            string wkt4326 = "GEOGCS[\"WGS 84\"," +
+                " DATUM[\"WGS_1984\"," +
+                " SPHEROID[\"WGS 84\",6378137,298.257223563," +
+                " AUTHORITY[\"EPSG\",\"7030\"]]," +
+                " AUTHORITY[\"EPSG\",\"6326\"]]," +
+                " PRIMEM[\"Greenwich\",0," +
+                " AUTHORITY[\"EPSG\",\"8901\"]]," +
+                " UNIT[\"degree\",0.0174532925199433," +
+                " AUTHORITY[\"EPSG\",\"9122\"]]," +
+                " AUTHORITY[\"EPSG\",\"4326\"]]";
+            string wkt5819 = "PROJCRS[\"EPSG topocentric example A\"," +
+                "   BASEGEOGCRS[\"WGS 84\"," +
+                "     DATUM[\"World Geodetic System 1984\"," +
+                "       ELLIPSOID[\"WGS 84\",6378137,298.257223563," +
+                "       LENGTHUNIT[\"metre\",1]]]," +
+                "   PRIMEM[\"Greenwich\",0," +
+                "     ANGLEUNIT[\"degree\",0.0174532925199433]]," +
+                "     ID[\"EPSG\",4979]]," +
+                "   CONVERSION[\"EPSG topocentric example A\"," +
+                "     METHOD[\"Geographic/topocentric conversions\"," +
+                "     ID[\"EPSG\",9837]]," +
+                "   PARAMETER[\"Latitude of topocentric origin\",55," +
+                "     ANGLEUNIT[\"degree\",0.0174532925199433]," +
+                "     ID[\"EPSG\",8834]]," +
+                "   PARAMETER[\"Longitude of topocentric origin\",5," +
+                "     ANGLEUNIT[\"degree\",0.0174532925199433]," +
+                "     ID[\"EPSG\",8835]]," +
+                "   PARAMETER[\"Ellipsoidal height of topocentric origin\",0," +
+                "     LENGTHUNIT[\"metre\",1]," +
+                "     ID[\"EPSG\",8836]]]," +
+                "   CS[Cartesian,3]," +
+                "   AXIS[\"topocentric East (U)\",east," +
+                "     ORDER[1]," +
+                "     LENGTHUNIT[\"metre\",1]]," +
+                "   AXIS[\"topocentric North (V)\",north," +
+                "     ORDER[2]," +
+                "     LENGTHUNIT[\"metre\",1]]," +
+                "   AXIS[\"topocentric height (W)\",up," +
+                "     ORDER[3]," +
+                "     LENGTHUNIT[\"metre\",1]]," +
+                "   USAGE[" +
+                "     SCOPE[\"unknown\"]," +
+                "     AREA[\"To be specified\"]," +
+                "     BBOX[-90,-180,90,180]]," +
+                "   ID[\"EPSG\",5819]]";
+            string wkt25831 = "PROJCS[\"ETRS89 / UTM zone 30N\",GEOGCS[\"ETRS89\",DATUM[\"European_Terrestrial_Reference_System_1989\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY[\"EPSG\",\"6258\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4258\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",3],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"25831\"]]";
+            string wkt3857 = "PROJCS[\"WGS 84 / World Mercator\",GEOGCS[\"WGS 84 sphere\",DATUM[\"WGS_1984 sphere\",SPHEROID[\"WGS 84 sphere\",6378137,0.0]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Mercator_1SP\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",0],PARAMETER[\"scale_factor\",1],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]";
+            string from4326ToUTM30N = wkt4326 + "=>" + utm30N;
+            string idString = from4326ToUTM30N;
+            if(IsDerivedCRS(idString))
+            {
+                //
+                string epsgNumber = GetEPSGNumber(idString);
+                if(epsgNumber == null || epsgNumber == "")
+                {
+                    // no transformation
+                }
+                else if(epsgNumber == "5819")
+                {
+                    // get lat0, lon0, h0
+
+                    // transform
+
+                }
+                else
+                {
+                    // not found
+                }
+            }
+            else if(IsFromAndToCRS(idString))
+            {
+                string fromCRS = "";
+                string toCRS = "";
+                GetFromAndToCRS(idString, out fromCRS, out toCRS);
+            }
+            else
+            {
+                // unrecognized form
+            }
+
+            CoordinateSystem csIn = null;  
+            try
+            {
+                csIn = cf.CreateFromWkt(wkt4326);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Bad, unrecognized, or unsupported outer coordinate system: " + ex.Message);
+            }
+            CoordinateSystem csOut = null;
+            try
+            {
+                csOut = cf.CreateFromWkt(utm30N);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Bad, unrecognized, or unsupported outer coordinate system: " + ex.Message);
+            }
+            //var cs3857 = cf.CreateFromWkt(wkt3857);
+            ProjNet.CoordinateSystems.Transformations.ICoordinateTransformation transform = null;
+            if (csIn != null && csOut != null)
+            {
+                transform = f.CreateFromCoordinateSystems(csIn, csOut);
+                double[] XYZ = new double[3];
+                double[] ret = transform.MathTransform.Transform(xyz);
+                if (ret.Length == 2)
+                {
+                    XYZ[2] = xyz[2];
+                }
+                XYZ[0] = ret[0];
+                XYZ[1] = ret[1];
+                Console.WriteLine("Coordinate transformation: " +
+                    xyz[0].ToString() + ", " + xyz[1].ToString() + ", " + xyz[2].ToString() + "=>" +
+                    XYZ[0].ToString() + ", " + XYZ[1].ToString() + ", " + XYZ[2].ToString());
+            }
+            else
+            {
+                Console.WriteLine("Coordinate transformation failed: ");
+            }
         }
+        public static bool IsDerivedCRS(string idString)
+        {
+            return false;
+        }
+        public static bool IsFromAndToCRS(string idString)
+        {
+            return false;
+        }
+        public static bool GetFromAndToCRS(string idString, out string fromCRS, out string toCRS)
+        {
+            fromCRS = "";
+            toCRS = "";
+            return false;
+        }
+        public static string GetEPSGNumber(string wktString)
+        {
+            return "";
+        }
+
     }
 }

@@ -1,4 +1,5 @@
-Copyright (c) 2023 The Dani Elenga Foundation
+/*
+ * Copyright (c) 2023 The Dani Elenga Foundation
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -17,10 +18,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*/
 
 // Implemention order: 3 - follows Position.
 // These classes define transformations of a Position in one 3D frame to a Position in another 3D frame.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -126,6 +127,8 @@ namespace FrameTransforms
                 var businessLocation = mathTransform.Transform(businessCoordinate.X, businessCoordinate.Y);
                 var searchLocation = mathTransform.Transform(searchLocationCoordinate.X, searchLocationCoordinate.Y);
 
+
+
                 return noTransform;
             }
             else if (uri == "https://epsg.org")
@@ -147,6 +150,44 @@ namespace FrameTransforms
             else if (uri == "https://iau.org")
             {
                 return noTransform;
+            }
+            else if (uri == "https://geopose.io")
+            {
+                // extract pair of CS wkts or CS plus transformation
+                //  if contains "=>" then that splits the outer and inner specs
+                //  else check as special case: ID[\"EPSG\",5819]]$ or AUTHORITY[\"EPGS\",\"5819\"]]$
+                //var inP = new Positions.NoPosition();
+                double[] xyz = new double[3];
+                if (point is CartesianPosition)
+                {
+                    xyz[0] = ((CartesianPosition)point).x;
+                    xyz[1] = ((CartesianPosition)point).y;
+                    xyz[2] = ((CartesianPosition)point).z;
+                }
+                else if(point is GeodeticPosition)
+                {
+                    xyz[0] = ((GeodeticPosition)point).lon;
+                    xyz[1] = ((GeodeticPosition)point).lat;
+                    xyz[2] = ((GeodeticPosition)point).h;
+                }
+                else
+                {
+                    return new Positions.NoPosition();
+                }
+                var cf = new CoordinateSystemFactory();
+                var f = new CoordinateTransformationFactory();
+                string wkt25831 = "PROJCS[\"ETRS89 / UTM zone 31N\",GEOGCS[\"ETRS89\",DATUM[\"European_Terrestrial_Reference_System_1989\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY[\"EPSG\",\"6258\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4258\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",3],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"25831\"]]";
+                string wkt3857 = "PROJCS[\"WGS 84 / World Mercator\",GEOGCS[\"WGS 84 sphere\",DATUM[\"WGS_1984 sphere\",SPHEROID[\"WGS 84 sphere\",6378137,0.0]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Mercator_1SP\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",0],PARAMETER[\"scale_factor\",1],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]";
+                var cs25831 = cf.CreateFromWkt(wkt25831);
+                var cs3857 = cf.CreateFromWkt(wkt3857);
+                var transformTo3857 = f.CreateFromCoordinateSystems(cs25831, cs3857);
+                double[] ret = transformTo3857.MathTransform.Transform(xyz);
+                if (ret != null)
+                {
+                    var outP = new Positions.CartesianPosition(ret[0], ret[1], xyz[2]);
+                    return outP;
+                }
+                return new Positions.NoPosition();
             }
             return noTransform;
         }

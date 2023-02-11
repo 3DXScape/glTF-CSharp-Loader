@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using ProjNet;
@@ -169,9 +170,31 @@ namespace ProjNetConsole
                 "     BBOX[-90,-180,90,180]]," +
                 "   ID[\"EPSG\",5819]]";
             string wkt25831 = "PROJCS[\"ETRS89 / UTM zone 30N\",GEOGCS[\"ETRS89\",DATUM[\"European_Terrestrial_Reference_System_1989\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY[\"EPSG\",\"6258\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4258\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",3],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"25831\"]]";
-            string wkt3857 = "PROJCS[\"WGS 84 / World Mercator\",GEOGCS[\"WGS 84 sphere\",DATUM[\"WGS_1984 sphere\",SPHEROID[\"WGS 84 sphere\",6378137,0.0]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Mercator_1SP\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",0],PARAMETER[\"scale_factor\",1],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]";
+            string wkt3857 = "PROJCS[\"WGS 84 / Pseudo-Mercator\"," +
+"GEOGCS[\"WGS 84\"," +
+"DATUM[\"WGS_1984\"," +
+"SPHEROID[\"WGS 84\",6378137,298.257223563," +
+"AUTHORITY[\"EPSG\",\"7030\"]]," +
+"AUTHORITY[\"EPSG\",\"6326\"]]," +
+"PRIMEM[\"Greenwich\",0," +
+"AUTHORITY[\"EPSG\",\"8901\"]]," +
+"UNIT[\"degree\",0.0174532925199433," +
+"AUTHORITY[\"EPSG\",\"9122\"]]," +
+"AUTHORITY[\"EPSG\",\"4326\"]]," +
+"PROJECTION[\"Mercator_1SP\"]," +
+"PARAMETER[\"central_meridian\",0]," +
+"PARAMETER[\"scale_factor\",1]," +
+"PARAMETER[\"false_easting\",0]," +
+"PARAMETER[\"false_northing\",0]," +
+"UNIT[\"metre\",1," +
+"AUTHORITY[\"EPSG\",\"9001\"]]," +
+"AXIS[\"Easting\",EAST]," +
+"AXIS[\"Northing\",NORTH]," +
+"EXTENSION[\"PROJ4\",\"+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs\"]," +
+"AUTHORITY[\"EPSG\",\"3857\"]]";
             string from4326ToUTM30N = wkt4326 + "=>" + utm30N;
-            string idString = from4326ToUTM30N;
+            string idString = wkt5819;// from4326ToUTM30N;
+            string myNumber = GetEPSGNumber(wkt3857);
             if(IsDerivedCRS(idString))
             {
                 //
@@ -245,7 +268,7 @@ namespace ProjNetConsole
         }
         public static bool IsDerivedCRS(string idString)
         {
-            return false;
+            return idString.ToLower().Contains("conversion[");
         }
         public static bool IsFromAndToCRS(string idString)
         {
@@ -259,7 +282,31 @@ namespace ProjNetConsole
         }
         public static string GetEPSGNumber(string wktString)
         {
-            return "";
+            string epsgNumber = "";
+            // look at end of WKT for WKT1 or WKT2 ID
+            // "ID\["EPSG",\d+\]\]$" or "AUTHORITY\["EPSG",\"\d+\"\]\]$"
+            Regex reID = new Regex("(id\\[\\\"epsg\\\",\\d+\\]\\]$)");
+            Regex reAuthority = new Regex("(authority\\[\\\"epsg\\\",\\\"\\d+\\\"\\]\\]$)");
+            string thisMatch = "";
+            MatchCollection matches;
+            if((matches = reID.Matches(wktString.ToLower())).Count > 0)
+            {
+                thisMatch = matches[0].Value;
+            }
+            else if((matches = reAuthority.Matches(wktString.ToLower())).Count > 0)
+            {
+                thisMatch = matches[0].Value;
+            }
+            if(thisMatch != "")
+            {
+                Regex reNumber = new Regex("\\d+");
+                matches = reNumber.Matches(thisMatch);
+                if (matches.Count > 0)
+                {
+                    epsgNumber = matches[0].Value;
+                }
+            }
+            return epsgNumber;
         }
 
     }

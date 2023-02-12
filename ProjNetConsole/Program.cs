@@ -145,10 +145,10 @@ namespace ProjNetConsole
                 "   CONVERSION[\"EPSG topocentric example A\"," +
                 "     METHOD[\"Geographic/topocentric conversions\"," +
                 "     ID[\"EPSG\",9837]]," +
-                "   PARAMETER[\"Latitude of topocentric origin\",55," +
+                "   PARAMETER[\"Latitude of topocentric origin\",51.5003," +
                 "     ANGLEUNIT[\"degree\",0.0174532925199433]," +
                 "     ID[\"EPSG\",8834]]," +
-                "   PARAMETER[\"Longitude of topocentric origin\",5," +
+                "   PARAMETER[\"Longitude of topocentric origin\",-1.2," +
                 "     ANGLEUNIT[\"degree\",0.0174532925199433]," +
                 "     ID[\"EPSG\",8835]]," +
                 "   PARAMETER[\"Ellipsoidal height of topocentric origin\",0," +
@@ -193,7 +193,8 @@ namespace ProjNetConsole
 "EXTENSION[\"PROJ4\",\"+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs\"]," +
 "AUTHORITY[\"EPSG\",\"3857\"]]";
             string from4326ToUTM30N = wkt4326 + "=>" + utm30N;
-            string idString =  from4326ToUTM30N; // wkt5819;
+            string idString =  wkt5819; // from4326ToUTM30N; // 
+            string parameterString = "{\"lat\": 51.5,\"lon\": -1.2,\"h\": 11.3}";
             string myNumber = GetEPSGNumber(wkt3857);
             string fromCRS = "";
             string toCRS = "";
@@ -212,9 +213,13 @@ namespace ProjNetConsole
                     double[] origin = new double[3];
                     if (GetOriginParameters(idString, ref origin))
                     {
-
+                        Positions.GeodeticPosition point = GetPositionFromParameters(parameterString);
+                        Positions.GeodeticPosition Origin = new Positions.GeodeticPosition(origin[0], origin[1], origin[2]);
+                        double east, north, up;
+                        Support.LTP_ENU.GeodeticToEnu(((Positions.GeodeticPosition)point).lat, ((Positions.GeodeticPosition)point).lon, ((Positions.GeodeticPosition)point).h,
+                            Origin.lat, Origin.lon, Origin.h, out east, out north, out up);
+                        Positions.CartesianPosition outPoint = new Positions.CartesianPosition(east, north, up);
                     }
-                    // transform
 
                 }
                 else
@@ -324,12 +329,12 @@ namespace ProjNetConsole
         public static bool GetOriginParameters(string wktString, ref double[] origin)
         {
             // PARAMETER[\"Latitude of topocentric origin\",55,
-            Regex re = new Regex("parameter\\[\\\"latitude.+,\\d+\\.?\\d*");
+            Regex re = new Regex("parameter\\[\\\"latitude.+,-?\\d+\\.?\\d*");
             MatchCollection matches = re.Matches(wktString.ToLower());
             if (matches.Count > 0)
             {
                 string thisMatch = matches[0].Value;
-                re = new Regex("\\d+\\.?\\d*");
+                re = new Regex("-?\\d+\\.?\\d*");
                 matches = re.Matches(thisMatch);
                 if (matches.Count > 0)
                 {
@@ -344,12 +349,12 @@ namespace ProjNetConsole
             {
                 return false;
             }
-            re = new Regex("parameter\\[\\\"longitude.+,\\d+\\.?\\d*");
+            re = new Regex("parameter\\[\\\"longitude.+,-?\\d+\\.?\\d*");
             matches = re.Matches(wktString.ToLower());
             if (matches.Count > 0)
             {
                 string thisMatch = matches[0].Value;
-                re = new Regex("\\d+\\.?\\d*");
+                re = new Regex("-?\\d+\\.?\\d*");
                 matches = re.Matches(thisMatch);
                 if (matches.Count > 0)
                 {
@@ -364,12 +369,12 @@ namespace ProjNetConsole
             {
                 return false;
             }
-            re = new Regex("parameter\\[\\\"[^\\]]*height.+,\\d+\\.?\\d*");
+            re = new Regex("parameter\\[\\\"[^\\]]*height.+,-?\\d+\\.?\\d*");
             matches = re.Matches(wktString.ToLower());
             if (matches.Count > 0)
             {
                 string thisMatch = matches[0].Value;
-                re = new Regex("\\d+\\.?\\d*");
+                re = new Regex("-?\\d+\\.?\\d*");
                 matches = re.Matches(thisMatch);
                 if (matches.Count > 0)
                 {
@@ -386,5 +391,73 @@ namespace ProjNetConsole
             }
             return true;
         }
+        public static Positions.GeodeticPosition GetPositionFromParameters(string paramString)
+        {
+            // URLEncoded: lat=12.345&lon=-22.543&h=11.22
+            // JSON encoded: {"lat": 12.345, "lon": -22.54, "h": 11.22}
+            Positions.GeodeticPosition position = new Positions.NoPosition();
+            Regex re = new Regex("\\\"lat\\\"\\s*:\\s*-?\\d+(\\.\\d*)?");
+            MatchCollection matches = re.Matches(paramString.ToLower());
+            if (matches.Count > 0)
+            {
+                string thisMatch = matches[0].Value;
+                re = new Regex("-?\\d+\\.?\\d*");
+                matches = re.Matches(thisMatch);
+                if (matches.Count > 0)
+                {
+                    position.lat = double.Parse(matches[0].Value);
+                }
+                else
+                {
+                    return new Positions.NoPosition(); 
+                }
+            }
+            else
+            {
+                return new Positions.NoPosition();
+            }
+            re = new Regex("\\\"lon\\\"\\s*:\\s*-?\\d+(\\.\\d*)?");
+            matches = re.Matches(paramString.ToLower());
+            if (matches.Count > 0)
+            {
+                string thisMatch = matches[0].Value;
+                re = new Regex("-?\\d+\\.?\\d*");
+                matches = re.Matches(thisMatch);
+                if (matches.Count > 0)
+                {
+                    position.lon = double.Parse(matches[0].Value);
+                }
+                else
+                {
+                    return new Positions.NoPosition();
+                }
+            }
+            else
+            {
+                return new Positions.NoPosition();
+            }
+            re = new Regex("\\\"h\\\"\\s*:\\s*-?\\d+(\\.\\d*)?");
+            matches = re.Matches(paramString.ToLower());
+            if (matches.Count > 0)
+            {
+                string thisMatch = matches[0].Value;
+                re = new Regex("-?\\d+\\.?\\d*");
+                matches = re.Matches(thisMatch);
+                if (matches.Count > 0)
+                {
+                    position.h = double.Parse(matches[0].Value);
+                }
+                else
+                {
+                    return new Positions.NoPosition();
+                }
+            }
+            else
+            {
+                return new Positions.NoPosition();
+            }
+            return position;
+        }
+
     }
 }

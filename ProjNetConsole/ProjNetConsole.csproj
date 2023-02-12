@@ -13,4 +13,8 @@
     <PackageReference Include="ProjNET4GeoAPI" Version="1.4.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GeoPoseLibrary\GeoPoseLibrary.csproj" />
+  </ItemGroup>
+
 </Project>

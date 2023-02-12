@@ -195,18 +195,22 @@ namespace ProjNetConsole
             string from4326ToUTM30N = wkt4326 + "=>" + utm30N;
             string idString = wkt5819;// from4326ToUTM30N;
             string myNumber = GetEPSGNumber(wkt3857);
-            if(IsDerivedCRS(idString))
+            if (IsDerivedCRS(idString))
             {
                 //
                 string epsgNumber = GetEPSGNumber(idString);
-                if(epsgNumber == null || epsgNumber == "")
+                if (epsgNumber == null || epsgNumber == "")
                 {
                     // no transformation
                 }
-                else if(epsgNumber == "5819")
+                else if (epsgNumber == "5819")
                 {
                     // get lat0, lon0, h0
+                    double[] origin = new double[3];
+                    if (GetOriginParameters(idString, ref origin))
+                    {
 
+                    }
                     // transform
 
                 }
@@ -215,7 +219,7 @@ namespace ProjNetConsole
                     // not found
                 }
             }
-            else if(IsFromAndToCRS(idString))
+            else if (IsFromAndToCRS(idString))
             {
                 string fromCRS = "";
                 string toCRS = "";
@@ -226,7 +230,7 @@ namespace ProjNetConsole
                 // unrecognized form
             }
 
-            CoordinateSystem csIn = null;  
+            CoordinateSystem csIn = null;
             try
             {
                 csIn = cf.CreateFromWkt(wkt4326);
@@ -289,15 +293,15 @@ namespace ProjNetConsole
             Regex reAuthority = new Regex("(authority\\[\\\"epsg\\\",\\\"\\d+\\\"\\]\\]$)");
             string thisMatch = "";
             MatchCollection matches;
-            if((matches = reID.Matches(wktString.ToLower())).Count > 0)
+            if ((matches = reID.Matches(wktString.ToLower())).Count > 0)
             {
                 thisMatch = matches[0].Value;
             }
-            else if((matches = reAuthority.Matches(wktString.ToLower())).Count > 0)
+            else if ((matches = reAuthority.Matches(wktString.ToLower())).Count > 0)
             {
                 thisMatch = matches[0].Value;
             }
-            if(thisMatch != "")
+            if (thisMatch != "")
             {
                 Regex reNumber = new Regex("\\d+");
                 matches = reNumber.Matches(thisMatch);
@@ -308,6 +312,70 @@ namespace ProjNetConsole
             }
             return epsgNumber;
         }
-
+        public static bool GetOriginParameters(string wktString, ref double[] origin)
+        {
+            // PARAMETER[\"Latitude of topocentric origin\",55,
+            Regex re = new Regex("parameter\\[\\\"latitude.+,\\d+\\.?\\d*");
+            MatchCollection matches = re.Matches(wktString.ToLower());
+            if (matches.Count > 0)
+            {
+                string thisMatch = matches[0].Value;
+                re = new Regex("\\d+\\.?\\d*");
+                matches = re.Matches(thisMatch);
+                if (matches.Count > 0)
+                {
+                    origin[0] = double.Parse(matches[0].Value);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+            re = new Regex("parameter\\[\\\"longitude.+,\\d+\\.?\\d*");
+            matches = re.Matches(wktString.ToLower());
+            if (matches.Count > 0)
+            {
+                string thisMatch = matches[0].Value;
+                re = new Regex("\\d+\\.?\\d*");
+                matches = re.Matches(thisMatch);
+                if (matches.Count > 0)
+                {
+                    origin[1] = double.Parse(matches[0].Value);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+            re = new Regex("parameter\\[\\\"[^\\]]*height.+,\\d+\\.?\\d*");
+            matches = re.Matches(wktString.ToLower());
+            if (matches.Count > 0)
+            {
+                string thisMatch = matches[0].Value;
+                re = new Regex("\\d+\\.?\\d*");
+                matches = re.Matches(thisMatch);
+                if (matches.Count > 0)
+                {
+                    origin[2] = double.Parse(matches[0].Value);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

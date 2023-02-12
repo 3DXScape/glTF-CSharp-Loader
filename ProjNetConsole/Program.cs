@@ -193,8 +193,11 @@ namespace ProjNetConsole
 "EXTENSION[\"PROJ4\",\"+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs\"]," +
 "AUTHORITY[\"EPSG\",\"3857\"]]";
             string from4326ToUTM30N = wkt4326 + "=>" + utm30N;
-            string idString = wkt5819;// from4326ToUTM30N;
+            string idString =  from4326ToUTM30N; // wkt5819;
             string myNumber = GetEPSGNumber(wkt3857);
+            string fromCRS = "";
+            string toCRS = "";
+
             if (IsDerivedCRS(idString))
             {
                 //
@@ -221,8 +224,6 @@ namespace ProjNetConsole
             }
             else if (IsFromAndToCRS(idString))
             {
-                string fromCRS = "";
-                string toCRS = "";
                 GetFromAndToCRS(idString, out fromCRS, out toCRS);
             }
             else
@@ -233,7 +234,7 @@ namespace ProjNetConsole
             CoordinateSystem csIn = null;
             try
             {
-                csIn = cf.CreateFromWkt(wkt4326);
+                csIn = cf.CreateFromWkt(fromCRS);
             }
             catch (Exception ex)
             {
@@ -242,7 +243,7 @@ namespace ProjNetConsole
             CoordinateSystem csOut = null;
             try
             {
-                csOut = cf.CreateFromWkt(utm30N);
+                csOut = cf.CreateFromWkt(toCRS);
             }
             catch (Exception ex)
             {
@@ -276,12 +277,20 @@ namespace ProjNetConsole
         }
         public static bool IsFromAndToCRS(string idString)
         {
-            return false;
+            return idString.Contains("=>");
         }
         public static bool GetFromAndToCRS(string idString, out string fromCRS, out string toCRS)
         {
             fromCRS = "";
             toCRS = "";
+            // Split at =>
+            int arrowIndex = idString.IndexOf("=>");
+            if(arrowIndex < 1)
+            {
+                return false;
+            }
+            fromCRS = idString.Substring(0, arrowIndex);
+            toCRS = idString.Substring(arrowIndex + 2);
             return false;
         }
         public static string GetEPSGNumber(string wktString)

@@ -214,12 +214,8 @@ namespace ProjNetConsole
                     if (GetOriginParameters(idString, ref origin))
                     {
                         Positions.GeodeticPosition point = GetPositionFromParameters(parameterString);
-                        Positions.GeodeticPosition Origin = new Positions.GeodeticPosition(origin[0], origin[1], origin[2]);
-                        //double east, north, up;
-                        //Support.LTP_ENU.GeodeticToEnu(((Positions.GeodeticPosition)point).lat, ((Positions.GeodeticPosition)point).lon, ((Positions.GeodeticPosition)point).h,
-                        //    Origin.lat, Origin.lon, Origin.h, out east, out north, out up);
-                        Positions.CartesianPosition outPoint = Support.LTP_ENU.GeodeticToEnu(point, Origin);
-                        //Positions.CartesianPosition outPoint = new Positions.CartesianPosition(east, north, up);
+                        Positions.GeodeticPosition tangentPoint = new Positions.GeodeticPosition(origin[0], origin[1], origin[2]);
+                        Positions.CartesianPosition outPoint = Support.LTP_ENU.GeodeticToEnu(point, tangentPoint);
                     }
 
                 }
@@ -330,8 +326,28 @@ namespace ProjNetConsole
         public static bool GetOriginParameters(string wktString, ref double[] origin)
         {
             // PARAMETER[\"Latitude of topocentric origin\",55,
-            Regex re = new Regex("parameter\\[\\\"latitude.+,-?\\d+\\.?\\d*");
-            MatchCollection matches = re.Matches(wktString.ToLower());
+            origin[0] = GetSignedDoubleInRe("parameter\\[\\\"latitude.+,-?\\d+\\.?\\d*", wktString);
+            origin[1] = GetSignedDoubleInRe("parameter\\[\\\"longitude.+,-?\\d+\\.?\\d*", wktString);
+            origin[2] = GetSignedDoubleInRe("parameter\\[\\\"[^\\]]*height.+,-?\\d+\\.?\\d*", wktString);
+            return (!double.IsNaN(origin[0]) && !double.IsNaN(origin[1]) && !double.IsNaN(origin[2]));
+        }
+        public static Positions.GeodeticPosition GetOriginParameters(string wktString)
+        {
+            // PARAMETER[\"Latitude of topocentric origin\",55,
+            double lat = GetSignedDoubleInRe("parameter\\[\\\"latitude.+,-?\\d+\\.?\\d*", wktString);
+            double lon = GetSignedDoubleInRe("parameter\\[\\\"longitude.+,-?\\d+\\.?\\d*", wktString);
+            double h = GetSignedDoubleInRe("parameter\\[\\\"[^\\]]*height.+,-?\\d+\\.?\\d*", wktString);
+            if(!double.IsNaN(lat) && !double.IsNaN(lon) && !double.IsNaN(h))
+            {
+                return new Positions.GeodeticPosition(lat, lon, h);
+            }
+            return new Positions.NoPosition();
+        }
+        public static double GetSignedDoubleInRe(string reString, string inputString)
+        {
+            double result = double.NaN;
+            Regex re = new Regex(reString);
+            MatchCollection matches = re.Matches(inputString.ToLower());
             if (matches.Count > 0)
             {
                 string thisMatch = matches[0].Value;
@@ -339,126 +355,22 @@ namespace ProjNetConsole
                 matches = re.Matches(thisMatch);
                 if (matches.Count > 0)
                 {
-                    origin[0] = double.Parse(matches[0].Value);
-                }
-                else
-                {
-                    return false;
+                    result = double.Parse(matches[0].Value);
                 }
             }
-            else
-            {
-                return false;
-            }
-            re = new Regex("parameter\\[\\\"longitude.+,-?\\d+\\.?\\d*");
-            matches = re.Matches(wktString.ToLower());
-            if (matches.Count > 0)
-            {
-                string thisMatch = matches[0].Value;
-                re = new Regex("-?\\d+\\.?\\d*");
-                matches = re.Matches(thisMatch);
-                if (matches.Count > 0)
-                {
-                    origin[1] = double.Parse(matches[0].Value);
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-            re = new Regex("parameter\\[\\\"[^\\]]*height.+,-?\\d+\\.?\\d*");
-            matches = re.Matches(wktString.ToLower());
-            if (matches.Count > 0)
-            {
-                string thisMatch = matches[0].Value;
-                re = new Regex("-?\\d+\\.?\\d*");
-                matches = re.Matches(thisMatch);
-                if (matches.Count > 0)
-                {
-                    origin[2] = double.Parse(matches[0].Value);
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-            return true;
+            return result;
         }
         public static Positions.GeodeticPosition GetPositionFromParameters(string paramString)
         {
-            // URLEncoded: lat=12.345&lon=-22.543&h=11.22
             // JSON encoded: {"lat": 12.345, "lon": -22.54, "h": 11.22}
-            Positions.GeodeticPosition position = new Positions.NoPosition();
-            Regex re = new Regex("\\\"lat\\\"\\s*:\\s*-?\\d+(\\.\\d*)?");
-            MatchCollection matches = re.Matches(paramString.ToLower());
-            if (matches.Count > 0)
+            double lat = GetSignedDoubleInRe("\\\"lat\\\"\\s*:\\s*-?\\d+(\\.\\d*)?", paramString);
+            double lon = GetSignedDoubleInRe("\\\"lon\\\"\\s*:\\s*-?\\d+(\\.\\d*)?", paramString);
+            double h   = GetSignedDoubleInRe("\\\"h\\\"\\s*:\\s*-?\\d+(\\.\\d*)?", paramString);
+            if (!double.IsNaN(lat) && !double.IsNaN(lon) && !double.IsNaN(h))
             {
-                string thisMatch = matches[0].Value;
-                re = new Regex("-?\\d+\\.?\\d*");
-                matches = re.Matches(thisMatch);
-                if (matches.Count > 0)
-                {
-                    position.lat = double.Parse(matches[0].Value);
-                }
-                else
-                {
-                    return new Positions.NoPosition(); 
-                }
+                return new Positions.GeodeticPosition(lat, lon, h);
             }
-            else
-            {
-                return new Positions.NoPosition();
-            }
-            re = new Regex("\\\"lon\\\"\\s*:\\s*-?\\d+(\\.\\d*)?");
-            matches = re.Matches(paramString.ToLower());
-            if (matches.Count > 0)
-            {
-                string thisMatch = matches[0].Value;
-                re = new Regex("-?\\d+\\.?\\d*");
-                matches = re.Matches(thisMatch);
-                if (matches.Count > 0)
-                {
-                    position.lon = double.Parse(matches[0].Value);
-                }
-                else
-                {
-                    return new Positions.NoPosition();
-                }
-            }
-            else
-            {
-                return new Positions.NoPosition();
-            }
-            re = new Regex("\\\"h\\\"\\s*:\\s*-?\\d+(\\.\\d*)?");
-            matches = re.Matches(paramString.ToLower());
-            if (matches.Count > 0)
-            {
-                string thisMatch = matches[0].Value;
-                re = new Regex("-?\\d+\\.?\\d*");
-                matches = re.Matches(thisMatch);
-                if (matches.Count > 0)
-                {
-                    position.h = double.Parse(matches[0].Value);
-                }
-                else
-                {
-                    return new Positions.NoPosition();
-                }
-            }
-            else
-            {
-                return new Positions.NoPosition();
-            }
-            return position;
+            return new Positions.NoPosition();
         }
-
     }
 }

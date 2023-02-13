@@ -181,6 +181,19 @@ namespace Support
             GeodeticToEcef(lat, lon, h, out x, out y, out z);
             EcefToEnu(x, y, z, lat0, lon0, h0, out xEast, out yNorth, out zUp);
         }
+        // Converts the geodetic WGS-84 coordinated (lat, lon, h) to 
+        // East-North-Up coordinates in a Local Tangent Plane that is centered at the 
+        // (WGS-84) Geodetic point (lat0, lon0, h0).
+        public static Positions.CartesianPosition GeodeticToEnu(Positions.GeodeticPosition geodeticPosition,
+            Positions.GeodeticPosition tangentPosition)
+        {
+            double x, y, z;
+            double xEast, yNorth, zUp; 
+            GeodeticToEcef(geodeticPosition.lat, geodeticPosition.lon, geodeticPosition.h, out x, out y, out z);
+            EcefToEnu(x, y, z, tangentPosition.lat, tangentPosition.lon, tangentPosition.h, out xEast, out yNorth, out zUp);
+            Positions.CartesianPosition enuPosition = new Positions.CartesianPosition(xEast, yNorth, zUp);
+            return enuPosition;
+        }
         public static void EnuToGeodetic(double xEast, double yNorth, double zUp,
                                              double lat0, double lon0, double h0,
                                             out double lat, out double lon, out double h

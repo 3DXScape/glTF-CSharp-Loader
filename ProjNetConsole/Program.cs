@@ -215,10 +215,11 @@ namespace ProjNetConsole
                     {
                         Positions.GeodeticPosition point = GetPositionFromParameters(parameterString);
                         Positions.GeodeticPosition Origin = new Positions.GeodeticPosition(origin[0], origin[1], origin[2]);
-                        double east, north, up;
-                        Support.LTP_ENU.GeodeticToEnu(((Positions.GeodeticPosition)point).lat, ((Positions.GeodeticPosition)point).lon, ((Positions.GeodeticPosition)point).h,
-                            Origin.lat, Origin.lon, Origin.h, out east, out north, out up);
-                        Positions.CartesianPosition outPoint = new Positions.CartesianPosition(east, north, up);
+                        //double east, north, up;
+                        //Support.LTP_ENU.GeodeticToEnu(((Positions.GeodeticPosition)point).lat, ((Positions.GeodeticPosition)point).lon, ((Positions.GeodeticPosition)point).h,
+                        //    Origin.lat, Origin.lon, Origin.h, out east, out north, out up);
+                        Positions.CartesianPosition outPoint = Support.LTP_ENU.GeodeticToEnu(point, Origin);
+                        //Positions.CartesianPosition outPoint = new Positions.CartesianPosition(east, north, up);
                     }
 
                 }

@@ -193,7 +193,7 @@ namespace ProjNetConsole
 "EXTENSION[\"PROJ4\",\"+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs\"]," +
 "AUTHORITY[\"EPSG\",\"3857\"]]";
             string from4326ToUTM30N = wkt4326 + "=>" + utm30N;
-            string idString =  wkt5819; // from4326ToUTM30N; // 
+            string idString =  from4326ToUTM30N; // wkt5819; // 
             string parameterString = "{\"lat\": 51.5,\"lon\": -1.2,\"h\": 11.3}";
             string myNumber = GetEPSGNumber(wkt3857);
             string fromCRS = "";
@@ -226,52 +226,63 @@ namespace ProjNetConsole
             }
             else if (IsFromAndToCRS(idString))
             {
-                GetFromAndToCRS(idString, out fromCRS, out toCRS);
+                if (GetFromAndToCRS(idString, out fromCRS, out toCRS))
+                {
+                    CoordinateSystem csIn = null;
+                    try
+                    {
+                        csIn = cf.CreateFromWkt(fromCRS);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Bad, unrecognized, or unsupported outer coordinate system: " + ex.Message);
+                    }
+                    CoordinateSystem csOut = null;
+                    try
+                    {
+                        csOut = cf.CreateFromWkt(toCRS);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Bad, unrecognized, or unsupported outer coordinate system: " + ex.Message);
+                    }
+                    //var cs3857 = cf.CreateFromWkt(wkt3857);
+                    ProjNet.CoordinateSystems.Transformations.ICoordinateTransformation transform = null;
+                    if (csIn != null && csOut != null)
+                    {
+                        transform = f.CreateFromCoordinateSystems(csIn, csOut);
+                        double[] XYZ = new double[3];
+                        double[] ret = transform.MathTransform.Transform(xyz);
+                        XYZ[0] = ret[0];
+                        XYZ[1] = ret[1];
+                        if (ret.Length == 2)
+                        {
+                            XYZ[2] = xyz[2];
+                        }
+                        else
+                        {
+                            XYZ[2] = ret[2];
+                        }
+                        Console.WriteLine("Coordinate transformation: " +
+                            xyz[0].ToString() + ", " + xyz[1].ToString() + ", " + xyz[2].ToString() + "=>" +
+                            XYZ[0].ToString() + ", " + XYZ[1].ToString() + ", " + XYZ[2].ToString());
+                    }
+                    else
+                    {
+                        Console.WriteLine("Coordinate transformation failed: ");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("from or to CS unrecognized");
+                }
+
             }
             else
             {
-                // unrecognized form
+                Console.WriteLine("id string missing \"=>\".");
             }
 
-            CoordinateSystem csIn = null;
-            try
-            {
-                csIn = cf.CreateFromWkt(fromCRS);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Bad, unrecognized, or unsupported outer coordinate system: " + ex.Message);
-            }
-            CoordinateSystem csOut = null;
-            try
-            {
-                csOut = cf.CreateFromWkt(toCRS);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Bad, unrecognized, or unsupported outer coordinate system: " + ex.Message);
-            }
-            //var cs3857 = cf.CreateFromWkt(wkt3857);
-            ProjNet.CoordinateSystems.Transformations.ICoordinateTransformation transform = null;
-            if (csIn != null && csOut != null)
-            {
-                transform = f.CreateFromCoordinateSystems(csIn, csOut);
-                double[] XYZ = new double[3];
-                double[] ret = transform.MathTransform.Transform(xyz);
-                if (ret.Length == 2)
-                {
-                    XYZ[2] = xyz[2];
-                }
-                XYZ[0] = ret[0];
-                XYZ[1] = ret[1];
-                Console.WriteLine("Coordinate transformation: " +
-                    xyz[0].ToString() + ", " + xyz[1].ToString() + ", " + xyz[2].ToString() + "=>" +
-                    XYZ[0].ToString() + ", " + XYZ[1].ToString() + ", " + XYZ[2].ToString());
-            }
-            else
-            {
-                Console.WriteLine("Coordinate transformation failed: ");
-            }
         }
         public static bool IsDerivedCRS(string idString)
         {
@@ -293,7 +304,7 @@ namespace ProjNetConsole
             }
             fromCRS = idString.Substring(0, arrowIndex);
             toCRS = idString.Substring(arrowIndex + 2);
-            return false;
+            return true;
         }
         public static string GetEPSGNumber(string wktString)
         {

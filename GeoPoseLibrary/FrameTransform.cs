@@ -153,9 +153,12 @@ namespace FrameTransforms
             }
             else if (uri == "https://geopose.io")
             {
-                // extract pair of CS wkts or CS plus transformation
+                // extract pair of CS wkts or CS plus transformation from the id string
+                // get the point to transform from the parameters string, JSON-encoded as
+                //  {"lat": 12.345, "lon": -22.54, "h": 11.22}
                 //  if contains "=>" then that splits the outer and inner specs
                 //  else check as special case: ID[\"EPSG\",5819]]$ or AUTHORITY[\"EPGS\",\"5819\"]]$
+#if REPLACED
                 //var inP = new Positions.NoPosition();
                 double[] xyz = new double[3];
                 if (point is CartesianPosition)
@@ -187,6 +190,95 @@ namespace FrameTransforms
                     var outP = new Positions.CartesianPosition(ret[0], ret[1], xyz[2]);
                     return outP;
                 }
+#endif // REPLACED
+                if (Support.ExtrinsicSupport.IsDerivedCRS(id))
+                {
+                    //
+                    string epsgNumber = Support.ExtrinsicSupport.GetEPSGNumber(id);
+                    if (epsgNumber == null || epsgNumber == "")
+                    {
+                        return noTransform;
+                    }
+                    else if (epsgNumber == "5819")
+                    {
+                        // get lat0, lon0, h0
+                        double[] origin = new double[3];
+                        if (Support.ExtrinsicSupport.GetOriginParameters(id, ref origin))
+                        {
+                            Positions.GeodeticPosition inPoint = Support.ExtrinsicSupport.GetPositionFromParameters(this.parameters);
+                            Positions.GeodeticPosition tangentPoint = new Positions.GeodeticPosition(origin[0], origin[1], origin[2]);
+                            Positions.CartesianPosition outPoint = Support.LTP_ENU.GeodeticToEnu(inPoint, tangentPoint);
+                        }
+
+                    }
+                    else
+                    {
+                        return noTransform;
+                    }
+                }
+                else if (Support.ExtrinsicSupport.IsFromAndToCRS(id))
+                {
+                    string fromCRS = "";
+                    string toCRS = "";
+                    if (Support.ExtrinsicSupport.GetFromAndToCRS(id, out fromCRS, out toCRS))
+                    {
+
+                        var cf = new CoordinateSystemFactory();
+                        var f = new CoordinateTransformationFactory();
+                        CoordinateSystem csIn = null;
+                        try
+                        {
+                            csIn = cf.CreateFromWkt(fromCRS);
+                        }
+                        catch (Exception ex)
+                        {
+                            return noTransform;
+                        }
+                        CoordinateSystem csOut = null;
+                        try
+                        {
+                            csOut = cf.CreateFromWkt(toCRS);
+                        }
+                        catch (Exception ex)
+                        {
+                            return noTransform;
+                        }
+                        //var cs3857 = cf.CreateFromWkt(wkt3857);
+                        ProjNet.CoordinateSystems.Transformations.ICoordinateTransformation transform = null;
+                        if (csIn != null && csOut != null)
+                        {
+                            Positions.GeodeticPosition inPoint = Support.ExtrinsicSupport.GetPositionFromParameters(this.parameters);
+                            transform = f.CreateFromCoordinateSystems(csIn, csOut);
+                            double[] xyz = new double[3] {inPoint.lon, inPoint.lat, inPoint.h}; // note lon, lat, h order
+                            double[] XYZ = new double[3];
+                            double[] ret = transform.MathTransform.Transform(xyz);
+                            XYZ[0] = ret[0];
+                            XYZ[1] = ret[1];
+                            if (ret.Length == 2)
+                            {
+                                XYZ[2] = xyz[2];
+                            }
+                            else
+                            {
+                                XYZ[2] = ret[2];
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Coordinate transformation failed: ");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("from or to CS unrecognized");
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("id string missing \"=>\".");
+                }
+
                 return new Positions.NoPosition();
             }
             return noTransform;

@@ -195,14 +195,14 @@ namespace ProjNetConsole
             string from4326ToUTM30N = wkt4326 + "=>" + utm30N;
             string idString =  from4326ToUTM30N; // wkt5819; // 
             string parameterString = "{\"lat\": 51.5,\"lon\": -1.2,\"h\": 11.3}";
-            string myNumber = GetEPSGNumber(wkt3857);
+            string myNumber = Support.ExtrinsicSupport.GetEPSGNumber(wkt3857);
             string fromCRS = "";
             string toCRS = "";
 
-            if (IsDerivedCRS(idString))
+            if (Support.ExtrinsicSupport.IsDerivedCRS(idString))
             {
                 //
-                string epsgNumber = GetEPSGNumber(idString);
+                string epsgNumber = Support.ExtrinsicSupport.GetEPSGNumber(idString);
                 if (epsgNumber == null || epsgNumber == "")
                 {
                     // no transformation
@@ -211,9 +211,9 @@ namespace ProjNetConsole
                 {
                     // get lat0, lon0, h0
                     double[] origin = new double[3];
-                    if (GetOriginParameters(idString, ref origin))
+                    if (Support.ExtrinsicSupport.GetOriginParameters(idString, ref origin))
                     {
-                        Positions.GeodeticPosition point = GetPositionFromParameters(parameterString);
+                        Positions.GeodeticPosition point = Support.ExtrinsicSupport.GetPositionFromParameters(parameterString);
                         Positions.GeodeticPosition tangentPoint = new Positions.GeodeticPosition(origin[0], origin[1], origin[2]);
                         Positions.CartesianPosition outPoint = Support.LTP_ENU.GeodeticToEnu(point, tangentPoint);
                     }
@@ -224,9 +224,9 @@ namespace ProjNetConsole
                     // not found
                 }
             }
-            else if (IsFromAndToCRS(idString))
+            else if (Support.ExtrinsicSupport.IsFromAndToCRS(idString))
             {
-                if (GetFromAndToCRS(idString, out fromCRS, out toCRS))
+                if (Support.ExtrinsicSupport.GetFromAndToCRS(idString, out fromCRS, out toCRS))
                 {
                     CoordinateSystem csIn = null;
                     try
@@ -263,9 +263,6 @@ namespace ProjNetConsole
                         {
                             XYZ[2] = ret[2];
                         }
-                        Console.WriteLine("Coordinate transformation: " +
-                            xyz[0].ToString() + ", " + xyz[1].ToString() + ", " + xyz[2].ToString() + "=>" +
-                            XYZ[0].ToString() + ", " + XYZ[1].ToString() + ", " + XYZ[2].ToString());
                     }
                     else
                     {
@@ -284,7 +281,8 @@ namespace ProjNetConsole
             }
 
         }
-        public static bool IsDerivedCRS(string idString)
+#if MOVED
+public static bool IsDerivedCRS(string idString)
         {
             return idString.ToLower().Contains("conversion[");
         }
@@ -383,5 +381,6 @@ namespace ProjNetConsole
             }
             return new Positions.NoPosition();
         }
+#endif // MOVED
     }
 }

@@ -209,7 +209,6 @@ namespace FrameTransforms
                             Positions.GeodeticPosition tangentPoint = new Positions.GeodeticPosition(origin[0], origin[1], origin[2]);
                             Positions.CartesianPosition outPoint = Support.LTP_ENU.GeodeticToEnu(inPoint, tangentPoint);
                         }
-
                     }
                     else
                     {

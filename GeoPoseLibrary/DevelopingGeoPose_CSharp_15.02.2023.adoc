@@ -1,4 +1,4 @@
-# OGC&#8482; GeoPose 1.0: TypeScript
+# OGC&#8482; GeoPose 1.0: C#
 07.02.2023 Steve Smyth <steve@opensiteplan.org>
 :toc: 
 
@@ -12,7 +12,7 @@ This documentation is maintained by Steve Smyth steve@opensiteplan.org If you ha
 
 A frequent question is "How should I implement software that makes or manipulates OGC GeoPoses?" This tutorial is one answer. It may not describe exactly the software you may need to build but I hope it gives you the necessary building blocks to see how you might proceed.  
 
-This tutorial describes one template for developing a software implementation supporting GeoPose 1.0 using any one of many modern object-oriented programming languages. The focus is on a TypeScript implementation but the principles are very similar for most programming languages supporting object-oriented design. 
+This tutorial describes one template for developing a software implementation supporting GeoPose 1.0 using any one of many modern object-oriented programming languages. The focus here is on a C# implementation but the principles are very similar for most programming languages supporting object-oriented design. 
 
 https://docs.ogc.org/dis/21-056r10/21-056r10.html[OGC GeoPose 1.0] is a draft international standard for a family of JSON data objects representing the position and orientation of real or virtual entities. There are eight independent forms described in the standard. There are no dependencies between the forms. Each may be implemented independently. There is no requirement to implement any specific form or number of forms.
 
@@ -68,9 +68,15 @@ Synthetic environments contain collections of moving objects, which themselves m
 * Instantaneous and time series estimation of the changes in location and orientation of an object using an optical imaging device (Visual Odometry)
 * Instantaneous and time series location and orientation of an optical imaging device used for photogrammetry
 
+
 ## Goals of this Tutorial
 
-The OGC GeoPose 1.0 standard does not specify anything about software design or programming language. The primary goal of this tutorial is to walk through a design and implementation of software that works well with OGC GeoPose 1.0 and which can be integrated in to applications that create or receive GeoPose 1.0 data objects. The only requirement is that the language offer basic object-oriented programming support. 
+The OGC GeoPose 1.0 standard does not specify anything about software design or programming language. The primary goal of this tutorial is to walk through a design and implementation of software that works well with OGC GeoPose 1.0 and which can be integrated in to applications that create or receive GeoPose 1.0 data objects. The only requirement is that the language offer basic object-oriented programming support.  
+
+[NOTE]
+There is also a TypeScript version of this tutorial.
+
+----
 
 There are several specific goals:
 
@@ -96,10 +102,6 @@ The design only relies on a few basic O-O concepts and capabilities. These are s
 
 ##  Architecture
 
-There are many possible implementations. My primary consideration is a simple and completely hierarchical design - patterned to meet the capabilities of common object-oriented languages. I also wanted to make it possible to consider individual parts in isolation and then to assemble them into a GeoPose inheritance tree.
-
-I describe the parts in reverse order of dependency. By the time you get to the Abstract GeoPose, there will be enough elements to start assembling them into the final structures.
-
 ### Goals
 
 There are many possible implementations. My primary consideration is a simple and completely hierarchical design - patterned to meet the capabilities of common object-oriented languages. I also wanted to make it possible to consider individual parts in isolation and then to assemble them into a GeoPose inheritance tree.
@@ -114,6 +116,7 @@ There are two obvious patterns to follow in a GeoPose implementation:
 2. implement the core structures of an anchored pose, focusing on implementation of the frame transforms and rotational transforms - build an "Engine" - and including conforming serialization and/or deserialization.
 
 The Adapter pattern is straightforward to implement and does not require a deep understanding of the details of specification and implementation of the transformations. The pattern that I use here is the Engine, where the intent is to support a range of useful frame and rotational transformations.
+
 ## Eight Steps
 
 The development steps outlined here proceed from independent components to three categories of GeoPoses: Basic, Advanced, and Local. Note that Local GeoPoses are within the scope of the GeoPose 1.0 logical model but must be serialized as Advanced GeoPoses to be compliant data objects.
@@ -127,9 +130,9 @@ The development steps outlined here proceed from independent components to three
 * Step 7: Advanced GeoPose
 * Step 8: Local Pose
 
-## TypeScript implementation
+## C# implementation
 
-The following is the sequence of steps for a TypeScript implementation:
+The following is the sequence of steps for a C# implementation:
 
 ### Step 1: Supporting Datatypes and Functions
 
@@ -163,7 +166,7 @@ image::support.png[Support Classes, 200, 256]
 
 The calculation support classes are not needed to create or consume GeoPose data objects but they **are** needed to actually use the GeoPoses in an application.
 
-==== TypeScript implementation:
+==== C# implementation:
 
 ===== Datatypes
 
@@ -373,7 +376,7 @@ image::Position.png[Support Classes, 600, 256]
 
 GeoPose 1.0 supports both a geodetic form and a Cartesian form. These forms are used in both frame transformations and orientation (rotation) transformations, both as quantities to be transformed and, in some cases, as a parameter of a family of transformations. Since some transformations are not possible, due to a mathematical singularity, unavailability of a transformation, or a runtime error in the transformation calculation, the NoPosition position is used as a "null" value. Each of the coordinates of the NoPosition are the IEEE 754 value NaN.
 
-==== TypeScript implementation:
+==== C# implementation:
 
 <<software-license>>
 ----
@@ -493,7 +496,7 @@ The Local form uses an implicit Translation transformation between outer and inn
 
 It is important to note that the GeoPose implementation not only contains the references needed to define outer frame, transformation, and inner frame but also must **implement** the transformation.
 
-==== TypeScript implementation:
+==== C# implementation:
 
 <<software-license>>
 ----
@@ -681,7 +684,7 @@ yaw, pitch, and roll angles are one choice for a representation based on success
 
 Unit quaternions have four components, the square root of the sum of the squares of which is 1.0.
 
-==== TypeScript implementation:
+==== C# implementation:
 
 <<software-license>>
 ----
@@ -877,7 +880,7 @@ image::GeoPose.png[Support Classes, 200, 256]
 
 The three properties PoseID, parentPoseID, and validTime are additional properties not define by GeoPose 1.0 but allowed as additional properties in the serialized JSON data objects.
 
-==== TypeScript implementation:
+==== C# implementation:
 
 <<software-license>>
 ----
@@ -1139,7 +1142,7 @@ image::advanced.png[Support Classes, 200, 256]
 The Advanced class should implement each of the frame transforms, where validity is determined by the implementer. Presentation of an invalid frame specification via the Extrinsic interface should result in a returned NoPosition value. Note that these are suggestions to the implementer, not requirements.
 
 
-==== TypeScript implementation:
+==== C# implementation:
 
 <<software-license>>
 ----
@@ -1269,7 +1272,7 @@ image::Local.png[Support Classes, 200, 256]
 
 The FrameTransform supported by the Local GeoPose is Translation.
 
-==== TypeScript implementation:
+==== C# implementation:
 
 <<software-license>>
 ----
@@ -1370,7 +1373,7 @@ The following example uses each of the GeoPose forms to show different pose rela
 The example starts out with a helper class to display the current pose status of a "Space Train" that is somewhere in interplanetary space, possibly headed to Mars.
 Then there is a check of PROJ and finally the model of the Space Train itself.
 
-### TypeScript
+### C#
 
 <<software-license>>
 ----

@@ -21,6 +21,7 @@
 
 import * as proj4 from 'proj4';
 import * as Position from './Position';
+import * as Support from './WGS84ToLTPENU';
 
 // Implemention order: 3 - follows Position.
 // These classes define transformations of a Position in one 3D frame to a Position in another 3D frame.
@@ -97,6 +98,82 @@ export class Extrinsic extends FrameTransform {
         }
         else if (uri == "https://iau.org") {
             return Position.NoPosition;
+        }
+        else if (uri == "https://geopose.io") {
+            if (Support.ExtrinsicSupport.IsDerivedCRS(this.id)) {
+                    //
+                   let  epsgNumber: string = Support.ExtrinsicSupport.GetEPSGNumber(this.id);
+                if (epsgNumber == null || epsgNumber == "") {
+                    return Position.NoPosition;
+                }
+                else if (epsgNumber == "5819") {
+                    // get lat0, lon0, h0
+                    let Origin = Support.ExtrinsicSupport.GetOriginParameters(this.id);
+                    if (!Number.isNaN(Origin.lat)) {
+                        let inPoint: Position.GeodeticPosition = Support.ExtrinsicSupport.GetPositionFromParameters(this.parameters);
+                        let tangentPoint: Position.GeodeticPosition = new Position.GeodeticPosition(Origin.lat, Origin.lon, Origin.h);
+                        let outPoint: Position.CartesianPosition = Support.LTP_ENU.GeodeticToEnu(inPoint, tangentPoint);
+                    }
+                }
+                else {
+                    return Position.NoPosition;
+                }
+            }
+            else if (Support.ExtrinsicSupport.IsFromAndToCRS(id)) {
+                let fromCRS: string = "";
+                let toCRS:   string = "";
+                if (Support.ExtrinsicSupport.GetFromAndToCRS(this.id, fromCRS, toCRS)) {
+
+                    var cf = new proj4.CoordinateSystemFactory();
+                    var f = new CoordinateTransformationFactory();
+                        CoordinateSystem csIn = null;
+                    try {
+                        csIn = cf.CreateFromWkt(fromCRS);
+                    }
+                    catch (Exception ex)
+                    {
+                        return noTransform;
+                    }
+                        CoordinateSystem csOut = null;
+                    try {
+                        csOut = cf.CreateFromWkt(toCRS);
+                    }
+                    catch (Exception ex)
+                    {
+                        return noTransform;
+                    }
+                    //var cs3857 = cf.CreateFromWkt(wkt3857);
+                    ProjNet.CoordinateSystems.Transformations.ICoordinateTransformation transform = null;
+                    if (csIn != null && csOut != null) {
+                        Positions.GeodeticPosition inPoint = Support.ExtrinsicSupport.GetPositionFromParameters(this.parameters);
+                        transform = f.CreateFromCoordinateSystems(csIn, csOut);
+                        double[] xyz = new double[3] { inPoint.lon, inPoint.lat, inPoint.h }; // note lon, lat, h order
+                        double[] XYZ = new double[3];
+                        double[] ret = transform.MathTransform.Transform(xyz);
+                        XYZ[0] = ret[0];
+                        XYZ[1] = ret[1];
+                        if (ret.Length == 2) {
+                            XYZ[2] = xyz[2];
+                        }
+                        else {
+                            XYZ[2] = ret[2];
+                        }
+                    }
+                    else {
+                        Console.WriteLine("Coordinate transformation failed: ");
+                    }
+                }
+                else {
+                    Console.WriteLine("from or to CS unrecognized");
+                }
+
+            }
+            else {
+                Console.WriteLine("id string missing \"=>\".");
+            }
+
+            return new Positions.NoPosition();
+
         }
         return Position.NoPosition;
     }

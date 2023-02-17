@@ -72,6 +72,9 @@ Synthetic environments contain collections of moving objects, which themselves m
 
 The OGC GeoPose 1.0 standard does not specify anything about software design or programming language. The primary goal of this tutorial is to walk through a design and implementation of software that works well with OGC GeoPose 1.0 and which can be integrated in to applications that create or receive GeoPose 1.0 data objects. The only requirement is that the language offer basic object-oriented programming support. 
 
+[NOTE]
+There is also a C# version of this tutorial.
+
 There are several specific goals:
 
 ### Add GeoPose to applications
@@ -149,7 +152,7 @@ PoseID has a single property - an id string.
 UnixTime has a single property - a string representation of the number of Unix time seconds multiplied by 1 000 for millisecond resolution.
 
 [.center]
-.The PoseID and UnixTime Extras Classes
+.The PoseID and UnixTime Extras Classes 
 image::extras.png[Support Classes, 400, 256]
 
 #### Coordinate conversion 

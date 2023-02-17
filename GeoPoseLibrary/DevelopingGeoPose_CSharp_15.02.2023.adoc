@@ -1,5 +1,5 @@
 # OGC&#8482; GeoPose 1.0: C#
-07.02.2023 Steve Smyth <steve@opensiteplan.org>
+15.02.2023 Steve Smyth <steve@opensiteplan.org>
 :toc: 
 
 ##	Introduction
@@ -75,8 +75,6 @@ The OGC GeoPose 1.0 standard does not specify anything about software design or 
 
 [NOTE]
 There is also a TypeScript version of this tutorial.
-
-----
 
 There are several specific goals:
 
@@ -175,20 +173,35 @@ The calculation support classes are not needed to create or consume GeoPose data
 // Implementation step: 1 - start here.
 // These classes are non-structural elements.
 // These are part of optional elements that are allowed but not standardized.
+using System;
 
-export class PoseID {
-  public constructor(id: string) {
-    this.id = id;
-  }
-  public id: string = "";
-}
+namespace Extras
+{
+    public class PoseID
+    {
+        internal PoseID()
+        {
 
-export class UnixTime {
-  // Constructor from long integer count of UNIX Time seconds x 1000
-  public constructor(longTime: number) {
-    this.timeValue = longTime.toString();
-  }
-  public timeValue: string = "";
+        }
+        public PoseID(string id)
+        {
+            this.id = id;
+        }
+        public string id { get; set; } = string.Empty;
+    }
+    public class UnixTime
+    {
+        internal UnixTime()
+        {
+
+        }
+        // Constructor from long integer count of UNIX Time seconds x 1000
+        public UnixTime(long longTime)
+        {
+            timeValue = longTime.ToString();
+        }
+        public string timeValue { get; set; } = string.Empty;
+    }
 }
 
 
@@ -199,171 +212,290 @@ export class UnixTime {
 <<software-license>>
 ----
 
-import * as Position from "./Position";
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
-export class LTP_ENU {
-  // WGS-84 geodetic constants
-  readonly a: number = 6378137.0; // WGS-84 Earth semimajor axis (m)
-  readonly b: number = 6356752.314245; // Derived Earth semiminor axis (m)
-  readonly f: number = (this.a - this.b) / this.a; // Ellipsoid Flatness
-  readonly f_inv: number = 1.0 / this.f; // Inverse flattening
-  readonly a_sq: number = this.a * this.a;
-  readonly b_sq: number = this.b * this.b;
-  readonly e_sq: number = this.f * (2.0 - this.f); // Square of Eccentricity
-  readonly toRadians: number = Math.PI / 180.0;
-  readonly toDegrees: number = 180.0 / Math.PI;
+using ProjNet;
+using ProjNet.CoordinateSystems;
+using ProjNet.CoordinateSystems.Transformations;
+using GeoAPI.CoordinateSystems.Transformations;
 
-  // Convert WGS-84 Geodetic point (lat, lon, h) to the
-  // Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z).
-  public GeodeticToEcef(
-    from: Position.GeodeticPosition,
-    to: Position.CartesianPosition
-  ): void {
-    // Convert to radians in notation consistent with the paper:
-    var lambda = from.lat * this.toRadians;
-    var phi = from.lon * this.toDegrees;
-    var s = Math.sin(lambda);
-    var N = this.a / Math.sqrt(1.0 - this.e_sq * s * s);
+namespace Support
+{
+    // This is an implementation of EPSG method 9837 using sections 4.1.1 and 4.1.2 of https://www.iogp.org/wp-content/uploads/2019/09/373-07-02.pdf.
+    public class LTP_ENU
+    {
+        // WGS-84 geodetic constants
+        const double a = 6378137.0;         // WGS-84 Earth semimajor axis (m)
 
-    var sin_lambda = Math.sin(lambda);
-    var cos_lambda = Math.cos(lambda);
-    var cos_phi = Math.cos(phi);
-    var sin_phi = Math.sin(phi);
+        const double b = 6356752.314245;     // Derived Earth semiminor axis (m)
+        const double f = (a - b) / a;           // Ellipsoid Flatness
+        const double f_inv = 1.0 / f;       // Inverse flattening
 
-    to.x = (from.h + N) * cos_lambda * cos_phi;
-    to.y = (from.h + N) * cos_lambda * sin_phi;
-    to.z = (from.h + (1 - this.e_sq) * N) * sin_lambda;
-  }
+        //const double f_inv = 298.257223563; // WGS-84 Flattening Factor of the Earth 
+        //const double b = a - a / f_inv;
+        //const double f = 1.0 / f_inv;
 
-  // Convert the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z) to
-  // (WGS-84) Geodetic point (lat, lon, h).
-  public EcefToGeodetic(
-    from: Position.CartesianPosition,
-    to: Position.GeodeticPosition
-  ): void {
-    var eps = this.e_sq / (1.0 - this.e_sq);
-    var p = Math.sqrt(from.x * from.x + from.y * from.y);
-    var q = Math.atan2(from.z * this.a, p * this.b);
-    var sin_q = Math.sin(q);
-    var cos_q = Math.cos(q);
-    var sin_q_3 = sin_q * sin_q * sin_q;
-    var cos_q_3 = cos_q * cos_q * cos_q;
-    var phi = Math.atan2(
-      from.z + eps * this.b * sin_q_3,
-      p - this.e_sq * this.a * cos_q_3
-    );
-    var lambda = Math.atan2(from.y, from.x);
-    var v = this.a / Math.sqrt(1.0 - this.e_sq * Math.sin(phi) * Math.sin(phi));
-    to.h = p / Math.cos(phi) - v;
+        const double a_sq = a * a;
+        const double b_sq = b * b;
+        const double e_sq = f * (2 - f);    // Square of Eccentricity
 
-    to.lat = phi * this.toDegrees;
-    to.lon = lambda * this.toDegrees;
-  }
+        // Converts WGS-84 Geodetic point (lat, lon, h) to the 
+        // Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z).
+        public static void GeodeticToEcef(double lat, double lon, double h,
+                                            out double x, out double y, out double z)
+        {
+            // Convert to radians in notation consistent with the paper:
+            var lambda = DegreesToRadians(lat);
+            var phi = DegreesToRadians(lon);
+            var s = Math.Sin(lambda);
+            var N = a / Math.Sqrt(1 - e_sq * s * s);
 
-  // Converts the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z) to
-  // East-North-Up coordinates in a Local Tangent Plane that is centered at the
-  // (WGS-84) Geodetic point (lat0, lon0, h0).
-  public EcefToEnu(
-    from: Position.CartesianPosition,
-    origin: Position.GeodeticPosition,
-    to: Position.CartesianPosition
-  ): //double x, double y, double z,
-  //double lat0, double lon0, double h0,
-  //out double xEast, out double yNorth, out double zUp):
-  void {
-    // Convert to radians in notation consistent with the paper:
-    var lambda = origin.lat * this.toRadians;
-    var phi = origin.lon * this.toDegrees;
-    var s = Math.sin(lambda);
-    var N = this.a / Math.sqrt(1.0 - this.e_sq * s * s);
+            var sin_lambda = Math.Sin(lambda);
+            var cos_lambda = Math.Cos(lambda);
+            var cos_phi = Math.Cos(phi);
+            var sin_phi = Math.Sin(phi);
 
-    var sin_lambda = Math.sin(lambda);
-    var cos_lambda = Math.cos(lambda);
-    var cos_phi = Math.cos(phi);
-    var sin_phi = Math.sin(phi);
+            x = (h + N) * cos_lambda * cos_phi;
+            y = (h + N) * cos_lambda * sin_phi;
+            z = (h + (1 - e_sq) * N) * sin_lambda;
+        }
 
-    var x0: number = (origin.h + N) * cos_lambda * cos_phi;
-    var y0: number = (origin.h + N) * cos_lambda * sin_phi;
-    var z0: number = (origin.h + (1 - this.e_sq) * N) * sin_lambda;
+        // Converts the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z) to 
+        // (WGS-84) Geodetic point (lat, lon, h).
+        public static void EcefToGeodetic(double x, double y, double z,
+                                            out double lat, out double lon, out double h)
+        {
+            var eps = e_sq / (1.0 - e_sq);
+            var p = Math.Sqrt(x * x + y * y);
+            var q = Math.Atan2((z * a), (p * b));
+            var sin_q = Math.Sin(q);
+            var cos_q = Math.Cos(q);
+            var sin_q_3 = sin_q * sin_q * sin_q;
+            var cos_q_3 = cos_q * cos_q * cos_q;
+            var phi = Math.Atan2((z + eps * b * sin_q_3), (p - e_sq * a * cos_q_3));
+            var lambda = Math.Atan2(y, x);
+            var v = a / Math.Sqrt(1.0 - e_sq * Math.Sin(phi) * Math.Sin(phi));
+            h = (p / Math.Cos(phi)) - v;
 
-    var xd: number = from.x - x0;
-    var yd: number = from.y - y0;
-    var zd: number = from.z - z0;
+            lat = RadiansToDegrees(phi);
+            lon = RadiansToDegrees(lambda);
+        }
 
-    // This is the matrix multiplication
-    to.x = -sin_phi * xd + cos_phi * yd;
-    to.y =
-      -cos_phi * sin_lambda * xd - sin_lambda * sin_phi * yd + cos_lambda * zd;
-    to.z =
-      cos_lambda * cos_phi * xd + cos_lambda * sin_phi * yd + sin_lambda * zd;
-  }
+        // Converts the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z) to 
+        // East-North-Up coordinates in a Local Tangent Plane that is centered at the 
+        // (WGS-84) Geodetic point (lat0, lon0, h0).
+        public static void EcefToEnu(double x, double y, double z,
+                                        double lat0, double lon0, double h0,
+                                        out double xEast, out double yNorth, out double zUp)
+        {
+            // Convert to radians in notation consistent with the paper:
+            var lambda = DegreesToRadians(lat0);
+            var phi = DegreesToRadians(lon0);
+            var s = Math.Sin(lambda);
+            var N = a / Math.Sqrt(1 - e_sq * s * s);
 
-  // Inverse of EcefToEnu. Converts East-North-Up coordinates (xEast, yNorth, zUp) in a
-  // Local Tangent Plane that is centered at the (WGS-84) Geodetic point (lat0, lon0, h0)
-  // to the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z).
-  public EnuToEcef(
-    from: Position.CartesianPosition,
-    origin: Position.GeodeticPosition,
-    to: Position.CartesianPosition
-  ): void {
-    // Convert to radians in notation consistent with the paper:
-    var lambda = origin.lat * this.toRadians;
-    var phi = origin.lon * this.toRadians;
-    var s = Math.sin(lambda);
-    var N = this.a / Math.sqrt(1.0 - this.e_sq * s * s);
+            var sin_lambda = Math.Sin(lambda);
+            var cos_lambda = Math.Cos(lambda);
+            var cos_phi = Math.Cos(phi);
+            var sin_phi = Math.Sin(phi);
 
-    var sin_lambda = Math.sin(lambda);
-    var cos_lambda = Math.cos(lambda);
-    var cos_phi = Math.cos(phi);
-    var sin_phi = Math.sin(phi);
+            double x0 = (h0 + N) * cos_lambda * cos_phi;
+            double y0 = (h0 + N) * cos_lambda * sin_phi;
+            double z0 = (h0 + (1 - e_sq) * N) * sin_lambda;
 
-    var x0: number = (origin.h + N) * cos_lambda * cos_phi;
-    var y0: number = (origin.h + N) * cos_lambda * sin_phi;
-    var z0: number = (origin.h + (1.0 - this.e_sq) * N) * sin_lambda;
+            double xd, yd, zd;
+            xd = x - x0;
+            yd = y - y0;
+            zd = z - z0;
 
-    var xd: number =
-      -sin_phi * from.x -
-      cos_phi * sin_lambda * from.y +
-      cos_lambda * cos_phi * from.z;
-    var yd: number =
-      cos_phi * from.x -
-      sin_lambda * sin_phi * from.y +
-      cos_lambda * sin_phi * from.z;
-    var zd: number = cos_lambda * from.y + sin_lambda * from.z;
+            // This is the matrix multiplication
+            xEast = -sin_phi * xd + cos_phi * yd;
+            yNorth = -cos_phi * sin_lambda * xd - sin_lambda * sin_phi * yd + cos_lambda * zd;
+            zUp = cos_lambda * cos_phi * xd + cos_lambda * sin_phi * yd + sin_lambda * zd;
+        }
 
-    to.x = xd + x0;
-    to.y = yd + y0;
-    to.z = zd + z0;
-  }
+        // Inverse of EcefToEnu. Converts East-North-Up coordinates (xEast, yNorth, zUp) in a
+        // Local Tangent Plane that is centered at the (WGS-84) Geodetic point (lat0, lon0, h0)
+        // to the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z).
+        public static void EnuToEcef(double xEast, double yNorth, double zUp,
+                                        double lat0, double lon0, double h0,
+                                        out double x, out double y, out double z)
+        {
+            // Convert to radians in notation consistent with the paper:
+            var lambda = DegreesToRadians(lat0);
+            var phi = DegreesToRadians(lon0);
+            var s = Math.Sin(lambda);
+            var N = a / Math.Sqrt(1 - e_sq * s * s);
 
-  // Convert the geodetic WGS-84 coordinated (lat, lon, h) to
-  // East-North-Up coordinates in a Local Tangent Plane that is centered at the
-  // (WGS-84) Geodetic point (lat0, lon0, h0).
-  public GeodeticToEnu(
-    from: Position.GeodeticPosition,
-    origin: Position.GeodeticPosition,
-    to: Position.CartesianPosition
-  ): void //double lat0, double lon0, double h0,
-  //out double xEast, out double yNorth, out double zUp)
-  {
-    let ecef = new Position.CartesianPosition(0, 0, 0);
-    this.GeodeticToEcef(from, ecef);
-    this.EcefToEnu(ecef, origin, to);
-  }
-  public EnuToGeodetic(
-    from: Position.CartesianPosition,
-    origin: Position.GeodeticPosition,
-    to: Position.GeodeticPosition
-  ): void //double xEast, double yNorth, double zUp,
-  //double lat0, double lon0, double h0,
-  //out double lat, out double lon, out double h
-  {
-    let ecef = new Position.CartesianPosition(0, 0, 0);
-    this.EnuToEcef(from, origin, ecef);
-    this.EcefToGeodetic(ecef, to);
-  }
+            var sin_lambda = Math.Sin(lambda);
+            var cos_lambda = Math.Cos(lambda);
+            var cos_phi = Math.Cos(phi);
+            var sin_phi = Math.Sin(phi);
+
+            double x0 = (h0 + N) * cos_lambda * cos_phi;
+            double y0 = (h0 + N) * cos_lambda * sin_phi;
+            double z0 = (h0 + (1 - e_sq) * N) * sin_lambda;
+
+            double xd = -sin_phi * xEast - cos_phi * sin_lambda * yNorth + cos_lambda * cos_phi * zUp;
+            double yd = cos_phi * xEast - sin_lambda * sin_phi * yNorth + cos_lambda * sin_phi * zUp;
+            double zd = cos_lambda * yNorth + sin_lambda * zUp;
+
+            x = xd + x0;
+            y = yd + y0;
+            z = zd + z0;
+        }
+
+        // Converts the geodetic WGS-84 coordinated (lat, lon, h) to 
+        // East-North-Up coordinates in a Local Tangent Plane that is centered at the 
+        // (WGS-84) Geodetic point (lat0, lon0, h0).
+        public static void GeodeticToEnu(double lat, double lon, double h,
+                                            double lat0, double lon0, double h0,
+                                            out double xEast, out double yNorth, out double zUp)
+        {
+            double x, y, z;
+            GeodeticToEcef(lat, lon, h, out x, out y, out z);
+            EcefToEnu(x, y, z, lat0, lon0, h0, out xEast, out yNorth, out zUp);
+        }
+        // Converts the geodetic WGS-84 coordinated (lat, lon, h) to 
+        // East-North-Up coordinates in a Local Tangent Plane that is centered at the 
+        // (WGS-84) Geodetic point (lat0, lon0, h0).
+        public static Positions.CartesianPosition GeodeticToEnu(Positions.GeodeticPosition geodeticPosition,
+            Positions.GeodeticPosition tangentPosition)
+        {
+            double x, y, z;
+            double xEast, yNorth, zUp; 
+            GeodeticToEcef(geodeticPosition.lat, geodeticPosition.lon, geodeticPosition.h, out x, out y, out z);
+            EcefToEnu(x, y, z, tangentPosition.lat, tangentPosition.lon, tangentPosition.h, out xEast, out yNorth, out zUp);
+            Positions.CartesianPosition enuPosition = new Positions.CartesianPosition(xEast, yNorth, zUp);
+            return enuPosition;
+        }
+        public static void EnuToGeodetic(double xEast, double yNorth, double zUp,
+                                             double lat0, double lon0, double h0,
+                                            out double lat, out double lon, out double h
+                                            )
+        {
+            double x, y, z;
+            EnuToEcef(xEast, yNorth, zUp, lat0, lon0, h0, out x, out y, out z);
+            EcefToGeodetic(x, y, z, out lat, out lon, out h);
+        }
+
+        static double DegreesToRadians(double degrees)
+        {
+            return Math.PI / 180.0 * degrees;
+        }
+
+        static double RadiansToDegrees(double radians)
+        {
+            return 180.0 / Math.PI * radians;
+        }
+    }
+    public class ExtrinsicSupport
+    {
+        public static bool IsDerivedCRS(string idString)
+        {
+            return idString.ToLower().Contains("conversion[");
+        }
+        public static bool IsFromAndToCRS(string idString)
+        {
+            return idString.Contains("=>");
+        }
+        public static bool GetFromAndToCRS(string idString, out string fromCRS, out string toCRS)
+        {
+            fromCRS = "";
+            toCRS = "";
+            // Split at =>
+            int arrowIndex = idString.IndexOf("=>");
+            if (arrowIndex < 1)
+            {
+                return false;
+            }
+            fromCRS = idString.Substring(0, arrowIndex);
+            toCRS = idString.Substring(arrowIndex + 2);
+            return true;
+        }
+        public static string GetEPSGNumber(string wktString)
+        {
+            string epsgNumber = "";
+            // look at end of WKT for WKT1 or WKT2 ID
+            // "ID\["EPSG",\d+\]\]$" or "AUTHORITY\["EPSG",\"\d+\"\]\]$"
+            Regex reID = new Regex("(id\\[\\\"epsg\\\",\\d+\\]\\]$)");
+            Regex reAuthority = new Regex("(authority\\[\\\"epsg\\\",\\\"\\d+\\\"\\]\\]$)");
+            string thisMatch = "";
+            MatchCollection matches;
+            if ((matches = reID.Matches(wktString.ToLower())).Count > 0)
+            {
+                thisMatch = matches[0].Value;
+            }
+            else if ((matches = reAuthority.Matches(wktString.ToLower())).Count > 0)
+            {
+                thisMatch = matches[0].Value;
+            }
+            if (thisMatch != "")
+            {
+                Regex reNumber = new Regex("\\d+");
+                matches = reNumber.Matches(thisMatch);
+                if (matches.Count > 0)
+                {
+                    epsgNumber = matches[0].Value;
+                }
+            }
+            return epsgNumber;
+        }
+        public static bool GetOriginParameters(string wktString, ref double[] origin)
+        {
+            // PARAMETER[\"Latitude of topocentric origin\",55,
+            origin[0] = GetSignedDoubleInRe("parameter\\[\\\"latitude.+,-?\\d+\\.?\\d*", wktString);
+            origin[1] = GetSignedDoubleInRe("parameter\\[\\\"longitude.+,-?\\d+\\.?\\d*", wktString);
+            origin[2] = GetSignedDoubleInRe("parameter\\[\\\"[^\\]]*height.+,-?\\d+\\.?\\d*", wktString);
+            return (!double.IsNaN(origin[0]) && !double.IsNaN(origin[1]) && !double.IsNaN(origin[2]));
+        }
+        public static Positions.GeodeticPosition GetOriginParameters(string wktString)
+        {
+            // PARAMETER[\"Latitude of topocentric origin\",55,
+            double lat = GetSignedDoubleInRe("parameter\\[\\\"latitude.+,-?\\d+\\.?\\d*", wktString);
+            double lon = GetSignedDoubleInRe("parameter\\[\\\"longitude.+,-?\\d+\\.?\\d*", wktString);
+            double h = GetSignedDoubleInRe("parameter\\[\\\"[^\\]]*height.+,-?\\d+\\.?\\d*", wktString);
+            if (!double.IsNaN(lat) && !double.IsNaN(lon) && !double.IsNaN(h))
+            {
+                return new Positions.GeodeticPosition(lat, lon, h);
+            }
+            return new Positions.NoPosition();
+        }
+        public static double GetSignedDoubleInRe(string reString, string inputString)
+        {
+            double result = double.NaN;
+            Regex re = new Regex(reString);
+            MatchCollection matches = re.Matches(inputString.ToLower());
+            if (matches.Count > 0)
+            {
+                string thisMatch = matches[0].Value;
+                re = new Regex("-?\\d+\\.?\\d*");
+                matches = re.Matches(thisMatch);
+                if (matches.Count > 0)
+                {
+                    result = double.Parse(matches[0].Value);
+                }
+            }
+            return result;
+        }
+        public static Positions.GeodeticPosition GetPositionFromParameters(string paramString)
+        {
+            // JSON encoded: {"lat": 12.345, "lon": -22.54, "h": 11.22}
+            double lat = GetSignedDoubleInRe("\\\"lat\\\"\\s*:\\s*-?\\d+(\\.\\d*)?", paramString);
+            double lon = GetSignedDoubleInRe("\\\"lon\\\"\\s*:\\s*-?\\d+(\\.\\d*)?", paramString);
+            double h = GetSignedDoubleInRe("\\\"h\\\"\\s*:\\s*-?\\d+(\\.\\d*)?", paramString);
+            if (!double.IsNaN(lat) && !double.IsNaN(lon) && !double.IsNaN(h))
+            {
+                return new Positions.GeodeticPosition(lat, lon, h);
+            }
+            return new Positions.NoPosition();
+        }
+    }
 }
-
 
 ----
 ### Step 2: Positions
@@ -390,87 +522,119 @@ GeoPose 1.0 supports both a geodetic form and a Cartesian form. These forms are 
 /// the abstract root class definition is simply an empty shell.
 /// </note>
 /// </summary>
-export abstract class Position {}
 
-/// <summary>
-/// GeodeticPosition is a specialization of Position for using two angles and a height for geodetic reference systems.
-/// </summary>
-export class GeodeticPosition extends Position {
-  public constructor(lat: number, lon: number, h: number) {
-    super();
-    this.lat = lat;
-    this.lon = lon;
-    this.h = h;
-  }
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
 
-  /// <summary>
-  /// A latitude in degrees, positive north of equator and negative south of equator.
-  /// The latitude is the angle between the plane of the equator and a plane tangent to the ellipsoid at the given point.
-  /// </summary>
-  public lat: number;
-  /// <summary>
-  /// A longitude in degrees, positive east of the prime meridian and negative west of prime meridian.
-  /// </summary>
-  public lon: number;
-  /// <summary>
-  /// A distance in meters, measured with respect to an implied (Basic) or specified (Advanced) reference surface,
-  /// positive opposite the direction of the force of gravity,
-  /// and negative in the direction of the force of gravity.
-  /// </summary>
-  public h: number;
+namespace Positions
+{
+    /// <summary>
+    /// A specialization of Position for using two angles and a height for geodetic positions.
+    /// </summary>
+    public class GeodeticPosition : Position
+    {
+        internal GeodeticPosition()
+        {
+
+        }
+        public GeodeticPosition(double lat, double lon, double h)
+        {
+            this.lat = lat;
+            this.lon = lon;
+            this.h = h;
+        }
+        public static implicit operator GeodeticPosition(NoPosition noPosition)
+        {
+            return new GeodeticPosition(double.NaN, double.NaN, double.NaN);
+        }
+
+        /// <summary>
+        /// A latitude in degrees, positive north of equator and negative south of equator.
+        /// The latitude is the angle between the plane of the equator and a plane tangent to the ellipsoid at the given point.
+        /// </summary>
+        public double lat { get; set; } = double.NaN;
+        /// <summary>
+        /// A longitude in degrees, positive east of the prime meridian and negative west of prime meridian.
+        /// </summary>
+        public double lon { get; set; } = double.NaN;
+        /// <summary>
+        /// A distance in meters, measured with respect to an implied (Basic) or specified (Advanced) reference surface,
+        /// postive opposite the direction of the force of gravity,
+        /// and negative in the direction of the force of gravity.
+        /// </summary>
+        public double h { get; set; } = double.NaN;
+    }
+    /// <summary>
+    /// A specialization of Position for geocentric positions.
+    /// </summary>
+    public class CartesianPosition : Position
+    {
+        protected CartesianPosition()
+        {
+        }
+        public CartesianPosition(double x, double y, double z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        /// <summary>
+        /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
+        /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
+        /// forming a right-hand coordinate system with the z-axis in the up direction.
+        /// </summary>
+        public double x { get; set; } = double.NaN;
+        /// <summary>
+        /// A coordinate value in meters, along an axis (y-axis) that typically has origin at
+        /// the center of mass, lies in the same plane as the x axis, and perpendicular to the x axis,
+        /// forming a right-hand coordinate system with the z-axis in the up direction.
+        /// </summary>
+        public double y { get; set; } = double.NaN;
+        /// <summary>
+        /// A coordinate value in meters, along the z-axis.
+        /// </summary>
+        public double z { get; set; } = double.NaN;
+    }
+    public class NoPosition : CartesianPosition
+    {
+        public NoPosition()
+        {
+            base.x = double.NaN;
+            base.y = double.NaN;
+            base.z = double.NaN;
+        }
+        /// <summary>
+        /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
+        /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
+        /// forming a right-hand coordinate system with the z-axis in the up direction.
+        /// </summary>
+        //public double x { get; set; } = double.NaN;
+        /// <summary>
+        /// A coordinate value in meters, along an axis (y-axis) that typically has origin at
+        /// the center of mass, lies in the same plane as the x axis, and perpendicular to the x axis,
+        /// forming a right-hand coordinate system with the z-axis in the up direction.
+        /// </summary>
+        //public double y { get; set; } = double.NaN;
+        /// <summary>
+        /// A coordinate value in meters, along the z-axis.
+        /// </summary>
+        //public double z { get; set; } = double.NaN;
+    }
+    /// <summary>
+    /// The abstract root of the Position hierarchy.
+    /// <note>
+    /// Because the various ways to express Position share no underlying structure,
+    /// the class definition is simply an empty shell.
+    /// </note>
+    /// </summary>
+    public abstract class Position
+    {
+
+    }
 }
-/// <summary>
-/// CartesianPosition is a specialization of Position for geocentric, topocentric, and engineering reference systems.
-/// </summary>
-export class CartesianPosition extends Position {
-  public constructor(x: number, y: number, z: number) {
-    super();
-    this.x = x;
-    this.y = y;
-    this.z = z;
-  }
-
-  /// <summary>
-  /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
-  /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
-  /// forming a right-hand coordinate system with the z-axis in the up direction.
-  /// </summary>
-  public x: number;
-  /// <summary>
-  /// A coordinate value in meters, along an axis (y-axis) that typically has origin at
-  /// the center of mass, lies in the same plane as the x axis, and perpendicular to the x axis,
-  /// forming a right-hand coordinate system with the z-axis in the up direction.
-  /// </summary>
-  public y: number;
-  /// <summary>
-  /// A coordinate value in meters, along the z-axis.
-  /// </summary>
-  public z: number;
-}
-
-export class NoPosition extends Position {
-  public constructor() {
-    super();
-    this.x = this.y = this.z = NaN;
-  }
-  /// <summary>
-  /// A coordinate value in meters, along an axis (x-axis) that typically has origin at
-  /// the center of mass, lies in the same plane as the y axis, and perpendicular to the y axis,
-  /// forming a right-hand coordinate system with the z-axis in the up direction.
-  /// </summary>
-  public x: number;
-  /// <summary>
-  /// A coordinate value in meters, along an axis (y-axis) that typically has origin at
-  /// the center of mass, lies in the same plane as the x axis, and perpendicular to the x axis,
-  /// forming a right-hand coordinate system with the z-axis in the up direction.
-  /// </summary>
-  public y: number;
-  /// <summary>
-  /// A coordinate value in meters, along the z-axis.
-  /// </summary>
-  public z: number;
-}
-
 
 ----
 
@@ -501,155 +665,307 @@ It is important to note that the GeoPose implementation not only contains the re
 <<software-license>>
 ----
 
-import * as proj4 from "proj4";
-import * as Position from "./Position";
-
-// Implementation step: 3 - follows Position.
+// Implementation order: 3 - follows Position.
 // These classes define transformations of a Position in one 3D frame to a Position in another 3D frame.
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-/// <summary>
-/// A FrameTransform is a generic container for information that defines mapping between reference frames.
-/// Most transformation have a context with necessary ancillary information
-/// that parameterizes the transformation of a Position in one frame to a corresponding Position is another.
-/// Such context may include, for example, some or all of the information that may be conveyed in an ISO 19111 CRS specification
-/// or a proprietary naming, numbering, or modelling scheme as used by EPSG, NASA Spice, or SEDRIS SRM.
-/// Subclasses of FrameTransform exist precisely to hold this context in conjunction with code
-/// implementing a Transform function.
-/// <remark>
-/// </remark>
-/// </summary>
-export abstract class FrameTransform {
-  public abstract Transform(point: Position.Position): Position.Position;
-}
+using ProjNet.CoordinateSystems;
+using ProjNet.CoordinateSystems.Transformations;
+using GeoAPI.CoordinateSystems.Transformations;
 
-/// <summary>
-/// A FrameSpecification is a generic container for information that defines a reference frame.
-/// <remark>
-/// A FrameSpecification can be abstracted as a Position:
-/// The origin of the coordinate system associated with the frame is a Position and serves in that role
-/// in the Advanced GeoPose.
-/// The origin, is in fact the *only* distinguished Position associated with the coordinate system.
-/// </remark>
-/// </summary>
-export class Extrinsic extends FrameTransform {
-  public constructor(authority: string, id: string, parameters: string) {
-    super();
-    this.authority = authority;
-    this.id = id;
-    this.parameters = parameters;
-  }
-  /// <summary>
-  /// The core function of a transformation is to implement a specific frame transformation
-  /// i.e. the transformation of a triple of point coordinates in the outer frame to a triple of point coordinates in the inner frame.
-  /// When this is not possible due to lack of an appropriate transformation procedure,
-  /// the triple (NaN, NaN, NaN) [three IEEE 574 not-a-number vales] is returned.
-  /// Note that an "authority" is not necessarily a standards organization but rather an entity that provides
-  /// a register of some kind for a category of frame- and/or frame transform specifications that is useful and stable enough
-  /// for someone to implement transformation functions.
-  /// An implementation need not implement all possible transforms.
-  /// </summary>
-  /// <note>
-  /// This would be a good element to implement as a set of plugin.
-  /// </note>
-  /// <param name="point"></param>
-  /// <returns></returns>
-  public override Transform(point: Position.Position): Position.Position {
-    let uri = this.authority.toLowerCase().replace("//www.", "");
-    if (uri == "https://proj.org" || uri == "https://osgeo.org") {
-      var outer = proj4.Proj("EPSG:4326"); //source coordinates will be in Longitude/Latitude, WGS84
-      var inner = proj4.Proj("EPSG:3785"); //destination coordinates in meters, global spherical mercator
-      var cp = point as Position.CartesianPosition;
-      let p = proj4.Point(cp.x, cp.y, cp.z);
-      proj4.transform(outer, inner, p);
-      // convert points from one coordinate system to another
-      let outP = new Position.CartesianPosition(p.x, p.y, p.z);
-      return outP;
-    } else if (uri == "https://epsg.org") {
-      return Position.NoPosition;
-    } else if (uri == "https://iers.org") {
-      return Position.NoPosition;
-    } else if (uri == "https://naif.jpl.nasa.gov") {
-      return Position.NoPosition;
-    } else if (uri == "https://sedris.org") {
-      return Position.NoPosition;
-    } else if (uri == "https://iau.org") {
-      return Position.NoPosition;
+using Positions;
+using Support;
+
+namespace FrameTransforms
+{
+    /// <summary>
+    /// A FrameTransform is a generic container for information that defines mapping between reference frames.
+    /// Most transformation have a context with necessary ancillary information
+    /// that parameterizes the transformation of a Position in one frame to a corresponding Position is another.
+    /// Such context may include, for example, some or all of the information that may be conveyed in an ISO 19111 CRS specification
+    /// or a proprietary naming, numbering, or modelling scheme as used by EPSG, NASA Spice, or SEDRIS SRM.
+    /// Subclasses of FrameTransform exist precisely to hold this context in conjunction with code
+    /// implementing a Transform function.
+    /// <remark>
+    /// </remark>
+    /// </summary>
+    public abstract class FrameTransform
+    {
+        public virtual Position Transform(Position point)
+        {
+            // The defualt is to apply the identity transformation
+            Position result = point;
+            return result;
+        }
     }
-    return Position.NoPosition;
-  }
-  /// <summary>
-  /// The name or identification of the definer of the category of frame specification.
-  /// A Uri that usually but not always points to a valid web address.
-  /// </summary>
-  public authority: string;
-  /// <summary>
-  /// A string that uniquely identifies a frame type.
-  /// The interpretation of the string is determined by the authority.
-  /// </summary>
-  public id: string;
-  /// <summary>
-  /// A string that holds any parameters required by the authority to define a frame of the given type as specified by the id.
-  /// The interpretation of the string is determined by the authority.
-  /// </summary>
-  public parameters: string;
-  public static noTransform: Position.Position = new Position.NoPosition();
-}
-/// <summary>
-/// A specialized specification of the WGS84 (EPSG 4326) geodetic frame to a local tangent plane East, North, Up frame.
-/// <remark>
-/// The origin of the coordinate system associated with the frame is a Position - the origin -
-/// which is the *only* distinguished Position associated with the coodinate system associated with the inner frame (range).
-/// </remark>
-/// </summary>
-export class WGS84ToLTPENU extends FrameTransform {
-  public constructor(origin: Position.GeodeticPosition) {
-    super();
-    this.Origin = origin;
-  }
-  public override Transform(point: Position.Position): Position.Position {
-    let geoPoint = point as Position.GeodeticPosition;
-    let outPoint: Position.CartesianPosition;
-    GeodeticToEnu(this.Origin, geoPoint, outPoint);
-    return outPoint;
-  }
 
-  /// <summary>
-  /// A single geodetic position defines the tangent point for a transform to LTP-ENU.
-  /// </summary>
-  public Origin: Position.GeodeticPosition;
-}
+    /// <summary>
+    /// A FrameSpecification is a generic container for information that defines a reference frame.
+    /// <remark>
+    /// A FrameSpecification can be abstracted as a Position:
+    /// The origin of the coordinate system associated with the frame is a Position and serves in that role
+    /// in the Advanced GeoPose.
+    /// The origin, is in fact the *only* distinguished Position associated with the coodinate system.
+    /// </remark>
+    /// </summary>
+    public class Extrinsic : FrameTransform
+    {
+        internal Extrinsic()
+        {
 
-export function GeodeticToEnu(
-  origin: Position.GeodeticPosition,
-  geoPoint: Position.GeodeticPosition,
-  enuPoint: Position.CartesianPosition
-) {
-  let out = new Position.CartesianPosition(0, 0, 0);
-  return out;
-}
+        }
+        public Extrinsic(string authority, string id, string parameters)
+        {
+            this.authority = authority;
+            this.id = id;
+            this.parameters = parameters;
+        }
+        /// <summary>
+        /// The core function of a transformation is the implement a specific frame transformation
+        /// i.e. the transformation of a triple of point coordinates in the outer frame to a triple of point coordinates in the inner frame.
+        /// When this is not possible due to lack of an appropriate tranformation procedure,
+        /// the triple (NaN, NaN, NaN) [three IEEE 574 not-a-number vales] is returned.
+        /// Note that an "authority" is not necessarily a standards organization but rather an entity that provides
+        /// a register of some kind for a category of frame- and/or frame transform specifications that is useful and stable enough
+        /// for someone to implement transformation functions.
+        /// An implementation need not implement all possbile transforms.
+        /// </summary>
+        /// <note>
+        /// This would be a good element to implement as a set of plugin.
+        /// </note>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public override Position Transform(Position point)
+        {
+            string uri = authority.ToLower().Replace("//www.", "");
+            if (uri == "https://proj.org" || uri == "https://osgeo.org")
+            {
+                CoordinateTransformationFactory ctfac = new CoordinateTransformationFactory();
+                string WKT = "PROJCRS[\"GeoPose LTP-ENU\", GEOGCS[\"WGS 84 (G873)\", DATUM[\"World_Geodetic_System_1984_G873\", " +
+                    "SPHEROID[\"WGS 84\",6378137,298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], AUTHORITY[\"EPSG\",\"1153\"]], " +
+                    "PRIMEM[\"Greenwich\",0, AUTHORITY[\"EPSG\",\"8901\"]], UNIT[\"degree\",0.0174532925199433, AUTHORITY[\"EPSG\",\"9122\"]], " +
+                    "AUTHORITY[\"EPSG\",\"9054\"]] CONVERSION[\"Topocentric LTP-ENU\", " +
+                    "METHOD[\"Geographic/topocentric conversions\", ID[\"EPSG\",9837]], " +
+                    "PARAMETER[\"Latitude of topocentric origin\",55, ANGLEUNIT[\"degree\",0.0174532925199433], ID[\"EPSG\",8834]], " +
+                    "PARAMETER[\"Longitude of topocentric origin\",5, ANGLEUNIT[\"degree\",0.0174532925199433], ID[\"EPSG\",8835]], " +
+                    "PARAMETER[\"Ellipsoidal height of topocentric origin\",0, LENGTHUNIT[\"metre\",1], ID[\"EPSG\",8836]], " +
+                    "ID[\"EPSG\",15594]] CS[Cartesian,3], " +
+                    "AXIS[\"topocentric East (U)\",east, ORDER[1], LENGTHUNIT[\"metre\",1]], " +
+                    "AXIS[\"topocentric North (V)\",north, ORDER[2], LENGTHUNIT[\"metre\",1]], " +
+                    "AXIS[\"topocentric height (W)\",up, ORDER[3], LENGTHUNIT[\"metre\",1]] " +
+                    "USAGE[ AREA[\"Planet Earth\"], BBOX[-90,-180,90,180]], ID[\"GeoPose\",LTP-ENU]]";
 
-// A simple translation frame transform.
-// The FrameTransform is created with an offset.
-// The Transform adds the offset ot an input Cartesian Position and reurns a Cartesian Position
-export class Translation extends FrameTransform {
-  public constructor(xOffset: number, yOffset: number, zOffset: number) {
-    super();
-    this.xOffset = xOffset;
-    this.yOffset = yOffset;
-    this.zOffset = zOffset;
-  }
-  public override Transform(point: Position.Position): Position.Position {
-    let cp = point as Position.CartesianPosition;
-    let p = new Position.CartesianPosition(
-      cp.x + this.xOffset,
-      cp.y + this.yOffset,
-      cp.z + this.zOffset
-    );
-    return p;
-  }
-  public xOffset: number;
-  public yOffset: number;
-  public zOffset: number;
+                var from = GeographicCoordinateSystem.WGS84;
+                var to = ProjNet.CoordinateSystems.ProjectedCoordinateSystem.WGS84_UTM(30, true);
+
+                // convert points from one coordinate system to another
+                ProjNet.CoordinateSystems.Transformations.ICoordinateTransformation trans = ctfac.CreateFromCoordinateSystems(from, to);
+
+                ProjNet.Geometries.XY businessCoordinate = new ProjNet.Geometries.XY(-0.127758, 51.507351);
+                ProjNet.Geometries.XY searchLocationCoordinate = new ProjNet.Geometries.XY(-0.142500, 51.539188);
+
+                MathTransform mathTransform = trans.MathTransform;
+                var businessLocation = mathTransform.Transform(businessCoordinate.X, businessCoordinate.Y);
+                var searchLocation = mathTransform.Transform(searchLocationCoordinate.X, searchLocationCoordinate.Y);
+
+
+
+                return noTransform;
+            }
+            else if (uri == "https://epsg.org")
+            {
+                return noTransform;
+            }
+            else if (uri == "https://iers.org")
+            {
+                return noTransform;
+            }
+            else if (uri == "https://naif.jpl.nasa.gov")
+            {
+                return noTransform;
+            }
+            else if (uri == "https://sedris.org")
+            {
+                return noTransform;
+            }
+            else if (uri == "https://iau.org")
+            {
+                return noTransform;
+            }
+            else if (uri == "https://geopose.io")
+            {
+                // extract pair of CS wkts or CS plus transformation from the id string
+                // get the point to transform from the parameters string, JSON-encoded as
+                //  {"lat": 12.345, "lon": -22.54, "h": 11.22}
+                //  if contains "=>" then that splits the outer and inner specs
+                //  else check as special case: ID[\"EPSG\",5819]]$ or AUTHORITY[\"EPGS\",\"5819\"]]$
+                if (Support.ExtrinsicSupport.IsDerivedCRS(id))
+                {
+                    //
+                    string epsgNumber = Support.ExtrinsicSupport.GetEPSGNumber(id);
+                    if (epsgNumber == null || epsgNumber == "")
+                    {
+                        return noTransform;
+                    }
+                    else if (epsgNumber == "5819")
+                    {
+                        // get lat0, lon0, h0
+                        double[] origin = new double[3];
+                        if (Support.ExtrinsicSupport.GetOriginParameters(id, ref origin))
+                        {
+                            Positions.GeodeticPosition inPoint = Support.ExtrinsicSupport.GetPositionFromParameters(this.parameters);
+                            Positions.GeodeticPosition tangentPoint = new Positions.GeodeticPosition(origin[0], origin[1], origin[2]);
+                            Positions.CartesianPosition outPoint = Support.LTP_ENU.GeodeticToEnu(inPoint, tangentPoint);
+                        }
+                    }
+                    else
+                    {
+                        return noTransform;
+                    }
+                }
+                else if (Support.ExtrinsicSupport.IsFromAndToCRS(id))
+                {
+                    string fromCRS = "";
+                    string toCRS = "";
+                    if (Support.ExtrinsicSupport.GetFromAndToCRS(id, out fromCRS, out toCRS))
+                    {
+
+                        var cf = new CoordinateSystemFactory();
+                        var f = new CoordinateTransformationFactory();
+                        CoordinateSystem csIn = null;
+                        try
+                        {
+                            csIn = cf.CreateFromWkt(fromCRS);
+                        }
+                        catch (Exception ex)
+                        {
+                            return noTransform;
+                        }
+                        CoordinateSystem csOut = null;
+                        try
+                        {
+                            csOut = cf.CreateFromWkt(toCRS);
+                        }
+                        catch (Exception ex)
+                        {
+                            return noTransform;
+                        }
+                        //var cs3857 = cf.CreateFromWkt(wkt3857);
+                        ProjNet.CoordinateSystems.Transformations.ICoordinateTransformation transform = null;
+                        if (csIn != null && csOut != null)
+                        {
+                            Positions.GeodeticPosition inPoint = Support.ExtrinsicSupport.GetPositionFromParameters(this.parameters);
+                            transform = f.CreateFromCoordinateSystems(csIn, csOut);
+                            double[] xyz = new double[3] {inPoint.lon, inPoint.lat, inPoint.h}; // note lon, lat, h order
+                            double[] XYZ = new double[3];
+                            double[] ret = transform.MathTransform.Transform(xyz);
+                            XYZ[0] = ret[0];
+                            XYZ[1] = ret[1];
+                            if (ret.Length == 2)
+                            {
+                                XYZ[2] = xyz[2];
+                            }
+                            else
+                            {
+                                XYZ[2] = ret[2];
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Coordinate transformation failed: ");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("from or to CS unrecognized");
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("id string missing \"=>\".");
+                }
+
+                return new Positions.NoPosition();
+            }
+            return noTransform;
+        }
+        /// <summary>
+        /// The name or identification of the definer of the category of frame specification.
+        /// A Uri that usually but not always points to a valid web address.
+        /// </summary>
+        public string authority { get; set; } = "";
+        /// <summary>
+        /// A string that uniquely identifies a frame type.
+        /// The interpretation of the string is determined by the authority.
+        /// </summary>
+        public string id { get; set; } = "";
+        /// <summary>
+        /// A string that holds any parameters required by the authority to define a frame of the given type as specified by the id.
+        /// The interpretation of the string is determined by the authority.
+        /// </summary>
+        public string parameters { get; set; } = "";
+        static Position noTransform = new NoPosition();
+    }
+    /// <summary>
+    /// A specialized specification of the WGS84 (EPSG 4326) geodetic frame to a local tangent plane East, North, Up frame.
+    /// <remark>
+    /// The origin of the coordinate system associated with the frame is a Position - the origin -
+    /// which is the *only* distinguished Position associated with the coodinate system associated with the inner frame (range).
+    /// </remark>
+    /// </summary>
+    public class WGS84ToLTP_ENU : FrameTransform
+    {
+        internal WGS84ToLTP_ENU()
+        {
+
+        }
+        public WGS84ToLTP_ENU(GeodeticPosition origin)
+        {
+            this.Origin = origin;
+        }
+        public override Position Transform(Position point)
+        {
+            double east, north, up;
+            Support.LTP_ENU.GeodeticToEnu(((GeodeticPosition)point).lat, ((GeodeticPosition)point).lon, ((GeodeticPosition)point).h,
+                Origin.lat, Origin.lon, Origin.h, out east, out north, out up);
+            CartesianPosition outPoint = new CartesianPosition(east, north, up);
+            return outPoint;
+        }
+
+        /// <summary>
+        /// A single geodetic position defines the tangent point for a transform to LTP-ENU.
+        /// </summary>
+        public GeodeticPosition Origin { get; set; } = null;
+    }
+
+    // A simple translation frame transform.
+    // The FrameTransform is created with an offset.
+    // The Transform adds the offset ot an input Cartesian Position and 
+    // returns a Cartesian Position.
+    public class Translation : FrameTransform
+    {
+        internal Translation()
+        {
+        }
+        public Translation(double xOffset, double yOffset, double zOffset)
+        {
+            this.xOffset = xOffset;
+            this.yOffset = yOffset;
+            this.zOffset = zOffset;
+        }
+        public override Position Transform(Position point)
+        {
+            return new CartesianPosition(((CartesianPosition)point).x, ((CartesianPosition)point).y, ((CartesianPosition)point).z);
+        }
+        public double xOffset { get; set; } = 0.0;
+        public double yOffset { get; set; } = 0.0;
+        public double zOffset { get; set; } = 0.0;
+    }
 }
 
 
@@ -689,10 +1005,12 @@ Unit quaternions have four components, the square root of the sum of the squares
 <<software-license>>
 ----
 
-import * as Position from "./Position";
-
-// Implementation step: 4 - follows FrameTransform.
+// Implementation order: 4 - follows FrameTransform.
 // These classes define rotations of a 3D frame transforming a Position to a rotated Position.
+
+using System;
+
+using Positions;
 
 /// <summary>
 /// The abstract root of the Orientation hierarchy.
@@ -706,167 +1024,182 @@ import * as Position from "./Position";
 /// implementing a Rotate function.
 /// </note>
 /// </summary>
-export abstract class Orientation {
-  abstract Rotate(point: Position.CartesianPosition): Position.Position;
-}
 
-/// <summary>
-/// A specialization of Orientation using Yaw, Pitch, and Roll angles measured in degrees.
-/// <remark>
-/// This style of Orientation is best for easy human interpretation.
-/// It suffers from some computational inefficiencies, awkward interpolation, and singularities.
-/// </remark>
-/// </summary>
-export class YPRAngles extends Orientation {
-  public constructor(yaw: number, pitch: number, roll: number) {
-    super();
-    this.yaw = yaw;
-    this.pitch = pitch;
-    this.roll = roll;
-  }
-
-  /// <summary>
-  /// The function is to apply a YPR transformation
-  /// </summary>
-  public override Rotate(point: Position.CartesianPosition): Position.Position {
-    // convert to quaternion and use quaternion rotation
-    let q = YPRAngles.ToQuaternion(this.yaw, this.pitch, this.roll);
-    return Quaternion.Transform(point, q);
-  }
-  public static ToQuaternion(
-    yaw: number,
-    pitch: number,
-    roll: number
-  ): Quaternion {
-    // GeoPose angles are measured in degrees for human readability
-    // Convert degrees to radians.
-    yaw *= Math.PI / 180.0;
-    pitch *= Math.PI / 180.0;
-    roll *= Math.PI / 180.0;
-
-    let cosRoll = Math.cos(roll * 0.5);
-    let sinRoll = Math.sin(roll * 0.5);
-    let cosPitch = Math.cos(pitch * 0.5);
-    let sinPitch = Math.sin(pitch * 0.5);
-    let cosYaw = Math.cos(yaw * 0.5);
-    let sinYaw = Math.sin(yaw * 0.5);
-
-    let w = cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw;
-    let x = sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw;
-    let y = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;
-    let z = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;
-
-    let norm = Math.sqrt(x * x + y * y + z * z + w * w);
-    let q = new Quaternion(x, y, z, w);
-    if (norm > 0.0) {
-      q.x = q.x / norm;
-      q.y = q.y / norm;
-      q.z = q.z / norm;
-      q.w = q.w / norm;
+namespace Orientations
+{
+    /// <summary>
+    /// The abstract root of the Orientation hierarchy.
+    /// <note>
+    /// An Orientation is a generic container for information that defines rotation within a
+    /// coordinate system associated with a reference frame.
+    /// An Orientation may have a specialized context with necessary ancillary information
+    /// that parameterizes the rotation.
+    /// Such context may include, for example, part of the information that 
+    /// may be conveyed in an ISO 19111 CRS specification
+    /// or a proprietary naming, numbering, or modelling scheme as used by EPSG, 
+    /// NASA Spice, or SEDRIS SRM.
+    /// Subclasses of Orientation exist precisely to hold this context in conjunction with code
+    /// implementing a Rotate function.
+    /// </note>
+    /// </summary>
+    public abstract class Orientation
+    {
+        public virtual Position Rotate(Position point)
+        {
+            return point;
+        }
     }
-    return q;
-  }
-  /// <summary>
-  /// A left-right angle in degrees.
-  /// </summary>
-  public yaw: number;
-  /// <summary>
-  /// A forward-looking up-down angle in degrees.
-  /// </summary>
-  public pitch: number;
-  /// <summary>
-  /// A side-to-side angle in degrees.
-  /// </summary>
-  public roll: number;
+    /// <summary>
+    /// A specialization of Orientation using Yaw, Pitch, and Roll angles in degrees.
+    /// <remark>
+    /// This style of Orientation is best for easy human interpretation.
+    /// It suffers from some computational inefficiencies, awkward interpolation, and singularities.
+    /// </remark>
+    /// </summary>
+    public class YPRAngles : Orientation
+    {
+        // Prevent public use of empty constructor.
+        internal YPRAngles()
+        {
+
+        }
+        public YPRAngles(double yaw, double pitch, double roll)
+        {
+            this.yaw = yaw;
+            this.pitch = pitch;
+            this.roll = roll;
+        }
+        public override Position Rotate(Position point)
+        {
+            // convert to quaternion and use quaternion rotation
+            Quaternion q = YPRAngles.ToQuaternion(this.yaw, this.pitch, this.roll);
+            return Quaternion.Transform(point, q);
+        }
+        public static Quaternion ToQuaternion(double yaw, double pitch, double roll)
+        {
+            // GeoPose uses angles in degrees for human readability
+            // Convert degrees to radians.
+            yaw *= (Math.PI / 180.0);
+            pitch *= (Math.PI / 180.0);
+            roll *= (Math.PI / 180.0);
+
+            double cosRoll = Math.Cos(roll * 0.5);
+            double sinRoll = Math.Sin(roll * 0.5);
+            double cosPitch = Math.Cos(pitch * 0.5);
+            double sinPitch = Math.Sin(pitch * 0.5);
+            double cosYaw = Math.Cos(yaw * 0.5);
+            double sinYaw = Math.Sin(yaw * 0.5);
+
+            double w = cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw;
+            double x = sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw;
+            double y = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;
+            double z = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;
+
+            double norm = Math.Sqrt(x * x + y * y + z * z + w * w);
+            if (norm <= double.MinValue)
+            {
+                return new Quaternion(x, y, z, w);
+            }
+            return new Quaternion(x / norm, y / norm, z / norm, w / norm);
+        }
+        /// <summary>
+        /// A left-right angle in degrees.
+        /// </summary>
+        public double yaw { get; set; } = double.NaN;
+        /// <summary>
+        /// An up-down angle in degrees.
+        /// </summary>
+        public double pitch { get; set; } = double.NaN;
+        /// <summary>
+        /// A side-to-side angle in degrees.
+        /// </summary>
+        public double roll { get; set; } = double.NaN;
+    }
+    /// <summary>
+    /// A specialization of Orientation using a unit quaternion.
+    /// </summary>
+    /// <remark>
+    /// This style of Orientation is best for computation.
+    /// It is not easily interpreted or visualized by humans.
+    /// </remark>
+    public class Quaternion : Orientation
+    {
+        internal Quaternion()
+        {
+
+        }
+        public Quaternion(double x, double y, double z, double w)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
+        public override Position Rotate(Position point)
+        {
+            return Quaternion.Transform(point, this);
+        }
+        public YPRAngles ToYPRAngles(Quaternion q)
+        {
+            YPRAngles yprAngles = new YPRAngles();
+
+            // roll (x-axis rotation)
+            double sinRollCosPitch = 2.0 * (q.w * q.x + q.y * q.z);
+            double cosRollCosPitch = 1.0 - 2.0 * (q.x * q.x + q.y * q.y);
+            yprAngles.roll = Math.Atan2(sinRollCosPitch, cosRollCosPitch) * (180.0 / Math.PI); // in degrees
+
+            // pitch (y-axis rotation)
+            double sinPitch = Math.Sqrt(1.0 + 2.0 * (q.w * q.y - q.x * q.z));
+            double cosPitch = Math.Sqrt(1.0 - 2.0 * (q.w * q.y - q.x * q.z));
+            yprAngles.pitch = (2.0 * Math.Atan2(sinPitch, cosPitch) - Math.PI / 2.0) * (180.0 / Math.PI); // in degrees
+
+            // yaw (z-axis rotation)
+            double sinYawCosPitch = 2.0 * (q.w * q.z + q.x * q.y);
+            double cosYawCosPitch = 1.0 - 2.0 * (q.y * q.y + q.z * q.z);
+            yprAngles.yaw = Math.Atan2(sinYawCosPitch, cosYawCosPitch) * (180.0 / Math.PI); // in degrees
+
+            return yprAngles;
+        }
+        public static Position Transform(Position inPoint, Quaternion rotation)
+        {
+            CartesianPosition point = (CartesianPosition)inPoint;
+            double x2 = rotation.x + rotation.x;
+            double y2 = rotation.y + rotation.y;
+            double z2 = rotation.z + rotation.z;
+
+            double wx2 = rotation.w * x2;
+            double wy2 = rotation.w * y2;
+            double wz2 = rotation.w * z2;
+            double xx2 = rotation.x * x2;
+            double xy2 = rotation.x * y2;
+            double xz2 = rotation.x * z2;
+            double yy2 = rotation.y * y2;
+            double yz2 = rotation.y * z2;
+            double zz2 = rotation.z * z2;
+
+            return new CartesianPosition(
+                point.x * (1.0f - yy2 - zz2) + point.y * (xy2 - wz2) + point.z * (xz2 + wy2),
+                point.x * (xy2 + wz2) + point.y * (1.0f - xx2 - zz2) + point.z * (yz2 - wx2),
+                point.x * (xz2 - wy2) + point.y * (yz2 + wx2) + point.z * (1.0f - xx2 - yy2));
+        }
+        /// <summary>
+        /// The x component.
+        /// </summary>
+        public double x { get; set; } = double.NaN;
+        /// <summary>
+        /// The y component.
+        /// </summary>
+        public double y { get; set; } = double.NaN;
+        /// <summary>
+        /// The z component.
+        /// </summary>
+        public double z { get; set; } = double.NaN;
+        /// <summary>
+        /// The w component.
+        /// </summary>
+        public double w { get; set; } = double.NaN;
+    }
 }
-/// <summary>
-/// Quaternion is a specialization of Orientation using a unit quaternion.
-/// </summary>
-/// <remark>
-/// This style of Orientation is best for computation.
-/// It is not easily interpreted or visualized by humans.
-/// </remark>
-export class Quaternion extends Orientation {
-  public constructor(x: number, y: number, z: number, w: number) {
-    super();
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    this.w = w;
-  }
-  public override Rotate(point: Position.CartesianPosition): Position.Position {
-    return Quaternion.Transform(point, this);
-  }
-  public ToYPRAngles(q: Quaternion): YPRAngles {
-    // roll (x-axis rotation)
-    let sinRollCosPitch = 2.0 * (q.w * q.x + q.y * q.z);
-    let cosRollCosPitch = 1.0 - 2.0 * (q.x * q.x + q.y * q.y);
-    let roll = Math.atan2(sinRollCosPitch, cosRollCosPitch) * (180.0 / Math.PI); // in degrees
-
-    // pitch (y-axis rotation)
-    let sinPitch = Math.sqrt(1.0 + 2.0 * (q.w * q.y - q.x * q.z));
-    let cosPitch = Math.sqrt(1.0 - 2.0 * (q.w * q.y - q.x * q.z));
-    let pitch =
-      (2.0 * Math.atan2(sinPitch, cosPitch) - Math.PI / 2.0) *
-      (180.0 / Math.PI); // in degrees
-
-    // yaw (z-axis rotation)
-    let sinYawCosPitch = 2.0 * (q.w * q.z + q.x * q.y);
-    let cosYawCosPitch = 1.0 - 2.0 * (q.y * q.y + q.z * q.z);
-    let yaw = Math.atan2(sinYawCosPitch, cosYawCosPitch) * (180.0 / Math.PI); // in degrees
-    let yprAngles = new YPRAngles(yaw, pitch, roll);
-    return yprAngles;
-  }
-  public static Transform(
-    inPoint: Position.CartesianPosition,
-    rotation: Quaternion
-  ): Position.CartesianPosition {
-    let point = new Position.CartesianPosition(inPoint.x, inPoint.y, inPoint.z);
-    let x2 = rotation.x + rotation.x;
-    let y2 = rotation.y + rotation.y;
-    let z2 = rotation.z + rotation.z;
-
-    let wx2 = rotation.w * x2;
-    let wy2 = rotation.w * y2;
-    let wz2 = rotation.w * z2;
-    let xx2 = rotation.x * x2;
-    let xy2 = rotation.x * y2;
-    let xz2 = rotation.x * z2;
-    let yy2 = rotation.y * y2;
-    let yz2 = rotation.y * z2;
-    let zz2 = rotation.z * z2;
-
-    let p = new Position.CartesianPosition(
-      point.x * (1.0 - yy2 - zz2) +
-        point.y * (xy2 - wz2) +
-        point.z * (xz2 + wy2),
-      point.x * (xy2 + wz2) +
-        point.y * (1.0 - xx2 - zz2) +
-        point.z * (yz2 - wx2),
-      point.x * (xz2 - wy2) +
-        point.y * (yz2 + wx2) +
-        point.z * (1.0 - xx2 - yy2)
-    );
-    return p;
-  }
-  /// <summary>
-  /// The x component.
-  /// </summary>
-  public x: number;
-  /// <summary>
-  /// The y component.
-  /// </summary>
-  public y: number;
-  /// <summary>
-  /// The z component.
-  /// </summary>
-  public z: number;
-  /// <summary>
-  /// The w component.
-  /// </summary>
-  public w: number;
-}
-
 
 ----
 
@@ -885,43 +1218,42 @@ The three properties PoseID, parentPoseID, and validTime are additional properti
 <<software-license>>
 ----
 
-import * as Extras from "./Extras";
-import * as FrameTransform from "./FrameTransform";
-import * as Orientation from "./Orientation";
-
-// Implementation step: 5 - follows Orientation.
+// Implementation order: 5 - follows Orientation.
 // This is the root of the GeoPose inheritance hierarchy.
 
-/// <summary>
-/// A GeoPose has a position and an orientation.
-/// The position is abstracted as a transformation between one reference frame (outer frame)
-/// and another (inner frame).
-/// The position is the origin of the coordinate system of the inner frame.
-/// The orientation is applied to the coordinate system of the inner frame.
-/// <remark>
-/// See the OGS GeoPose 1.0 standard for a full description.
-/// </remark>
-/// <remark>
-/// This implementation includes some optional properties not define in the 1.0 standard
-/// but allowed by JSON serializations of all but the Basic-Quaternion(Strict) standardization target.
-/// The optional properties are identifiers and time values that are useful in practice.
-/// They may be part of a future version of the standard but, as of February 2023, they are optional add-ons.
-/// </remark>
-/// </summary>
-export abstract class GeoPose {
-  // Optional and non-standard but conforming added property:
-  // an identifier unique within an application.
-  public poseID: Extras.PoseID;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-  // Optional and non-standard but conforming added property:
-  // a PoseID type identifier of another GeoPose in the direction of the root of a pose tree.
-  public parentPoseID: Extras.PoseID;
+using Positions;
+using FrameTransforms;
+using Orientations;
+using Extras;
 
-  // Optional and non-standard (except in Advanced) but conforming added property:
-  // a validTime with milliseconds of Unix time.
-  public validTime: number;
-  abstract FrameTransform: FrameTransform.FrameTransform;
-  abstract Orientation: Orientation.Orientation;
+namespace GeoPose
+{
+    /// <summary>
+    /// The abstract root of the GeoPose Basic and Advanced classes.
+    /// </summary>
+    public abstract class GeoPose
+    {
+        // Optional and non-standard but conforming added property:
+        //   an identifier unique within an application.
+        public PoseID? poseID { get; set; } = null;
+
+        // Optional and non-standard but conforming added property:
+        //  a PoseID type identifier of another GeoPose in the direction of the root of a pose tree.
+        public PoseID? parentPoseID { get; set; } = null;
+
+        // Optional and non-standard but conforming added property:
+        //   a poseID identifier in the direction of the root of a pose tree.
+        public UnixTime? validTime { get; set; } = null;
+        public abstract FrameTransform FrameTransform { get; set; }
+        public abstract Orientation Orientation { get; set; }
+        public abstract string ToJSON(string indent);
+    }
 }
 
 
@@ -942,185 +1274,187 @@ The two members of the Basic family are distinguished by the rotational transfor
 
 <<software-license>>
 ----
-// Implementation step: 6 - follows GeoPose.
-// Basic is the simplest family of GeoPoses - the 80% part of a 80/20 solution.
+using System;
+using System.Text;
 
-/// <summary>
-/// The Basic GeoPoses share the use of a local tangent plane, east-north-up frame transform.
-/// The types of Basic GeoPose are distinguished by the method used to specify orientation of the inner frame.
-/// </summary>
-export abstract class Basic extends GeoPose.GeoPose {
-  /// <summary>
-  /// A Position specified in geographic coordinates with height above a reference surface -
-  /// usually an ellipsoid of revolution or a gravitational equipotential surface is
-  /// transformed to a local Cartesian frame, suitable for use over an extent of a few km.
-  /// </summary>
-  public override FrameTransform: FrameTransform.WGS84ToLTPENU;
-}
+using GeoPose;
+using Positions;
+using FrameTransforms;
+using Orientations;
+using Extras;
 
-/// <summary>
-/// A Basic-YPR GeoPose uses yaw, pitch, and roll angles measured in degrees to define the orientation of the inner frame..
-/// </summary>
-export class BasicYPR extends Basic {
-  public constructor(
-    id: string,
-    tangentPoint: Position.GeodeticPosition,
-    yprAngles: Orientation.YPRAngles
-  ) {
-    super();
-    this.poseID = new Extras.PoseID(id);
-    this.FrameTransform = new FrameTransform.WGS84ToLTPENU(tangentPoint);
-    this.Orientation = yprAngles;
-  }
-  /// <summary>
-  /// An Orientation specified as three successive rotations about the local Z, Y, and X axes, in that order..
-  /// </summary>
-  public override Orientation: Orientation.YPRAngles;
-
-  /// <summary>
-  /// This function returns a Json encoding of a Basic-YPR GeoPose
-  /// </summary>
-  public toJSON(): string {
-    let indent: string = "";
-    let sb: string[] = [""];
-    if (FrameTransform != null && Orientation != null) {
-      sb.push("{\r\n  " + indent);
-      if (this.validTime != null) {
-        sb.push(
-          '"validTime": ' + this.validTime.toString() + ",\r\n" + indent + "  "
-        );
-      }
-      if (this.poseID != null && this.poseID.id != "") {
-        sb.push('"poseID": "' + this.poseID.id + '",\r\n' + indent + "  ");
-      }
-      if (this.parentPoseID != null && this.parentPoseID.id != "") {
-        sb.push(
-          '"parentPoseID": "' + this.parentPoseID.id + '",\r\n' + indent + "  "
-        );
-      }
-      sb.push(
-        '"position": \r\n  {\r\n    ' +
-          indent +
-          '"lat": ' +
-          (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lat +
-          ",\r\n    " +
-          indent +
-          '"lon": ' +
-          (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lon +
-          ",\r\n    " +
-          indent +
-          '"h":   ' +
-          (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.h
-      );
-      sb.push("\r\n  " + indent + "},");
-      sb.push("\r\n  " + indent);
-      sb.push(
-        '"angles": \r\n  {\r\n    ' +
-          indent +
-          '"yaw":   ' +
-          (this.Orientation as Orientation.YPRAngles).yaw +
-          ",\r\n    " +
-          indent +
-          '"pitch": ' +
-          (this.Orientation as Orientation.YPRAngles).pitch +
-          ",\r\n    " +
-          indent +
-          '"roll":  ' +
-          (this.Orientation as Orientation.YPRAngles).roll
-      );
-      sb.push("\r\n  " + indent + "}");
-      sb.push("\r\n" + indent + "}");
+namespace Basic
+{
+    public abstract class Basic : GeoPose.GeoPose
+    {
+        /// <summary>
+        /// A Position specified in spherical coordinates with height above a reference surface -
+        /// usually an ellipsoid of revolution or a gravitational equipotential surface.
+        /// </summary>
+        private WGS84ToLTP_ENU _frameTransform = new WGS84ToLTP_ENU();
+        public override FrameTransform FrameTransform
+        {
+            get
+            {
+                return _frameTransform;
+            }
+            set
+            {
+                if (value.GetType() == typeof(WGS84ToLTP_ENU))
+                {
+                    _frameTransform = (WGS84ToLTP_ENU)value;
+                }
+            }
+        }
     }
-    return sb.join("");
-  }
-}
 
-/// <summary>
-/// A Basic-Quaternion GeoPose uses a unit quaternions to define the orientation of the inner frame..
-/// <remark>
-/// See the OGS GeoPose 1.0 standard for a full description.
-/// </remark>
-/// </summary>
-export class BasicQuaternion extends Basic {
-  public constructor(
-    id: string,
-    tangentPoint: Position.GeodeticPosition,
-    quaternion: Orientation.Quaternion
-  ) {
-    super();
-    this.poseID = new Extras.PoseID(id);
-    this.FrameTransform = new FrameTransform.WGS84ToLTPENU(tangentPoint);
-    this.Orientation = quaternion;
-  }
+    /// <summary>
+    /// A Basic-YPR GeoPose.
+    /// <remark>
+    /// See the OGS GeoPose 1.0 standard for a full description.
+    /// </remark>
+    /// </summary>
+    public class BasicYPR : Basic
+    {
+        internal BasicYPR()
+        {
 
-  /// <summary>
-  /// An Orientation specified as a unit quaternion.
-  /// </summary>
-  public override Orientation: Orientation.Quaternion;
-
-  /// <summary>
-  /// This function returns a Json encoding of a Basic-Quaternion GeoPose
-  /// </summary>
-  public toJSON(): string {
-    let indent: string = "";
-    let sb: string[] = [""];
-    if (
-      (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin != null &&
-      (this.Orientation as Orientation.Quaternion) != null
-    ) {
-      sb.push("{\r\n  " + indent);
-      if (this.validTime != null) {
-        sb.push(
-          '"validTime": ' + this.validTime.toString() + ",\r\n" + indent + "  "
-        );
-      }
-      if (this.poseID != null && this.poseID.id != "") {
-        sb.push('"poseID": "' + this.poseID.id + '",\r\n' + indent + "  ");
-      }
-      if (this.parentPoseID != null && this.parentPoseID.id != "") {
-        sb.push(
-          '"parentPoseID": "' + this.parentPoseID.id + '",\r\n' + indent + "  "
-        );
-      }
-      sb.push(
-        '"position": \r\n  {\r\n    ' +
-          indent +
-          '"lat": ' +
-          (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lat +
-          ",\r\n    " +
-          indent +
-          '"lon": ' +
-          (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.lon +
-          ",\r\n    " +
-          indent +
-          '"h":   ' +
-          (this.FrameTransform as FrameTransform.WGS84ToLTPENU).Origin.h
-      );
-      sb.push("\r\n  " + indent + "},");
-      sb.push("\r\n  " + indent);
-      sb.push(
-        '"quaternion": \r\n  {\r\n    ' +
-          indent +
-          '"x":   ' +
-          (this.Orientation as Orientation.Quaternion).x +
-          ",\r\n      " +
-          indent +
-          '"y": ' +
-          (this.Orientation as Orientation.Quaternion).y +
-          ",\r\n      " +
-          indent +
-          '"z": ' +
-          (this.Orientation as Orientation.Quaternion).z +
-          ",\r\n      " +
-          indent +
-          '"w":  ' +
-          (this.Orientation as Orientation.Quaternion).w
-      );
-      sb.push("\r\n  " + indent + "}");
-      sb.push("\r\n" + indent + "}");
-      return sb.join("");
+        }
+        public BasicYPR(string id, GeodeticPosition tangentPoint, YPRAngles yprAngles)
+        {
+            this.poseID = new PoseID(id);
+            this.FrameTransform = new WGS84ToLTP_ENU(tangentPoint);
+            this.Orientation = yprAngles;
+        }
+        private YPRAngles _orientation = new YPRAngles();
+        /// <summary>
+        /// An Orientation specified as three rotations.
+        /// </summary>
+        public override Orientation Orientation
+        {
+            get
+            {
+                return _orientation;
+            }
+            set
+            {
+                if (value.GetType() == typeof(YPRAngles))
+                {
+                    _orientation = (YPRAngles)value;
+                }
+            }
+        }
+        /// <summary>
+        /// Return a string containing Json encoding of a Basic-YPR GeoPose
+        /// </summary>
+        public override string ToJSON(string indent = "")
+        {
+            StringBuilder sb = new StringBuilder();
+            if (FrameTransform != null && Orientation != null)
+            {
+                sb.Append("{\r\n\t\t" + indent);
+                if (validTime != null && validTime.timeValue != String.Empty)
+                {
+                    sb.Append("\"validTime\": " + validTime.timeValue + ",\r\n" + indent + "  ");
+                }
+                if (poseID != null && poseID.id != String.Empty)
+                {
+                    sb.Append("\"poseID\": \"" + poseID.id + "\",\r\n" + indent + "  ");
+                }
+                if (parentPoseID != null && parentPoseID.id != String.Empty)
+                {
+                    sb.Append("\"parentPoseID\": \"" + parentPoseID.id + "\",\r\n" + indent + "  ");
+                }
+                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " + ((WGS84ToLTP_ENU)FrameTransform).Origin.lat + ",\r\n\t\t\t" + indent +
+                    "\"lon\": " + ((WGS84ToLTP_ENU)FrameTransform).Origin.lon + ",\r\n\t\t\t" + indent +
+                    "\"h\":   " + ((WGS84ToLTP_ENU)FrameTransform).Origin.h);
+                sb.Append("\r\n\t\t" + indent + "},");
+                sb.Append("\r\n\t\t" + indent);
+                sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"yaw\":   " + ((YPRAngles)Orientation).yaw + ",\r\n\t\t\t" + indent +
+                    "\"pitch\": " + ((YPRAngles)Orientation).pitch + ",\r\n\t\t\t" + indent +
+                    "\"roll\":  " + ((YPRAngles)Orientation).roll);
+                sb.Append("\r\n\t\t" + indent + "}");
+                sb.Append("\r\n\t" + indent + "}");
+            }
+            return sb.ToString();
+        }
     }
-  }
+
+    /// <summary>
+    /// A Basic-Quaternion GeoPose.
+    /// <remark>
+    /// See the OGS GeoPose 1.0 standard for a full description.
+    /// </remark>
+    /// </summary>
+    public class BasicQuaternion : Basic
+    {
+        internal BasicQuaternion()
+        {
+        }
+        public BasicQuaternion(string id, GeodeticPosition tangentPoint, Quaternion quaternion)
+        {
+            this.poseID = new PoseID(id);
+            this.FrameTransform = new WGS84ToLTP_ENU(tangentPoint);
+            this.Orientation = quaternion;
+        }
+
+        /// <summary>
+        /// An Orientation specified as a unit quaternion.
+        /// </summary>
+        private Quaternion _orientation = new Quaternion();
+        public override Orientation Orientation
+        {
+            get
+            {
+                return _orientation;
+            }
+            set
+            {
+                if (value.GetType() == typeof(Quaternion))
+                {
+                    _orientation = (Quaternion)value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// This function returns a Json encoding of a Basic-Quaternion GeoPose
+        /// </summary>
+        public override string ToJSON(string indent = "")
+        {
+            StringBuilder sb = new StringBuilder();
+            if (((WGS84ToLTP_ENU)FrameTransform).Origin != null && Orientation != null)
+            {
+                sb.Append("{\r\n\t\t" + indent);
+                if (validTime != null && validTime.timeValue != String.Empty)
+                {
+                    sb.Append("\"validTime\": " + validTime.timeValue + ",\r\n" + indent + "  ");
+                }
+                if (poseID != null && poseID.id != String.Empty)
+                {
+                    sb.Append("\"poseID\": \"" + poseID.id + "\",\r\n" + indent + "  ");
+                }
+                if (parentPoseID != null && parentPoseID.id != String.Empty)
+                {
+                    sb.Append("\"parentPoseID\": \"" + parentPoseID.id + "\",\r\n" + indent + "  ");
+                }
+                sb.Append("\"position\": {\r\n\t\t\t" + indent + "\"lat\": " +
+                    ((WGS84ToLTP_ENU)FrameTransform).Origin.lat + ",\r\n\t\t\t" + indent +
+                    "\"lon\": " + ((WGS84ToLTP_ENU)FrameTransform).Origin.lon +
+                    ",\r\n\t\t\t" + indent +
+                    "\"h\":   " + ((WGS84ToLTP_ENU)FrameTransform).Origin.h);
+                sb.Append("\r\n\t\t" + indent + "},");
+                sb.Append("\r\n\t\t" + indent);
+                sb.Append("\"angles\": {\r\n\t\t\t" + indent + "\"x\":   " + ((Quaternion)Orientation).x + ",\r\n\t\t\t" + indent +
+                    "\"y\": " + ((Quaternion)Orientation).y + ",\r\n\t\t\t" + indent +
+                    "\"z\": " + ((Quaternion)Orientation).z + ",\r\n\t\t\t" + indent +
+                    "\"w\":  " + ((Quaternion)Orientation).w);
+                sb.Append("\r\n\t\t" + indent + "}");
+                sb.Append("\r\n\t" + indent + "}");
+            }
+            return sb.ToString();
+        }
+    }
 }
 
 ----
@@ -1147,114 +1481,105 @@ The Advanced class should implement each of the frame transforms, where validity
 <<software-license>>
 ----
 
-import * as Extras from "./Extras";
-import * as FrameTransform from "./FrameTransform";
-import * as Orientation from "./Orientation";
-import * as GeoPose from "./GeoPose";
+using System;
+using System.Text;
 
-// Implementation step: 7 - follows Basic GeoPose.
-// This is the most general GeoPose - the largest part of the 20% part of a 80/20 solution.
-// The difficult implementation is creating the interface layer between the
-// Extrinsic specification and external authorities and data sources.
+using GeoPose;
+using Extras;
+using FrameTransforms;
+using Orientations;
 
-/// <summary>
-/// Advanced GeoPose.
-/// </summary>
-export class Advanced extends GeoPose.GeoPose {
-  public constructor(
-    id: string,
-    frameTransform: FrameTransform.Extrinsic,
-    orientation: Orientation.Quaternion
-  ) {
-    super();
-    this.poseID = new Extras.PoseID(id);
-    this.FrameTransform = frameTransform;
-    this.Orientation = orientation;
-  }
-
-  /// <summary>
-  /// A Frame Specification defining a frame with associated coordinate system whose Position is the origin.
-  /// </summary>
-  public override FrameTransform: FrameTransform.Extrinsic;
-
-  /// <summary>
-  /// An Orientation specified as a unit quaternion.
-  /// </summary>
-  public override Orientation: Orientation.Quaternion;
-
-  /// <summary>
-  /// This function returns a Json encoding of an Advanced GeoPose
-  /// </summary>
-  public toJSON(): string {
-    let indent: string = "";
-    let sb: string[] = [""];
+namespace Advanced
+{
+    /// <summary>
+    /// Advanced GeoPose.
+    /// </summary>
+    public class Advanced : GeoPose.GeoPose
     {
-      sb.push("{\r\n" + indent + "  ");
-      if (this.validTime != null) {
-        sb.push(
-          '"validTime": ' + this.validTime.toString() + ",\r\n" + indent + "  "
-        );
-      }
-      if (this.poseID != null && this.poseID.id != "") {
-        sb.push('"poseID": "' + this.poseID.id + '",\r\n' + indent + "  ");
-      }
-      if (this.parentPoseID != null && this.parentPoseID.id != "") {
-        sb.push(
-          '"parentPoseID": "' + this.parentPoseID.id + '",\r\n' + indent + "  "
-        );
-      }
-      sb.push(
-        '"frameSpecification":\r\n' +
-          indent +
-          "  " +
-          "{\r\n" +
-          indent +
-          '    "authority": "' +
-          (this.FrameTransform as FrameTransform.Extrinsic).authority.replace(
-            '"',
-            '\\"'
-          ) +
-          '",\r\n' +
-          indent +
-          '    "id": "' +
-          (this.FrameTransform as FrameTransform.Extrinsic).id.replace(
-            '"',
-            '\\"'
-          ) +
-          '",\r\n' +
-          indent +
-          '    "parameters": "' +
-          (this.FrameTransform as FrameTransform.Extrinsic).parameters.replace(
-            '"',
-            '\\"'
-          ) +
-          '"\r\n' +
-          indent +
-          "  },\r\n" +
-          indent +
-          "  "
-      );
-      sb.push(
-        '"quaternion":\r\n' +
-          indent +
-          "  {\r\n" +
-          indent +
-          '    "x":' +
-          (this.Orientation as Orientation.Quaternion).x +
-          ',"y":' +
-          (this.Orientation as Orientation.Quaternion).y +
-          ',"z":' +
-          (this.Orientation as Orientation.Quaternion).z +
-          ',"w":' +
-          (this.Orientation as Orientation.Quaternion).w
-      );
-      sb.push("\r\n" + indent + "  }\r\n" + indent + "}\r\n");
-      return sb.join("");
+        internal Advanced()
+        {
+
+        }
+        public Advanced(PoseID poseID, Extrinsic frameTransform, Quaternion orientation)
+        {
+            this.poseID = poseID;
+            FrameTransform = frameTransform;
+            Orientation = orientation;
+        }
+
+        /// <summary>
+        /// A Frame Specification defining a frame with associated coordinate system whose Position is the origin.
+        /// </summary>
+        private Extrinsic _frameTransform = new Extrinsic();
+        public override FrameTransform FrameTransform
+        {
+            get
+            {
+                return _frameTransform;
+            }
+            set
+            {
+                if (value.GetType() == typeof(Extrinsic))
+                {
+                    _frameTransform = (Extrinsic)value;
+                }
+                // else throw expected extrinsic exception
+            }
+        }
+        /// <summary>
+        /// An Orientation specified as a unit quaternion.
+        /// </summary>
+        private Quaternion _orientation = new Quaternion();
+        public override Orientation Orientation
+        {
+            get
+            {
+                return _orientation;
+            }
+            set
+            {
+                if (value.GetType() == typeof(Quaternion))
+                {
+                    _orientation = (Quaternion)value;
+                }
+            }
+        }
+        /// <summary>
+        /// Milliseconds of Unix time ticks (optional).
+        /// </summary>
+        //public long? ValidTime { get; set; } = 0;
+        /// <summary>
+        /// This function returns a Json encoding of an Advanced GeoPose
+        /// </summary>
+        public override string ToJSON(string indent)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("{\r\n" + indent + "  ");
+            if (validTime != null && validTime.timeValue != String.Empty)
+            {
+                sb.Append("\"validTime\": " + validTime.timeValue + ",\r\n" + indent + "  ");
+            }
+            if (poseID != null && poseID.id != String.Empty)
+            {
+                sb.Append("\"poseID\": \"" + poseID.id + "\",\r\n" + indent + "  ");
+            }
+            if (parentPoseID != null && parentPoseID.id != String.Empty)
+            {
+                sb.Append("\"parentPoseID\": \"" + parentPoseID.id + "\",\r\n" + indent + "  ");
+            }
+            sb.Append("\"frameSpecification\":\r\n" + indent + "  " + "{\r\n" + indent + "    \"authority\": \"" +
+                ((Extrinsic)FrameTransform).authority.Replace("\"", "\\\"") + "\",\r\n" + indent + "    \"id\": \"" +
+                ((Extrinsic)FrameTransform).id.Replace("\"", "\\\"") + "\",\r\n" + indent + "    \"parameters\": \"" +
+                ((Extrinsic)FrameTransform).parameters.Replace("\"", "\\\"") + "\"\r\n" + indent + "  },\r\n" + indent + "  ");
+            sb.Append("\"quaternion\":\r\n" + indent + "  {\r\n" + indent + "    \"x\":" + ((Quaternion)Orientation).x + ",\"y\":" +
+                ((Quaternion)Orientation).y + ",\"z\":" +
+                ((Quaternion)Orientation).z + ",\"w\":" +
+                ((Quaternion)Orientation).w);
+            sb.Append("\r\n" + indent + "  }\r\n" + indent + "}\r\n");
+            return sb.ToString();
+        }
     }
-  }
 }
-
-
 
 ----
 
@@ -1277,91 +1602,106 @@ The FrameTransform supported by the Local GeoPose is Translation.
 <<software-license>>
 ----
 
-// Implementation step: 8 -a useful GeoPose for working within a local Cartesian (i.e. engineering) frame.
+// Implemention order: 8 -a useful GeoPose for working within a local Cartesian (i.e. engineering) frame.
 // Local can be expressed as an Advanced form, but the Advanced form is more complex and this implementation is a shortcut.
 
+using System;
+using System.Text;
+
+using GeoPose;
+using Positions;
+using FrameTransforms;
+using Orientations;
+using Extras;
+
 /// <summary>
-/// Local GeoPose is a derived pose within an engineering CRS with a Cartesian coordinate system.
+/// A derived pose within an engineering CRS with a Cartesian coordinate system.
 /// This form is the closest to the classical computer graphics pose concept.
 /// <remark>
-/// WARNING: Local is not (yet) part of the OGC GeoPose standard and not backwards-compatible.
+/// Not (yet) part of the OGC GeoPose standard and not backwards-compatible.
 /// Useful when operating within a local Cartesian frame defined by a Basic (or other) GeoPose.
-/// It is possible to define Local via the Advanced GeoPose with
-///   "authority": "steve@opensiteplan.org-experimental", "id": "translation", "parameters": {<dx>, <dy>, <dz> }
 /// </remark>
 /// </summary>
-export class Local extends GeoPose.GeoPose {
-  public constructor(
-    id: string,
-    frameTransform: FrameTransform.Translation,
-    orientation: Orientation.YPRAngles
-  ) {
-    super();
-    this.poseID = new Extras.PoseID(id);
-    this.FrameTransform = frameTransform;
-    this.Orientation = orientation;
-  }
-  /// <summary>
-  /// The xOffset, yOffset, zOffset from the origin of the rotated inner frame of a "parent" GeoPose.
-  /// </summary>
-  public override FrameTransform: FrameTransform.Translation;
-
-  /// <summary>
-  /// An Orientation specified as three rotations.
-  /// </summary>
-  public override Orientation: Orientation.YPRAngles;
-
-  /// <summary>
-  /// This function returns a Json encoding of an Advanced GeoPose
-  /// </summary>
-  public toJSON(): string {
-    let indent: string = "";
-    let sb: string[] = [""];
+public class Local : GeoPose.GeoPose
+{
+    public Local(string id, Translation frameTransform, Orientation quaternion)
     {
-      sb.push("{\r\n  ");
-      if (this.validTime != null) {
-        sb.push(
-          '"validTime": ' + this.validTime.toString() + ",\r\n" + indent + "  "
-        );
-      }
-      if (this.poseID != null && this.poseID.id != "") {
-        sb.push('"poseID": "' + this.poseID.id + '",\r\n' + indent + "  ");
-      }
-      if (this.parentPoseID != null && this.parentPoseID.id != "") {
-        sb.push(
-          '"parentPoseID": "' + this.parentPoseID.id + '",\r\n' + indent + "  "
-        );
-      }
-      sb.push(
-        '"position": \r\n  {\r\n    ' +
-          '"x": ' +
-          (this.FrameTransform as FrameTransform.Translation).xOffset +
-          ",\r\n    " +
-          '"y": ' +
-          (this.FrameTransform as FrameTransform.Translation).yOffset +
-          ",\r\n    " +
-          '"z":   ' +
-          (this.FrameTransform as FrameTransform.Translation).zOffset
-      );
-      sb.push("\r\n  " + "},");
-      sb.push("\r\n  ");
-      sb.push(
-        '"angles": \r\n  {\r\n    ' +
-          '"yaw":   ' +
-          (this.Orientation as Orientation.YPRAngles).yaw +
-          ",\r\n    " +
-          '"pitch": ' +
-          (this.Orientation as Orientation.YPRAngles).pitch +
-          ",\r\n    " +
-          '"roll":  ' +
-          (this.Orientation as Orientation.YPRAngles).roll
-      );
-      sb.push("\r\n  " + "}");
-      sb.push("\r\n" + "}\r\n");
-
-      return sb.join("");
+        this.poseID = new PoseID(id);
+        this.FrameTransform = frameTransform;
+        this.Orientation = quaternion;
     }
-  }
+    /// <summary>
+    /// The xOffset, yOffset, zOffset from the origin of the rotated inner frame of a "parent" GeoPose.
+    /// </summary>
+    private Translation _frameTransform = new Translation();
+    public override FrameTransform FrameTransform
+    {
+        get
+        {
+            return _frameTransform;
+        }
+        set
+        {
+            if (value.GetType() == typeof(Translation))
+            {
+                _frameTransform = (Translation)value;
+            }
+            // else throw expected translation exception
+        }
+    }
+    /// <summary>
+    /// Local uses the yaw, pitch, roll orientation.
+    /// </summary>
+    private YPRAngles _orientation = new YPRAngles();
+    /// <summary>
+    /// An Orientation specified as three rotations.
+    /// </summary>
+    public override Orientation Orientation
+    {
+        get
+        {
+            return _orientation;
+        }
+        set
+        {
+            if (value.GetType() == typeof(YPRAngles))
+            {
+                _orientation = (YPRAngles)value;
+            }
+            // else throw expected YPRAngles exception
+        }
+    }
+    /// <summary>
+    /// This function returns a Json encoding of a Basic-YPR GeoPose
+    /// </summary>
+    public override string ToJSON(string indent = "")
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append("{\r\n  ");
+        if (validTime != null && validTime.timeValue != String.Empty)
+        {
+            sb.Append("\"validTime\": " + validTime.timeValue + ",\r\n" + indent + "  ");
+        }
+        if (poseID != null && poseID.id != String.Empty)
+        {
+            sb.Append("\"poseID\": \"" + poseID.id + "\",\r\n" + indent + "  ");
+        }
+        if (parentPoseID != null && parentPoseID.id != String.Empty)
+        {
+            sb.Append("\"parentPoseID\": \"" + parentPoseID.id + "\",\r\n" + indent + "  ");
+        }
+        sb.Append("\"position\": \r\n  {\r\n    " + "\"x\": " + ((Translation)FrameTransform).xOffset + ",\r\n    " +
+            "\"y\": " + ((Translation)FrameTransform).yOffset + ",\r\n    " +
+            "\"z\":   " + ((Translation)FrameTransform).zOffset);
+        sb.Append("\r\n  " + "},");
+        sb.Append("\r\n  ");
+        sb.Append("\"angles\": \r\n  {\r\n    " + "\"yaw\":   " + ((YPRAngles)Orientation).yaw + ",\r\n    " +
+            "\"pitch\": " + ((YPRAngles)Orientation).pitch + ",\r\n    " +
+            "\"roll\":  " + ((YPRAngles)Orientation).roll);
+        sb.Append("\r\n  " + "}");
+        sb.Append("\r\n" + "}\r\n");
+        return sb.ToString();
+    }
 }
 
 ----

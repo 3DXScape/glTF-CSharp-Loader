@@ -1,10 +1,14 @@
-using GeoPoseX;
+using GeoPose;
+using Advanced;
+using Basic;
+using FrameTransforms;
+using Orientations;
 
 // Create Mars Express in the current International Celestial Reference Frame ICRF2 
-Advanced marsExpress = new Advanced(new PoseID("https://example.com/nodes/MarsExpress/1"),
+Advanced.Advanced marsExpress = new Advanced.Advanced(new Extras.PoseID("https://example.com/nodes/MarsExpress/1"),
     new Extrinsic("https://www.iers.org/", "icrf3", "{\"x\": 1234567890.9876,\"y\": 2345678901.8765, \"z\": 3456789012.7654}"),
-    new Quaternion(0,0,0,1));
-marsExpress.validTime = new UnixTime(1674767748003);
+    new Orientations.Quaternion(0.0, 0.0, 0.0, 1.0));
+marsExpress.validTime = new Extras.UnixTime(1674767748003);
 
 // Create four 10 m long wagons with identical seat layouts in frames local to Mars Express and remember them in a wagon list
 List<Local> wagons = new List<Local>();
@@ -22,7 +26,7 @@ wagon4.parentPoseID = marsExpress.poseID;
 wagons.Add(wagon4);
 
 // Create passengers from the SWG in wagons 1 and 3 in local frames local to specific wagons and remember them in a passenger list
-List<GeoPoseX.GeoPose> passengers = new List<GeoPoseX.GeoPose>();
+List<GeoPose.GeoPose> passengers = new List<GeoPose.GeoPose>();
 
 //  - Jerome is a clever thinker who has many questions and good ideas
 Local jerome = new Local("https://example.com/nodes/MarsExpress/1/Passengers/Jerome", new Translation(2.2, 0.8, -7.0), new YPRAngles(180.0, 1.0, 0.0));
@@ -40,8 +44,8 @@ steve.parentPoseID = wagon3.poseID;
 passengers.Add(steve);
 
 //  - Carl is one of Steve's multiple personalities who does not believe in using any GeoPose not in the 1.0.0 standard
-Advanced carl =
-    new Advanced(new PoseID("https://carlsmyth.com"),
+Advanced.Advanced carl =
+    new Advanced.Advanced(new Extras.PoseID("https://carlsmyth.com"),
     new Extrinsic(
         "https://ogc.org",
         "PROJCRS[\"GeoPose Local\",+GEOGCS[\"None)\"]+CS[Cartesian,3],+AXIS[\"x\",,ORDER[1],LENGTHUNIT[\"metre\",1]],+AXIS[\"y\",,ORDER[2],LENGTHUNIT[\"metre\",1]],+AXIS[\"z\",,ORDER[3],LENGTHUNIT[\"metre\",1]]+USAGE[AREA[\"+/-1000 m\"],BBOX[-1000,-1000,1000,1000],ID[\"GeoPose\",Local]]",
@@ -57,7 +61,7 @@ passengers.Add(carl);
 Example.Display.Output(marsExpress, wagons, passengers);
 
 // After a minute, the Carl personality decides that he must split from the Steve personality and moves to the same seat in wagon 4
-marsExpress.validTime = new UnixTime(1674767748003 + 60*1000 + 327);
+marsExpress.validTime = new Extras.UnixTime(1674767748003 + 60*1000 + 327);
 carl.parentPoseID = wagon4.poseID;
 // Carl moved so we need to update the validTime
 carl.validTime = marsExpress.validTime; // Use the Mars Express local clock

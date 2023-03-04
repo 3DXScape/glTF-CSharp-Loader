@@ -8,15 +8,15 @@ namespace Example
 {
     internal static class Display
     {
-        public static void Output(GeoPoseX.GeoPose marsExpress, List<GeoPoseX.Local> wagons, List<GeoPoseX.GeoPose> passengers)
+        public static void Output(GeoPose.GeoPose marsExpress, List<Local> wagons, List<GeoPose.GeoPose> passengers)
         {
             Console.WriteLine("\r\n========== Mars Express at Local Clock UNIX Time " + marsExpress.validTime.timeValue + "==========\r\n");
             Console.WriteLine(marsExpress.ToJSON(""));
-            foreach (GeoPoseX.GeoPose wagon in wagons)
+            foreach (GeoPose.GeoPose wagon in wagons)
             {
                 Console.WriteLine("=-=-=-=-=- Wagon -=-=-=-=-=: " + wagon.poseID.id.Substring(1 + wagon.poseID.id.LastIndexOf('/')) + "\r\n");
                 Console.WriteLine(wagon.ToJSON(""));
-                foreach (GeoPoseX.GeoPose passenger in passengers)
+                foreach (GeoPose.GeoPose passenger in passengers)
                 {
                     if (passenger.parentPoseID.id == wagon.poseID.id)
                     {

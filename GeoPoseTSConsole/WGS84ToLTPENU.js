@@ -19,25 +19,14 @@
 // *     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // * SOFTWARE.
 // *
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LTP_ENU = void 0;
+exports.ExtrinsicSupport = exports.LTP_ENU = void 0;
 const Position = require("./Position");
 class LTP_ENU {
-    constructor() {
-        // WGS-84 geodetic constants
-        this.a = 6378137.0; // WGS-84 Earth semimajor axis (m)
-        this.b = 6356752.314245; // Derived Earth semiminor axis (m)
-        this.f = (this.a - this.b) / this.a; // Ellipsoid Flatness
-        this.f_inv = 1.0 / this.f; // Inverse flattening
-        this.a_sq = this.a * this.a;
-        this.b_sq = this.b * this.b;
-        this.e_sq = this.f * (2.0 - this.f); // Square of Eccentricity
-        this.toRadians = Math.PI / 180.0;
-        this.toDegrees = 180.0 / Math.PI;
-    }
     // Convert WGS-84 Geodetic point (lat, lon, h) to the 
     // Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z).
-    GeodeticToEcef(from, to) {
+    static GeodeticToEcef(from, to) {
         // Convert to radians in notation consistent with the paper:
         var lambda = from.lat * this.toRadians;
         var phi = from.lon * this.toDegrees;
@@ -53,7 +42,7 @@ class LTP_ENU {
     }
     // Convert the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z) to 
     // (WGS-84) Geodetic point (lat, lon, h).
-    EcefToGeodetic(from, to) {
+    static EcefToGeodetic(from, to) {
         var eps = this.e_sq / (1.0 - this.e_sq);
         var p = Math.sqrt(from.x * from.x + from.y * from.y);
         var q = Math.atan2((from.z * this.a), (p * this.b));
@@ -71,7 +60,7 @@ class LTP_ENU {
     // Converts the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z) to 
     // East-North-Up coordinates in a Local Tangent Plane that is centered at the 
     // (WGS-84) Geodetic point (lat0, lon0, h0).
-    EcefToEnu(from, origin, to) {
+    static EcefToEnu(from, origin, to) {
         // Convert to radians in notation consistent with the paper:
         var lambda = origin.lat * this.toRadians;
         var phi = origin.lon * this.toDegrees;
@@ -95,7 +84,7 @@ class LTP_ENU {
     // Inverse of EcefToEnu. Converts East-North-Up coordinates (xEast, yNorth, zUp) in a
     // Local Tangent Plane that is centered at the (WGS-84) Geodetic point (lat0, lon0, h0)
     // to the Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z).
-    EnuToEcef(from, origin, to) {
+    static EnuToEcef(from, origin, to) {
         // Convert to radians in notation consistent with the paper:
         var lambda = origin.lat * this.toRadians;
         var phi = origin.lon * this.toRadians;
@@ -118,16 +107,115 @@ class LTP_ENU {
     // Converts the geodetic WGS-84 coordinated (lat, lon, h) to 
     // East-North-Up coordinates in a Local Tangent Plane that is centered at the 
     // (WGS-84) Geodetic point (lat0, lon0, h0).
-    GeodeticToEnu(from, origin, to) {
+    static GeodeticToEnu(from, origin) {
         let ecef = new Position.CartesianPosition(0, 0, 0);
         this.GeodeticToEcef(from, ecef);
+        let to = new Position.CartesianPosition(0, 0, 0);
         this.EcefToEnu(ecef, origin, to);
+        return to;
     }
-    EnuToGeodetic(from, origin, to) {
+    static EnuToGeodetic(from, origin, to) {
         let ecef = new Position.CartesianPosition(0, 0, 0);
         this.EnuToEcef(from, origin, ecef);
         this.EcefToGeodetic(ecef, to);
     }
 }
 exports.LTP_ENU = LTP_ENU;
+_a = LTP_ENU;
+// WGS-84 geodetic constants
+LTP_ENU.a = 6378137.0; // WGS-84 Earth semimajor axis (m)
+LTP_ENU.b = 6356752.314245; // Derived Earth semiminor axis (m)
+LTP_ENU.f = (_a.a - _a.b) / _a.a; // Ellipsoid Flatness
+LTP_ENU.f_inv = 1.0 / _a.f; // Inverse flattening
+LTP_ENU.a_sq = _a.a * _a.a;
+LTP_ENU.b_sq = _a.b * _a.b;
+LTP_ENU.e_sq = _a.f * (2.0 - _a.f); // Square of Eccentricity
+LTP_ENU.toRadians = Math.PI / 180.0;
+LTP_ENU.toDegrees = 180.0 / Math.PI;
+class ExtrinsicSupport {
+    static IsDerivedCRS(idString) {
+        return idString.toLowerCase().includes("conversion[");
+    }
+    static IsFromAndToCRS(idString) {
+        return idString.includes("=>");
+    }
+    static GetFromAndToCRS(idString, fromCRS, toCRS) {
+        fromCRS = "";
+        toCRS = "";
+        // Split at =>
+        let arrowIndex = idString.indexOf("=>");
+        if (arrowIndex < 1) {
+            return false;
+        }
+        fromCRS = idString.substring(0, arrowIndex);
+        toCRS = idString.substring(arrowIndex + 2);
+        return true;
+    }
+    static GetEPSGNumber(wktString) {
+        let epsgNumber = "";
+        // look at end of WKT for WKT1 or WKT2 ID
+        // "ID\["EPSG",\d+\]\]$" or "AUTHORITY\["EPSG",\"\d+\"\]\]$"
+        let reID = /(id\\[\\\"epsg\\\",\\d+\\]\\]$)/;
+        let reAuthority = /(authority\\[\\\"epsg\\\",\\\"\\d+\\\"\\]\\]$)/;
+        let thisMatch = "";
+        let matches = wktString.toLowerCase().match(reID);
+        if (matches.length > 0) {
+            thisMatch = matches[0];
+        }
+        //else if ((matches = reAuthority.Matches(wktString.ToLower())).Count > 0) {
+        else if ((matches = wktString.toLowerCase().match(reAuthority)).length > 0) {
+            thisMatch = matches[0];
+        }
+        if (thisMatch != "") {
+            let reNumber = /\\d+/;
+            matches = thisMatch.match(reNumber);
+            if (matches.length > 0) {
+                epsgNumber = matches[0];
+            }
+        }
+        return epsgNumber;
+    }
+    //export static GetOriginParameters(wktString: string, out origin): boolean {
+    //    // PARAMETER[\"Latitude of topocentric origin\",55,
+    //    origin[0] = ExtrinsicSupport.GetSignedDoubleInRe("parameter\\[\\\"latitude.+,-?\\d+\\.?\\d*", wktString);
+    //    origin[1] = ExtrinsicSupport.GetSignedDoubleInRe("parameter\\[\\\"longitude.+,-?\\d+\\.?\\d*", wktString);
+    //    origin[2] = ExtrinsicSupport.GetSignedDoubleInRe("parameter\\[\\\"[^\\]]*height.+,-?\\d+\\.?\\d*", wktString);
+    //    return (!Number.isNaN(origin[0]) && !Number.isNaN(origin[1]) && !Number.isNaN(origin[2]));
+    //}
+    static GetOriginParameters(wktString) {
+        // PARAMETER[\"Latitude of topocentric origin\",55,
+        let lat = ExtrinsicSupport.GetSignedDoubleInRe("parameter\\[\\\"latitude.+,-?\\d+\\.?\\d*", wktString);
+        let lon = ExtrinsicSupport.GetSignedDoubleInRe("parameter\\[\\\"longitude.+,-?\\d+\\.?\\d*", wktString);
+        let h = ExtrinsicSupport.GetSignedDoubleInRe("parameter\\[\\\"[^\\]]*height.+,-?\\d+\\.?\\d*", wktString);
+        if (!Number.isNaN(lat) && !Number.isNaN(lon) && !Number.isNaN(h)) {
+            return new Position.GeodeticPosition(lat, lon, h);
+        }
+        return new Position.GeodeticPosition(Number.NaN, Number.NaN, Number.NaN);
+    }
+    static GetSignedDoubleInRe(reString, inputString) {
+        let result = Number.NaN;
+        let re = new RegExp(reString);
+        let matches = inputString.toLowerCase().match(re);
+        if (matches.length > 0) {
+            let thisMatch = matches[0];
+            re = new RegExp("-?\\d+\\.?\\d*");
+            matches = thisMatch.match(re);
+            if (matches.length > 0) {
+                result = Number.parseFloat(matches[0]);
+            }
+        }
+        return result;
+    }
+    static GetPositionFromParameters(paramString) {
+        // JSON encoded: {"lat": 12.345, "lon": -22.54, "h": 11.22}
+        let lat = ExtrinsicSupport.GetSignedDoubleInRe("\\\"lat\\\"\\s*:\\s*-?\\d+(\\.\\d*)?", paramString);
+        let lon = ExtrinsicSupport.GetSignedDoubleInRe("\\\"lon\\\"\\s*:\\s*-?\\d+(\\.\\d*)?", paramString);
+        let h = ExtrinsicSupport.GetSignedDoubleInRe("\\\"h\\\"\\s*:\\s*-?\\d+(\\.\\d*)?", paramString);
+        if (!Number.isNaN(lat) && !Number.isNaN(lon) && !Number.isNaN(h)) {
+            return new Position.GeodeticPosition(lat, lon, h);
+        }
+        return new Position.GeodeticPosition(Number.NaN, Number.NaN, Number.NaN);
+    }
+}
+exports.ExtrinsicSupport = ExtrinsicSupport;
 //# sourceMappingURL=WGS84ToLTPENU.js.map

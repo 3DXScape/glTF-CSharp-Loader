@@ -119,61 +119,28 @@ export class Extrinsic extends FrameTransform {
                     return Position.NoPosition;
                 }
             }
-            else if (Support.ExtrinsicSupport.IsFromAndToCRS(id)) {
+            else if (Support.ExtrinsicSupport.IsFromAndToCRS(this.id)) {
                 let fromCRS: string = "";
                 let toCRS:   string = "";
                 if (Support.ExtrinsicSupport.GetFromAndToCRS(this.id, fromCRS, toCRS)) {
-
-                    var cf = new proj4.CoordinateSystemFactory();
-                    var f = new CoordinateTransformationFactory();
-                        CoordinateSystem csIn = null;
-                    try {
-                        csIn = cf.CreateFromWkt(fromCRS);
-                    }
-                    catch (Exception ex)
-                    {
-                        return noTransform;
-                    }
-                        CoordinateSystem csOut = null;
-                    try {
-                        csOut = cf.CreateFromWkt(toCRS);
-                    }
-                    catch (Exception ex)
-                    {
-                        return noTransform;
-                    }
-                    //var cs3857 = cf.CreateFromWkt(wkt3857);
-                    ProjNet.CoordinateSystems.Transformations.ICoordinateTransformation transform = null;
-                    if (csIn != null && csOut != null) {
-                        Positions.GeodeticPosition inPoint = Support.ExtrinsicSupport.GetPositionFromParameters(this.parameters);
-                        transform = f.CreateFromCoordinateSystems(csIn, csOut);
-                        double[] xyz = new double[3] { inPoint.lon, inPoint.lat, inPoint.h }; // note lon, lat, h order
-                        double[] XYZ = new double[3];
-                        double[] ret = transform.MathTransform.Transform(xyz);
-                        XYZ[0] = ret[0];
-                        XYZ[1] = ret[1];
-                        if (ret.Length == 2) {
-                            XYZ[2] = xyz[2];
-                        }
-                        else {
-                            XYZ[2] = ret[2];
-                        }
-                    }
-                    else {
-                        Console.WriteLine("Coordinate transformation failed: ");
-                    }
+                    var outer = proj4.Proj(fromCRS);    //source coordinates will be in Longitude/Latitude, WGS84
+                    var inner = proj4.Proj(toCRS);     //destination coordinates in meters, global spherical mercato
+                    var cp = point as Position.CartesianPosition;
+                    let p = proj4.Point(cp.x, cp.y, cp.z);
+                    proj4.transform(outer, inner, p);
+                    // convert points from one coordinate system to another
+                    let outP = new Position.CartesianPosition(p.x, p.y, p.z);
+                    return outP;
                 }
                 else {
-                    Console.WriteLine("from or to CS unrecognized");
+                    console.log("from or to CS unrecognized");
                 }
-
             }
             else {
-                Console.WriteLine("id string missing \"=>\".");
+                console.log("id string missing \"=>\".");
             }
 
-            return new Positions.NoPosition();
-
+            return new Position.NoPosition();
         }
         return Position.NoPosition;
     }

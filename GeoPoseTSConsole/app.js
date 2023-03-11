@@ -58,11 +58,9 @@ let r = proj4.transform(dest, source, q);
 console.log("X : " + p.x + " \nY : " + p.y + " \nZ : " + p.z);
 console.log("X : " + q.x + " \nY : " + q.y + " \nZ : " + q.z);
 console.log("X : " + r.x + " \nY : " + r.y + " \nZ : " + r.z);
-let d = new LTPENU.LTP_ENU();
 let from = new Position.GeodeticPosition(-1.0, 52.0, 15.0);
 let origin = new Position.GeodeticPosition(-1.00005, 52.0, 15.3);
-let to = new Position.CartesianPosition(0, 0, 0);
-d.GeodeticToEnu(from, origin, to);
+let to = LTPENU.LTP_ENU.GeodeticToEnu(from, origin);
 console.log('from: lat: ' + from.lat.toString() + " lon: " + from.lon.toString() + " h: " + from.h.toString());
 console.log('  to: x: ' + to.x.toString() + " y: " + to.y.toString() + " z: " + to.z.toString());
 //  - Display some example GeoPoses

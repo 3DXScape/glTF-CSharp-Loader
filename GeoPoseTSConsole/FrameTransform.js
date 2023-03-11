@@ -23,6 +23,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Translation = exports.GeodeticToEnu = exports.WGS84ToLTPENU = exports.Extrinsic = exports.FrameTransform = void 0;
 const proj4 = require("proj4");
 const Position = require("./Position");
+const Support = require("./WGS84ToLTPENU");
 // Implemention order: 3 - follows Position.
 // These classes define transformations of a Position in one 3D frame to a Position in another 3D frame.
 /// <summary>
@@ -96,6 +97,48 @@ class Extrinsic extends FrameTransform {
         }
         else if (uri == "https://iau.org") {
             return Position.NoPosition;
+        }
+        else if (uri == "https://geopose.io") {
+            if (Support.ExtrinsicSupport.IsDerivedCRS(this.id)) {
+                //
+                let epsgNumber = Support.ExtrinsicSupport.GetEPSGNumber(this.id);
+                if (epsgNumber == null || epsgNumber == "") {
+                    return Position.NoPosition;
+                }
+                else if (epsgNumber == "5819") {
+                    // get lat0, lon0, h0
+                    let Origin = Support.ExtrinsicSupport.GetOriginParameters(this.id);
+                    if (!Number.isNaN(Origin.lat)) {
+                        let inPoint = Support.ExtrinsicSupport.GetPositionFromParameters(this.parameters);
+                        let tangentPoint = new Position.GeodeticPosition(Origin.lat, Origin.lon, Origin.h);
+                        let outPoint = Support.LTP_ENU.GeodeticToEnu(inPoint, tangentPoint);
+                    }
+                }
+                else {
+                    return Position.NoPosition;
+                }
+            }
+            else if (Support.ExtrinsicSupport.IsFromAndToCRS(this.id)) {
+                let fromCRS = "";
+                let toCRS = "";
+                if (Support.ExtrinsicSupport.GetFromAndToCRS(this.id, fromCRS, toCRS)) {
+                    var outer = proj4.Proj(fromCRS); //source coordinates will be in Longitude/Latitude, WGS84
+                    var inner = proj4.Proj(toCRS); //destination coordinates in meters, global spherical mercato
+                    var cp = point;
+                    let p = proj4.Point(cp.x, cp.y, cp.z);
+                    proj4.transform(outer, inner, p);
+                    // convert points from one coordinate system to another
+                    let outP = new Position.CartesianPosition(p.x, p.y, p.z);
+                    return outP;
+                }
+                else {
+                    console.log("from or to CS unrecognized");
+                }
+            }
+            else {
+                console.log("id string missing \"=>\".");
+            }
+            return new Position.NoPosition();
         }
         return Position.NoPosition;
     }

@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GeoPose\GeoPose.csproj" />
+    <ProjectReference Include="..\GeoPoseLibrary\GeoPoseLibrary.csproj" />
     <ProjectReference Include="..\glTFInterface\glTFInterface.csproj" />
     <ProjectReference Include="..\LTPENE_WGS84\LTPENUWGS84.csproj" />
     <ProjectReference Include="..\SemanticObjects\SemanticObjects.csproj" />

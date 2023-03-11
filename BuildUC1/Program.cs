@@ -1,7 +1,10 @@
 // See https://aka.ms/new-console-template for more information
+using System;
+
 using Affordances;
 using Verses;
 using Entities;
+using GeoPose;
 using g4;
 // 50.93813907737537, -1.4706584849810118
 //TerrainComponents.TerrainInfo results = await TerrainComponents.TerrainComponents.GetTerrainComponents("OS Southampton HQ", "c:/temp/models/world", 50.93765028067923, -1.4696398272318714, 19.08, 256.0);

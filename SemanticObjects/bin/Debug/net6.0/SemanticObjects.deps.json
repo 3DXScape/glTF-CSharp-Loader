@@ -19,6 +19,17 @@
         }
       },
       "GeoAPI/1.7.4": {},
+      "GeoAPI.CoordinateSystems/1.7.5": {
+        "dependencies": {
+          "GeoAPI.Core": "1.7.5"
+        },
+        "runtime": {
+          "lib/netstandard2.0/GeoAPI.CoordinateSystems.dll": {
+            "assemblyVersion": "1.7.5.0",
+            "fileVersion": "1.7.5.0"
+          }
+        }
+      },
       "GeoAPI.Core/1.7.5": {
         "runtime": {
           "lib/netstandard2.0/GeoAPI.dll": {
@@ -81,6 +92,23 @@
           }
         }
       },
+      "ProjNET/2.0.0": {
+        "dependencies": {
+          "System.Memory": "4.5.3",
+          "System.Numerics.Vectors": "4.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/ProjNET.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.0"
+          }
+        }
+      },
+      "ProjNET4GeoAPI/1.4.1": {
+        "dependencies": {
+          "GeoAPI.CoordinateSystems": "1.7.5"
+        }
+      },
       "SixLabors.ImageSharp/2.1.3": {
         "dependencies": {
           "System.Runtime.CompilerServices.Unsafe": "5.0.0",
@@ -93,6 +121,8 @@
           }
         }
       },
+      "System.Memory/4.5.3": {},
+      "System.Numerics.Vectors/4.5.0": {},
       "System.Runtime.CompilerServices.Unsafe/5.0.0": {},
       "System.Text.Encoding.CodePages/5.0.0": {
         "dependencies": {
@@ -100,6 +130,11 @@
         }
       },
       "GeoPose/1.0.0": {
+        "dependencies": {
+          "LTPENUWGS84": "1.0.0",
+          "ProjNET4GeoAPI": "1.4.1",
+          "ProjNET": "2.0.0"
+        },
         "runtime": {
           "GeoPose.dll": {}
         }
@@ -163,6 +198,13 @@
       "path": "geoapi/1.7.4",
       "hashPath": "geoapi.1.7.4.nupkg.sha512"
     },
+    "GeoAPI.CoordinateSystems/1.7.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JBcvkeQFjCW9NTfkII5WiJNmnv0ZtYA/VTVljbIqDFWBJ8kHwu2UHd2MVStD/VVHVnLoyNcDIapsuTENdlyF3g==",
+      "path": "geoapi.coordinatesystems/1.7.5",
+      "hashPath": "geoapi.coordinatesystems.1.7.5.nupkg.sha512"
+    },
     "GeoAPI.Core/1.7.5": {
       "type": "package",
       "serviceable": true,
@@ -198,12 +240,40 @@
       "path": "nettopologysuite.io/1.14.0.1",
       "hashPath": "nettopologysuite.io.1.14.0.1.nupkg.sha512"
     },
+    "ProjNET/2.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-iMJG8qpGJ8SjFrB044O8wgo0raAWCdG1Bvly0mmVcjzsrexDHhC+dUct6Wb1YwQtupMBjSTWq7Fn00YeNErprA==",
+      "path": "projnet/2.0.0",
+      "hashPath": "projnet.2.0.0.nupkg.sha512"
+    },
+    "ProjNET4GeoAPI/1.4.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Gw1fW7vQpGB23XZJepG9Cvo2bjpPKuddmsb8+Bwap6KYJdEYWwqHIr+6YP3e391h0ksf6t8mzvj3FA0U/7hUfA==",
+      "path": "projnet4geoapi/1.4.1",
+      "hashPath": "projnet4geoapi.1.4.1.nupkg.sha512"
+    },
     "SixLabors.ImageSharp/2.1.3": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-8yonNRWX3vUE9k29ta0Hbfa0AEc0hbDjSH/nZ3vOTJEXmY6hLnGsjDKoz96Z+AgOsrdkAu6PdL/Ebaf70aitzw==",
       "path": "sixlabors.imagesharp/2.1.3",
       "hashPath": "sixlabors.imagesharp.2.1.3.nupkg.sha512"
+    },
+    "System.Memory/4.5.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3oDzvc/zzetpTKWMShs1AADwZjQ/36HnsufHRPcOjyRAAMLDlu2iD33MBI2opxnezcVUtXyqDXXjoFMOU9c7SA==",
+      "path": "system.memory/4.5.3",
+      "hashPath": "system.memory.4.5.3.nupkg.sha512"
+    },
+    "System.Numerics.Vectors/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QQTlPTl06J/iiDbJCiepZ4H//BVraReU4O4EoRw1U02H5TLUIT7xn3GnDp9AXPSlJUDyFs4uWjWafNX6WrAojQ==",
+      "path": "system.numerics.vectors/4.5.0",
+      "hashPath": "system.numerics.vectors.4.5.0.nupkg.sha512"
     },
     "System.Runtime.CompilerServices.Unsafe/5.0.0": {
       "type": "package",

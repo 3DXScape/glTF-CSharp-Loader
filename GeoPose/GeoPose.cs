@@ -14,7 +14,6 @@
 // <author>Steve Smyth</author>
 // <website>https://opensiteplan.org</website>
 //-----------------------------------------------------------------------
-
 /// <summary>
 /// This library is a C# implementation of the three OGC GeoPose 1.0 Basic and Advanced targets
 /// with Json serialization of each, conforming to the OGC GeoPose 1.0 standard.
@@ -32,7 +31,6 @@
 ///This version targets the open source and platform-independent .NET 6 Core framework.
 /// </note>
 /// </summary>
-
 using System;
 using System.Text;
 
